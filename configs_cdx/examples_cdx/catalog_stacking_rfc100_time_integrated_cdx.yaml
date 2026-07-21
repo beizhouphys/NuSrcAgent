@@ -1,0 +1,32 @@
+schema_version: "0.1"
+
+analysis:
+  type: catalog_stacking
+  time_mode: time_integrated
+
+data:
+  sample: icecube_public_ps_10yr
+
+catalog:
+  file: configs_cdx/examples_cdx/catalog_sources_rfc100_cdx.csv
+  name_column: source_name
+  ra_column: ra_deg
+  dec_column: dec_deg
+
+weights:
+  mode: column
+  column: xband_flux_jy
+  normalize: true
+
+stacking:
+  spectral_indices:
+    - -2.53
+  include_uniform_baseline: true
+
+background:
+  method: ra_scramble
+  n_trials: 10000
+  random_seed: 12345
+
+outputs:
+  output_root: data_output/runs_cdx

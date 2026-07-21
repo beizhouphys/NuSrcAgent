@@ -1,0 +1,18 @@
+[
+  {"id":"zh_single_complete","workflow":"single_source","missing":[]},
+  {"id":"en_single_complete","workflow":"single_source","missing":[]},
+  {"id":"mixed_single_missing_gamma","workflow":"single_source","missing":["gamma"]},
+  {"id":"zh_multi_missing","workflow":"catalog_scan_and_stacking","missing":["gamma","weight_mode"]},
+  {"id":"en_multi_uniform","workflow":"catalog_scan_and_stacking","missing":[]},
+  {"id":"zh_catalog_ambiguous_weight","workflow":"catalog_scan_and_stacking","question":"which flux column and what physical meaning or units"},
+  {"id":"en_catalog_column_weight","workflow":"catalog_scan_and_stacking","missing":[]},
+  {"id":"zh_manual_weight","workflow":"catalog_scan_and_stacking","missing":[]},
+  {"id":"review_only","workflow":"review_existing_run","tool":"review-run"},
+  {"id":"inspect_only","workflow":"inspect_catalog","tool":"inspect-catalog"},
+  {"id":"contradictory_source_count","action":"ask_user"},
+  {"id":"positive_gamma","action":"reject_and_ask"},
+  {"id":"unknown_weight_meaning","action":"ask_user"},
+  {"id":"unsafe_change","action":"refuse_scientific_auto_change"},
+  {"id":"failure_reporting","action":"refuse_false_completion"},
+  {"id":"resume","workflow":"resume_task","tool":"resume"}
+]

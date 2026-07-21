@@ -1,0 +1,43 @@
+schema_version: "0.2"
+
+analysis:
+  type: catalog_stacking
+  time_mode: time_integrated
+
+data:
+  sample: icecube_public_ps_10yr
+
+sources:
+  -
+    name: TXS 0506+056
+    ra_deg: 77.3582
+    dec_deg: 5.6931
+  -
+    name: NGC 1068
+    ra_deg: 40.6696
+    dec_deg: -0.0133
+  -
+    name: GB6 J1542+6129
+    ra_deg: 235.75
+    dec_deg: 61.50
+
+weights:
+  mode: manual
+  values:
+    - 2.0
+    - 1.0
+    - 1.0
+  normalize: true
+
+stacking:
+  spectral_indices:
+    - -2.53
+  include_uniform_baseline: true
+
+background:
+  method: ra_scramble
+  n_trials: 10000
+  random_seed: 12345
+
+outputs:
+  output_root: data_output/runs_cdx
