@@ -10,7 +10,9 @@ User request -> Codex Skill -> persistent AgentTask -> LLH tools -> review -> co
 
 ## Private-alpha status
 
-Version: `0.2.0-private-alpha`
+Version: `0.2.0-private-alpha.1`
+
+Private repository: `https://github.com/beizhouphys/NuSrcAgent`
 
 This repository is currently intended only for the owner and explicitly invited collaborators. It is not a public scientific release, and results must not be described as publication-ready while review warnings remain. No redistribution or public deployment is authorized at this stage.
 
@@ -29,6 +31,8 @@ This repository is currently intended only for the owner and explicitly invited 
 Create the tested Conda environment:
 
 ```bash
+git clone https://github.com/beizhouphys/NuSrcAgent.git
+cd NuSrcAgent
 conda env create -f environment_private_alpha_cdx.yml
 conda activate nusrcagent-cdx
 ```
