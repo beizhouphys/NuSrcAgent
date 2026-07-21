@@ -1,0 +1,24 @@
+name: Agent wrapper tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: pip
+      - name: Install private-alpha dependencies
+        run: python -m pip install -r requirements_private_alpha_cdx.txt
+      - name: Run deterministic agent tests
+        run: python -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
+      - name: Validate language evaluation corpus
+        run: python evaluate_agent_cases_cdx.py --validate-golden
