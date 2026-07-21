@@ -10,7 +10,7 @@ User request -> Codex Skill -> persistent AgentTask -> LLH tools -> review -> co
 
 ## Private-alpha status
 
-Version: `0.2.0-private-alpha.1`
+Version: `0.2.0-private-alpha.2`
 
 Private repository: `https://github.com/beizhouphys/NuSrcAgent`
 

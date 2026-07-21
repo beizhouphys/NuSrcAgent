@@ -16,6 +16,7 @@ jobs:
         with:
           python-version: "3.8"
           cache: pip
+          cache-dependency-path: requirements_private_alpha_cdx.txt
       - name: Install private-alpha dependencies
         run: python -m pip install -r requirements_private_alpha_cdx.txt
       - name: Run deterministic agent tests
