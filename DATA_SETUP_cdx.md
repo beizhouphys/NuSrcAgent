@@ -2,38 +2,26 @@
 
 ## Policy
 
-LLH input data and generated analysis products are intentionally excluded from Git. The source repository contains code, tests, small example catalogs, and a cryptographic manifest only.
+The private repository includes the audited LLH input subset required by the current callable backend. Generated analysis products and unrelated local data remain excluded from Git.
 
-The private data bundle is for explicitly invited collaborators. Do not upload it to a public repository or redistribute it without confirming the applicable IceCube data terms and the provenance of the corrected combined event sample.
+Repository access is for explicitly invited collaborators. Do not make the repository public or redistribute its data without confirming the applicable IceCube data terms and the provenance of the corrected combined event sample.
 
-## Bundle
+## Included data
 
-Expected bundle name:
-
-```text
-NuSrcAgent_data_v0.2.0_cdx.tar.gz
-```
-
-Extract it from the repository root:
-
-```bash
-tar -xzf NuSrcAgent_data_v0.2.0_cdx.tar.gz
-```
-
-It restores only the files required by the current callable time-integrated backend:
+The Git checkout contains only the files required by the current callable time-integrated backend:
 
 - five event samples under `data_input/.../events/uncorrected_probably/`;
 - five uptime tables under `data_input/.../uptime/`;
 - five effective-area tables under `data_input/.../irfs/`;
 - five derived background PDF tables under `data_output/bkgd_pdfs_cdx/`.
 
-Verify presence and hashes:
+No separate download or extraction is required. Verify presence and hashes from the repository root:
 
 ```bash
 python3 verify_private_alpha_setup_cdx.py --hashes
 ```
 
-The verifier does not upload or modify any data.
+The verifier does not upload or modify any data. `data_manifest_private_alpha_cdx.json` defines the tracked data set and expected SHA-256 values; the bundle builder remains available only for archival compatibility.
 
 ## Workbook output
 

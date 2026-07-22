@@ -1,4 +1,4 @@
-# NuSrcAgent 0.2.0 Private Alpha 2
+# NuSrcAgent 0.2.0 Private Alpha 3
 
 ## Audience
 
@@ -18,19 +18,19 @@ Owner and explicitly invited collaborators only. This version is not a public sc
 - Run review, workbook and figure output support, and multilingual agent tests.
 - Pinned Python 3.8/NumPy environment and GitHub Actions wrapper tests.
 
-## Data asset
+## Included data
 
-- File: `NuSrcAgent_data_v0.2.0_cdx.tar.gz`
-- Size: approximately 46 MB compressed
-- SHA-256: `cf6972ddc893d7ad0b15a02c844791b3d0957c53b258733b93373d705d02020a`
+- The 20 required IceCube and derived background files are tracked directly in the private Git repository.
+- A fresh clone is ready for hash verification without a separate Release download or extraction step.
+- `data_manifest_private_alpha_cdx.json` records the expected file paths and SHA-256 values.
 
-The data asset is not stored in Git history. It restores the 20 files listed in `data_manifest_private_alpha_cdx.json` and has passed clean-extraction hash verification.
+The earlier alpha.2 data asset remains available only for historical compatibility.
 
 ## Verification
 
 - 21 deterministic agent tests passed in a clean clone.
 - 16-case language corpus validation passed.
-- All 20 private data files passed SHA-256 verification after clean extraction.
+- All 20 private data files passed SHA-256 verification from a clean clone.
 - A real-backend TXS 0506+056 single-source task completed in the clean clone with expected review warnings preserved.
 
 ## Known limitations
