@@ -8,16 +8,15 @@ The GitHub repository is private. Add collaborators by GitHub username, not by s
 
 1. Clone `NuSrcAgent`.
 2. Create the environment from `environment_private_alpha_cdx.yml`.
-3. Obtain the private data bundle from the owner and extract it at the repository root.
-4. Run `python3 verify_private_alpha_setup_cdx.py --hashes`.
-5. Run the unit tests.
-6. Open the repository in Codex and invoke `$he-neutrino-analysis-cdx`, or use `run_agent_wrap_cdx.py` directly.
+3. Run `python3 verify_private_alpha_setup_cdx.py --hashes`; the required data are included in the clone.
+4. Run the unit tests.
+5. Open the repository in Codex and invoke `$he-neutrino-analysis-cdx`, or use `run_agent_wrap_cdx.py` directly.
 
 ## Development workflow
 
 - Keep `main` usable; develop changes on a short-lived branch.
 - Use pull requests for changes to agent behavior or LLH behavior.
-- Never commit `data_input/`, `data_output/`, `figures/`, credentials, or local caches.
+- Do not add data beyond the manifest-approved tracked subset. Never commit generated run outputs, figures, credentials, or local caches.
 - Record scientific parameter changes explicitly in the pull request.
 - Add or update tests when changing planner, confirmation, recovery, or completion behavior.
 - Tag stable collaborator snapshots; do not rewrite published tag history.

@@ -10,7 +10,7 @@ User request -> Codex Skill -> persistent AgentTask -> LLH tools -> review -> co
 
 ## Private-alpha status
 
-Version: `0.2.0-private-alpha.2`
+Version: `0.2.0-private-alpha.3`
 
 Private repository: `https://github.com/beizhouphys/NuSrcAgent`
 
@@ -43,14 +43,13 @@ Or install the minimal Python dependency into an existing Python 3.8 environment
 python3 -m pip install -r requirements_private_alpha_cdx.txt
 ```
 
-The LLH data are distributed separately from Git. Place the private data bundle at the repository root, extract it, and verify it:
+The required IceCube LLH data are included in the private repository. Verify the environment and all tracked data files after cloning:
 
 ```bash
-tar -xzf NuSrcAgent_data_v0.2.0_cdx.tar.gz
 python3 verify_private_alpha_setup_cdx.py --hashes
 ```
 
-See [DATA_SETUP_cdx.md](DATA_SETUP_cdx.md) for the data policy and expected paths.
+No separate data download or extraction is required. See [DATA_SETUP_cdx.md](DATA_SETUP_cdx.md) for the data scope and handling policy.
 
 ## Use with Codex
 
@@ -83,7 +82,7 @@ python3 -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
 python3 evaluate_agent_cases_cdx.py --validate-golden
 ```
 
-After installing the data, run the setup verifier and a single-source smoke test. Current scientific limitations and warnings are documented in [project_audit_cdx.md](project_audit_cdx.md) and [AGENT_EVALUATION_cdx.md](AGENT_EVALUATION_cdx.md).
+Run the setup verifier and a single-source smoke test after cloning. Current scientific limitations and warnings are documented in [project_audit_cdx.md](project_audit_cdx.md) and [AGENT_EVALUATION_cdx.md](AGENT_EVALUATION_cdx.md).
 
 ## Documentation
 
