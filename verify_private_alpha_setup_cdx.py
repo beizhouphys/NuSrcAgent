@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Verify the NuSrcAgent private-alpha environment and data bundle.")
+    parser = argparse.ArgumentParser(description="Verify the NuSrcAgent private-alpha environment and repository data.")
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--manifest", default="data_manifest_private_alpha_cdx.json")
     parser.add_argument("--hashes", action="store_true", help="Compute SHA-256 for every required data file.")

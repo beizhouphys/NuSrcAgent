@@ -10,6 +10,7 @@ from unittest.mock import patch
 from agent_core_cdx.agent_orchestrator_cdx import classify_error, evaluate_completion, execute_task, resume_interrupted_task
 from agent_core_cdx.planner_cdx import plan_catalog_task, plan_single_task, revalidate_task_plan
 from agent_core_cdx.task_state_cdx import confirm_parameters, load_task, save_task
+from run_agent_wrap_cdx import build_parser
 
 
 class AgentPlanningTests(unittest.TestCase):
@@ -24,7 +25,7 @@ class AgentPlanningTests(unittest.TestCase):
         task = plan_single_task("analyze this source", "A", 10.0, 20.0, -2.5)
         self.assertEqual(task["workflow"], "single_source")
         self.assertEqual(task["status"], "READY")
-        self.assertIn("run_analysis_agent_cdx.py single", task["planned_tools"])
+        self.assertIn("run_agent_wrap_cdx.py run", task["planned_tools"])
 
     def test_single_source_missing_gamma_waits(self):
         task = plan_single_task("分析这个源", "A", 10.0, 20.0, None)
@@ -172,6 +173,16 @@ class AgentCompletionTests(unittest.TestCase):
             self.assertEqual(len(result["attempts"]), 2)
             self.assertEqual(result["attempts"][0]["request_sha256"], result["attempts"][1]["request_sha256"])
             self.assertFalse(result["attempts"][0]["recovery"]["scientific_parameters_changed"])
+
+
+class AgentCliTests(unittest.TestCase):
+    def test_catalog_inspection_uses_public_entry_point(self):
+        args = build_parser().parse_args(["inspect-catalog", "--catalog", "catalog.csv"])
+        self.assertEqual(args.command, "inspect-catalog")
+
+    def test_run_review_uses_public_entry_point(self):
+        args = build_parser().parse_args(["review-run", "--run-directory", "run"])
+        self.assertEqual(args.command, "review-run")
 
 
 if __name__ == "__main__":

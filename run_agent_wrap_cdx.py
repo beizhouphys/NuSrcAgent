@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from agent_core_cdx.agent_orchestrator_cdx import execute_task, resume_interrupted_task
+from agent_core_cdx.catalog_inspector_cdx import inspect_catalog
 from agent_core_cdx.planner_cdx import plan_catalog_task, plan_single_task, revalidate_task_plan
+from agent_core_cdx.review_cdx import review_run
 from agent_core_cdx.task_state_cdx import confirm_parameters, load_task, save_task
 
 
@@ -16,6 +18,14 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).expanduser().resolve()
     try:
+        if args.command == "inspect-catalog":
+            result = inspect_catalog(args.catalog, args.name_column, args.ra_column, args.dec_column, args.weight_column)
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 2 if result.get("status") == "fail" else 0
+        if args.command == "review-run":
+            result = review_run(args.run_directory, repo_root, write_artifacts=not args.no_write)
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 2 if result.get("status") == "fail" else 0
         if args.command == "create-single":
             task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, args.gamma)
             path = save_task(task, repo_root)
@@ -95,6 +105,17 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument("--task", required=True)
     resume = subparsers.add_parser("resume", help="Explicitly resume an interrupted RUNNING/REVIEWING task.")
     resume.add_argument("--task", required=True)
+
+    inspect_parser = subparsers.add_parser("inspect-catalog", help="Inspect catalog columns, coordinates, and candidate weights.")
+    inspect_parser.add_argument("--catalog", required=True)
+    inspect_parser.add_argument("--name-column")
+    inspect_parser.add_argument("--ra-column")
+    inspect_parser.add_argument("--dec-column")
+    inspect_parser.add_argument("--weight-column")
+
+    review_parser = subparsers.add_parser("review-run", help="Review a completed analysis run and write review artifacts.")
+    review_parser.add_argument("--run-directory", required=True)
+    review_parser.add_argument("--no-write", action="store_true")
     return parser
 
 

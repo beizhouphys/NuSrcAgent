@@ -10,7 +10,7 @@ from typing import Any # Codex
 from numpy import * # Codex
 
 from agent_core_cdx.schemas_cdx import NormalizedAnalysis, to_clean_dict # Codex
-from likelihood_backend_single_source_cdx import load_backend_data # Codex
+from analysis_backend_cdx.single_source_cdx import load_backend_data # Codex
 
 
 SOURCE_COLUMNS = ["source_number", "source_name", "significance_rank", "ra_deg", "dec_deg", "intrinsic_weight", "ns_hat", "ts", "signed_sqrt_ts", "pre_trial_p", "pre_trial_significance", "post_trial_p", "post_trial_significance", "n_events_in_roi", "fit_status"] # Codex
@@ -83,7 +83,7 @@ def build_run_information(normalized: NormalizedAnalysis) -> list[list[object]]:
         ["random_seed", normalized.random_seed], # Codex
         ["reference", "https://arxiv.org/abs/2103.12813"], # Codex
         ["ts_definition", "TS evaluated at the maximum-likelihood estimate ns_hat"], # Codex
-        ["flux_conversion", "Paper-calibrated ns-to-flux references from likelihood_v4.py/ns2flux.py"], # Codex
+        ["flux_conversion", "Paper-calibrated ns-to-flux references from legacy_cdx/likelihood_v4.py and legacy_cdx/ns2flux.py"], # Codex
     ] # Codex
 
 

@@ -11,7 +11,7 @@ from typing import Any # Codex
 from numpy import * # Codex
 
 from agent_core_cdx.schemas_cdx import NormalizedAnalysis # Codex
-from likelihood_backend_single_source_cdx import bounded_minimize, interp1d_linear, load_backend_data, run_single_source_time_integrated # Codex
+from analysis_backend_cdx.single_source_cdx import bounded_minimize, interp1d_linear, load_backend_data, run_single_source_time_integrated # Codex
 
 
 FIG4_ASTRO_NS_REFERENCES = {-2.00: 3217.3, -2.53: 8845.7, -3.00: 49282.2} # Codex
@@ -31,7 +31,7 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -
             stacking_results.append(result) # Codex
             stacking_curves.append(curve) # Codex
     stacking_warnings.append("Stacking post-trial p-value is not reported until background trials include the full weighting/spectral-index scan.") # Codex
-    stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from likelihood_v4.py/ns2flux.py.") # Codex
+    stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from legacy_cdx/likelihood_v4.py and legacy_cdx/ns2flux.py.") # Codex
     return { # Codex
         "backend": "likelihood_catalog_time_integrated_v1", # Codex
         "n_sources": len(normalized.sources), # Codex
