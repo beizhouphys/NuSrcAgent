@@ -1,5 +1,5 @@
 {
-  "bundle": "NuSrcAgent_data_v0.2.0_cdx.tar.gz",
+  "distribution": "tracked_private_repository",
   "schema_version": "0.1",
   "files": [
     {"path":"data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC40_exp.csv","sha256":"23d633925cb22cccb9530376b1de51ccd3fa2696fc49c1955bc8a9dafef035a0"},

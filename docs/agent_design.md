@@ -1,0 +1,51 @@
+# Agent Design and Behavior
+
+## Architecture
+
+NuSrcAgent separates natural-language interpretation from deterministic execution:
+
+```text
+Codex Skill
+  -> task planner and confirmation gate
+  -> persistent AgentTask
+  -> deterministic likelihood backend
+  -> artifact and scientific review
+  -> completion gate
+```
+
+Codex interprets Chinese, English, or mixed-language requests. The Python layer receives structured coordinates, catalog paths, gamma values, and weighting choices; it does not call an LLM API.
+
+## Workflow Selection
+
+- Exactly one source selects `single_source`.
+- Multiple sources or a multi-row catalog select `catalog_scan_and_stacking`.
+- Inspection-only requests use `inspect-catalog`.
+- Existing results use `review-run`.
+- Unclear source count or intent requires a user question.
+
+## Parameter Gate
+
+Execution is blocked until required scientific choices are explicit:
+
+- a finite negative spectral index gamma;
+- for stacking, uniform, catalog-column, or manual weighting;
+- the physical meaning or units of a selected weight column;
+- coordinate-column interpretation when it cannot be inferred safely.
+
+Each parameter records its value, provenance, and confirmation state.
+
+## Task States
+
+`DRAFT`, `AWAITING_CONFIRMATION`, `READY`, `RUNNING`, `REVIEWING`, `COMPLETED`, `COMPLETED_WITH_WARNINGS`, and `FAILED` are persisted under `data_output/agent_tasks_cdx/`.
+
+A terminal task is immutable. A changed scientific choice creates a new task.
+
+## Recovery and Completion
+
+Only dependency, output-generation, or transient I/O failures may retry automatically, at most once, with an identical request hash. Gamma, weights, catalog membership, coordinates, trial definitions, optimizer bounds, and likelihood definitions are never changed automatically.
+
+Completion requires confirmed parameters, a recorded run directory, and a completed-run review. Warning reviews produce `COMPLETED_WITH_WARNINGS`; failed reviews produce `FAILED`, whose numerical results must not be presented as valid.
+
+## Interfaces
+
+`run_agent_wrap_cdx.py` is the sole public Python CLI. It exposes task creation, confirmation, execution, resume, display, catalog inspection, and run review as subcommands. Internal modules may be imported directly by tests and development tools but are not separate user interfaces.

@@ -22,4 +22,4 @@ jobs:
       - name: Run deterministic agent tests
         run: python -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
       - name: Validate language evaluation corpus
-        run: python evaluate_agent_cases_cdx.py --validate-golden
+        run: python tools_cdx/evaluate_agent_cases_cdx.py --validate-golden

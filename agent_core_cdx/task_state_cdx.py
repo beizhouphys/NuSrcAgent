@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 
 TASK_SCHEMA_VERSION = "0.1"
-AGENT_WRAPPER_VERSION = "0.2.0-private-alpha.3" # cdx
+AGENT_WRAPPER_VERSION = "0.2.0-private-alpha.4" # cdx
 TERMINAL_STATES = {"COMPLETED", "COMPLETED_WITH_WARNINGS", "FAILED"}
 RUNNABLE_STATE = "READY"
 
@@ -72,10 +72,10 @@ def required_parameter_names(task: Dict[str, Any]) -> List[str]:
 
 def tools_for_workflow(workflow: str) -> List[str]:
     mapping = {
-        "single_source": ["run_analysis_agent_cdx.py single", "review-run"],
-        "catalog_scan_and_stacking": ["inspect-catalog", "run_analysis_agent_cdx.py catalog", "review-run"],
-        "inspect_catalog": ["inspect-catalog"],
-        "review_existing_run": ["review-run"],
+        "single_source": ["run_agent_wrap_cdx.py run", "run_agent_wrap_cdx.py review-run"],
+        "catalog_scan_and_stacking": ["run_agent_wrap_cdx.py inspect-catalog", "run_agent_wrap_cdx.py run", "run_agent_wrap_cdx.py review-run"],
+        "inspect_catalog": ["run_agent_wrap_cdx.py inspect-catalog"],
+        "review_existing_run": ["run_agent_wrap_cdx.py review-run"],
         "resume_task": ["run_agent_wrap_cdx.py resume"],
     }
     return list(mapping.get(workflow, []))

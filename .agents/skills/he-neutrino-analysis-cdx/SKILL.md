@@ -1,6 +1,6 @@
 ---
 name: he-neutrino-analysis-cdx
-description: Orchestrate, execute, and scientifically review time-integrated high-energy neutrino single-source searches, catalog-wide source scans, and catalog stacking analyses in the Radio_Bright_AGN repository. Use when a user asks in natural language to inspect a source catalog, analyze one or more sky coordinates, choose or apply catalog weights, run the IceCube public-data likelihood, reproduce 2103.12813-style outputs, diagnose a run, or assess whether analysis outputs are trustworthy.
+description: Orchestrate, execute, and scientifically review time-integrated high-energy neutrino single-source searches, catalog-wide source scans, and catalog stacking analyses in the NuSrcAgent repository. Use when a user asks in natural language to inspect a source catalog, analyze one or more sky coordinates, choose or apply catalog weights, run the IceCube public-data likelihood, reproduce 2103.12813-style outputs, diagnose a run, or assess whether analysis outputs are trustworthy.
 ---
 
 # HE Neutrino Analysis
@@ -52,13 +52,13 @@ The wrapper writes attempt hashes, classifies failures, permits at most one safe
 6. For an inspection-only request, use:
 
 ```bash
-python3 run_codex_analysis_tool_cdx.py inspect-catalog --catalog <catalog>
+python3 run_agent_wrap_cdx.py inspect-catalog --catalog <catalog>
 ```
 
 For an existing-run review, use:
 
 ```bash
-python3 run_codex_analysis_tool_cdx.py review-run --run-directory <run_directory> --repo-root .
+python3 run_agent_wrap_cdx.py --repo-root . review-run --run-directory <run_directory>
 ```
 
 Treat `status=fail` as blocking and present unresolved questions to the user.
@@ -75,7 +75,7 @@ The current sample is fixed to the IceCube public 10-year point-source data and 
 8. Read `<task_directory>/agent_review_cdx.json` and `<run_directory>/review_cdx.json` after every run. If the run review is absent, run:
 
 ```bash
-python3 run_codex_analysis_tool_cdx.py review-run --run-directory <run_directory> --repo-root .
+python3 run_agent_wrap_cdx.py --repo-root . review-run --run-directory <run_directory>
 ```
 
 9. Apply the review policy:

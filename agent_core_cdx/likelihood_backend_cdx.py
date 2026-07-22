@@ -3,8 +3,8 @@ from __future__ import annotations # Codex
 from pathlib import Path # Codex
 
 from agent_core_cdx.schemas_cdx import ConfigError, NormalizedAnalysis # cdx
-from likelihood_backend_catalog_cdx import run_catalog_time_integrated # Codex
-from likelihood_backend_single_source_cdx import run_single_source_time_integrated # cdx
+from analysis_backend_cdx.catalog_cdx import run_catalog_time_integrated # Codex
+from analysis_backend_cdx.single_source_cdx import run_single_source_time_integrated # cdx
 
 
 def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None) -> dict[str, object]: # Codex

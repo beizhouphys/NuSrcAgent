@@ -1,68 +1,52 @@
 # NuSrcAgent
 
-Private-alpha agent wrapper for time-integrated high-energy neutrino single-source searches, catalog scans, and stacking analyses.
-
-NuSrcAgent separates natural-language interaction from deterministic likelihood execution:
+NuSrcAgent is a private-alpha agent for time-integrated high-energy neutrino single-source searches, catalog scans, and stacking analyses using the IceCube public point-source data.
 
 ```text
-User request -> Codex Skill -> persistent AgentTask -> LLH tools -> review -> completion gate
+Natural-language request -> Codex Skill -> persistent task -> deterministic LLH backend -> scientific review
 ```
 
-## Private-alpha status
+Version: `0.2.0-private-alpha.4`
 
-Version: `0.2.0-private-alpha.3`
-
-Private repository: `https://github.com/beizhouphys/NuSrcAgent`
-
-This repository is currently intended only for the owner and explicitly invited collaborators. It is not a public scientific release, and results must not be described as publication-ready while review warnings remain. No redistribution or public deployment is authorized at this stage.
+This private repository is for the owner and invited collaborators. It is not yet a public or publication-ready scientific release.
 
 ## Capabilities
 
-- One source automatically selects single-source analysis.
-- Multiple sources or a catalog select a catalog-wide single-source scan plus stacking.
-- Missing gamma or weighting definitions block execution and trigger a user question.
-- Tasks persist confirmations, attempts, request hashes, artifacts, and terminal status.
-- Safe engineering failures may retry once without changing scientific parameters.
-- Completed runs produce machine-readable reviews and pass/warning/fail completion states.
+- One source selects a single-source analysis.
+- Multiple sources or a catalog select a source-by-source scan plus stacking.
+- Missing gamma or weighting choices block execution and trigger a question.
+- Tasks preserve inputs, confirmations, attempts, request hashes, outputs, and completion status.
+- Completed runs produce tables, figures, provenance, and machine-readable scientific reviews.
 - Chinese, English, and mixed-language requests are supported through the repository Codex Skill.
 
-## Setup
-
-Create the tested Conda environment:
+## Install
 
 ```bash
 git clone https://github.com/beizhouphys/NuSrcAgent.git
 cd NuSrcAgent
 conda env create -f environment_private_alpha_cdx.yml
 conda activate nusrcagent-cdx
-```
-
-Or install the minimal Python dependency into an existing Python 3.8 environment:
-
-```bash
-python3 -m pip install -r requirements_private_alpha_cdx.txt
-```
-
-The required IceCube LLH data are included in the private repository. Verify the environment and all tracked data files after cloning:
-
-```bash
 python3 verify_private_alpha_setup_cdx.py --hashes
 ```
 
-No separate data download or extraction is required. See [DATA_SETUP_cdx.md](DATA_SETUP_cdx.md) for the data scope and handling policy.
+The required IceCube/LLH data are included in the private repository. No separate data download is required.
 
-## Use with Codex
+## Use With Codex
 
-Open this repository in Codex and ask naturally, or explicitly invoke:
+Open the repository in Codex and ask naturally:
 
 ```text
-$he-neutrino-analysis-cdx
-Analyze TXS 0506+056 at RA 77.3582 deg and Dec 5.6931 deg with gamma -2.53.
+Analyze TXS 0506+056 at RA 77.3582 deg and Dec 5.6931 deg.
+Ask me before choosing any unspecified scientific parameter.
 ```
 
-The Skill creates a persistent task and calls the deterministic wrapper only after required parameters are confirmed.
+Codex discovers `$he-neutrino-analysis-cdx`, creates a persistent task, asks for missing parameters, runs the deterministic backend, and reviews the result.
 
-## Direct CLI
+## Command Line
+
+`run_agent_wrap_cdx.py` is the only public Python entry point.
+
+Create and run a single-source task:
 
 ```bash
 python3 run_agent_wrap_cdx.py create-single \
@@ -73,26 +57,47 @@ python3 run_agent_wrap_cdx.py confirm --task <task_id> --gamma -2.53
 python3 run_agent_wrap_cdx.py run --task <task_id>
 ```
 
-## Verify
+Create a catalog task:
 
-The deterministic wrapper tests do not require the private LLH data:
+```bash
+python3 run_agent_wrap_cdx.py create-catalog \
+  --request "Scan and stack this catalog" \
+  --catalog configs_cdx/examples_cdx/catalog_sources_rfc100_cdx.csv \
+  --name-column source_name --ra-column ra_deg --dec-column dec_deg
+```
+
+Inspect a catalog or review an existing run:
+
+```bash
+python3 run_agent_wrap_cdx.py inspect-catalog --catalog <catalog.csv>
+python3 run_agent_wrap_cdx.py review-run --run-directory <run_directory>
+```
+
+Use `python3 run_agent_wrap_cdx.py --help` to see all task, confirmation, execution, recovery, inspection, and review commands.
+
+## Verify
 
 ```bash
 python3 -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
-python3 evaluate_agent_cases_cdx.py --validate-golden
+python3 tools_cdx/evaluate_agent_cases_cdx.py --validate-golden
 ```
 
-Run the setup verifier and a single-source smoke test after cloning. Current scientific limitations and warnings are documented in [project_audit_cdx.md](project_audit_cdx.md) and [AGENT_EVALUATION_cdx.md](AGENT_EVALUATION_cdx.md).
+## Repository Layout
+
+- `run_agent_wrap_cdx.py`: sole public CLI.
+- `agent_core_cdx/`: planning, state, execution, validation, reporting, and review.
+- `analysis_backend_cdx/`: callable single-source and catalog likelihood backends.
+- `.agents/skills/`: natural-language Codex Skill.
+- `tests_cdx/`: deterministic and language-adapter tests.
+- `tools_cdx/`: internal development and artifact-generation tools.
+- `legacy_cdx/`: preserved research scripts not used by the agent runtime.
+- `docs/`: design, data, validation, and scientific-status documentation.
 
 ## Documentation
 
-- [Agent usage](README_AGENT_cdx.md)
-- [Behavior contract](AGENT_BEHAVIOR_SPEC_cdx.md)
-- [Architecture](AGENT_ARCHITECTURE_cdx.md)
-- [Evaluation](AGENT_EVALUATION_cdx.md)
-- [Private collaboration](PRIVATE_ALPHA_GUIDE_cdx.md)
-- [Release checklist](RELEASE_CHECKLIST_cdx.md)
+- [Agent design and behavior](docs/agent_design.md)
+- [Data, environment, and collaboration](docs/data_and_environment.md)
+- [Testing and release criteria](docs/testing_and_release.md)
+- [Scientific status and limitations](docs/scientific_status.md)
 
-## License and citation
-
-No open-source license has been granted for this private alpha. Author, affiliation, citation, and public-release licensing metadata will be added before any public release.
+No open-source license has been granted for this private alpha.

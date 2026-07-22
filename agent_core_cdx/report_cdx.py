@@ -107,7 +107,7 @@ def build_excel_workbook(run_dir: Path, repo_root: Path) -> str | None: # Codex
     if not local_node_modules.exists() and dependency_directory is not None: # Codex
         local_node_modules.symlink_to(Path(dependency_directory), target_is_directory=True) # Codex
         created_dependency_link = True # Codex
-    builder = repo_root/"build_analysis_workbook_cdx.mjs" # Codex
+    builder = repo_root/"tools_cdx/build_analysis_workbook_cdx.mjs" # Codex
     payload = run_dir/"workbook_payload_cdx.json" # Codex
     output = run_dir/"analysis_results_cdx.xlsx" # Codex
     qa_directory = run_dir/"workbook_qa_cdx" # Codex
