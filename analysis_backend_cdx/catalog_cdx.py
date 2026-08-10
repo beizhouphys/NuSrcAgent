@@ -1,7 +1,9 @@
 #!/usr/bin/python
 from __future__ import annotations # Codex
 
-# Stacking likelihood blocks are copied from likelihood_v4.py with minimal callable-backend edits.
+# The stacking likelihood core is a callable extraction of the corresponding
+# blocks in legacy_codex_revised/likelihood_v4.py.  Agent-facing task and result handling
+# that does not exist in the legacy script remains local to this module.
 
 import builtins # Codex
 import math # Codex
@@ -30,8 +32,10 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -
             result, curve = run_stacking_likelihood(normalized, weights, scheme_name, gamma, data) # Codex
             stacking_results.append(result) # Codex
             stacking_curves.append(curve) # Codex
+            if not isfinite(float(result["flux_100tev_95"])): # Codex
+                stacking_warnings.append(f"Flux conversion is unavailable for gamma={float(gamma):g}; flux_100tev_95 and fraction_of_diffuse_flux_95 are left blank.") # Codex
     stacking_warnings.append("Stacking post-trial p-value is not reported until background trials include the full weighting/spectral-index scan.") # Codex
-    stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from legacy_cdx/likelihood_v4.py and legacy_cdx/ns2flux.py.") # Codex
+    stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from legacy_codex_revised/likelihood_v4.py and legacy_codex_revised/ns2flux.py.") # Codex
     return { # Codex
         "backend": "likelihood_catalog_time_integrated_v1", # Codex
         "n_sources": len(normalized.sources), # Codex
@@ -99,23 +103,29 @@ def build_weighting_schemes(normalized: NormalizedAnalysis) -> list[tuple[str, n
 
 
 def run_stacking_likelihood(normalized: NormalizedAnalysis, intrinsic_weights: ndarray, scheme_name: str, gamma: float, data: dict[str, Any]) -> tuple[dict[str, object], dict[str, object]]: # Codex
-    decs = array([source.dec_rad for source in normalized.sources], dtype=float) # Codex
-    ras = array([source.ra_rad for source in normalized.sources], dtype=float) # Codex
-    acceptance = source_acceptance_matrix(decs, data) # Codex
-    weighted_acceptance = acceptance*intrinsic_weights.reshape(1, -1) # Codex
-    normalized_source_weights = weighted_acceptance/weighted_acceptance.sum(axis=1).reshape(-1, 1) # Codex
-    fks = weighted_acceptance.sum(axis=1) # Codex
-    fks = fks/fks.sum() # Codex
-    signal_pdfs, background_pdfs = stacking_signal_background_pdfs(ras, decs, normalized_source_weights, data) # Codex
-    sb_ratios = [signal_pdfs[k]/background_pdfs[k] for k in range(len(signal_pdfs))] # Codex
-    n_events = array([len(values) for values in sb_ratios], dtype=int) # Codex
-    def ts_function(ns): # Codex
-        return stacking_ts(float(ns), fks, sb_ratios, n_events) # Codex
-    ns_hat, min_negative_ts = bounded_minimize(lambda ns: -ts_function(ns), 0., float(n_events.sum())) # Codex
-    ts = builtins.max(-float(min_negative_ts), 0.) # Codex
-    if ts == 0.: # Codex
+    # Names and calculation order below follow likelihood_v4.py:194-200 and
+    # 615-630 so that the callable backend remains easy to compare to it.
+    RAs_src = array([source.ra_rad for source in normalized.sources], dtype=float) # Codex
+    Decs_src = array([source.dec_rad for source in normalized.sources], dtype=float) # Codex
+    N_src = len(RAs_src) # Codex
+    W_mdls_src = asarray(intrinsic_weights, dtype=float) # Codex
+    W_accs_src = source_acceptance_matrix(Decs_src, data) # Codex
+
+    W_facs, W_facs_normd, fks = legacy_stacking_weights(W_accs_src, W_mdls_src, scheme_name == "uniform") # Codex
+    S_ki, B_ki, Nks1 = stacking_signal_background_pdfs(RAs_src, Decs_src, W_facs_normd, data) # Codex
+
+    def ts_function(n_s): # Codex
+        return TS_tot(n_s, fks, S_ki, B_ki, Nks1) # Codex
+
+    # likelihood_v4.py first scans a logarithmic n_s grid to seed the fit.
+    ns_seed_grid = legacy_ns_grid(float(Nks1.sum())) # Codex
+    TS_seed_grid = array([ts_function(n_s) for n_s in ns_seed_grid]) # Codex
+    ns_s_hat = ns_seed_grid[argmax(TS_seed_grid)] if len(ns_seed_grid) else 0. # Codex
+    ts, ns_hat = max_TS_tot(ns_s_hat, fks, S_ki, B_ki, Nks1) # Codex
+    if ts <= 0.: # Codex
+        ts = 0. # Codex
         ns_hat = 0. # Codex
-    ns_95 = find_ns_95(ts_function, ns_hat, ts, float(n_events.sum())) # Codex
+    ns_95 = find_ns_95(ts_function, ns_hat, ts, float(Nks1.sum())) # Codex
     flux_100tev_95 = ns_to_fig4_flux100(ns_95, gamma) # Codex
     reference_flux = REFERENCE_DIFFUSE_ALL_FLAVOR_FLUX100.get(round(float(gamma), 2)) # Codex
     fraction_diffuse = None if reference_flux is None else flux_100tev_95/reference_flux # Codex
@@ -134,11 +144,25 @@ def run_stacking_likelihood(normalized: NormalizedAnalysis, intrinsic_weights: n
         "flux_100tev_95": float(flux_100tev_95), # Codex
         "fraction_of_diffuse_flux_95": None if fraction_diffuse is None else float(fraction_diffuse), # Codex
     } # Codex
-    ns_curve = build_ns_curve(ns_hat, ns_95, float(n_events.sum())) # Codex
+    ns_curve = build_ns_curve(ns_hat, ns_95, float(Nks1.sum())) # Codex
     ts_curve = array([ts_function(value)-ts for value in ns_curve], dtype=float) # Codex
     flux_curve = array([ns_to_fig4_flux100(value, gamma) for value in ns_curve], dtype=float) # Codex
     curve = {"weighting_scheme": scheme_name, "spectral_index": float(gamma), "ns": ns_curve.tolist(), "delta_ts": ts_curve.tolist(), "flux_100tev": flux_curve.tolist(), "ns_95": float(ns_95), "flux_100tev_95": float(flux_100tev_95)} # Codex
     return result, curve # Codex
+
+
+def legacy_stacking_weights(W_accs_src: ndarray, W_mdls_src: ndarray, IF_equal_weighting: bool) -> tuple[ndarray, ndarray, ndarray]: # Codex
+    """likelihood_v4.py:615-630, with legacy globals passed as arguments.""" # Codex
+    N_src = W_accs_src.shape[1] # Codex
+    if IF_equal_weighting: # Codex
+        W_facs = W_accs_src # Codex
+    else: # Codex
+        W_facs = W_accs_src * W_mdls_src.reshape(1,-1) # Codex
+    W_facs_normd = W_facs/(W_facs.sum(axis=1).reshape(-1,1)) # Codex
+
+    W_facs_sum = W_facs.sum(axis=1)/N_src # Codex
+    fks = W_facs_sum/W_facs_sum.sum() # Codex
+    return W_facs, W_facs_normd, fks # Codex
 
 
 def source_acceptance_matrix(decs: ndarray, data: dict[str, Any]) -> ndarray: # Codex
@@ -148,40 +172,77 @@ def source_acceptance_matrix(decs: ndarray, data: dict[str, Any]) -> ndarray: # 
     return acceptance # Codex
 
 
-def stacking_signal_background_pdfs(ras: ndarray, decs: ndarray, normalized_source_weights: ndarray, data: dict[str, Any], chunk_size: int = 4096) -> tuple[list[ndarray], list[ndarray]]: # Codex
-    signal_pdfs: list[ndarray] = [] # Codex
-    background_pdfs: list[ndarray] = [] # Codex
-    cos_decs = cos(decs).reshape(1, -1) # Codex
-    sin_decs = sin(decs).reshape(1, -1) # Codex
-    for k in range(len(data["Nks"])): # Codex
-        event_ras = data["RAs_nu"][k] # Codex
-        event_decs = data["Decs_nu"][k] # Codex
-        event_sigmas = data["sgms_nu"][k] # Codex
-        signal = zeros(len(event_ras), dtype=float) # Codex
-        for start in range(0, len(event_ras), chunk_size): # Codex
-            stop = builtins.min(start+chunk_size, len(event_ras)) # Codex
-            ra_chunk = event_ras[start:stop].reshape(-1, 1) # Codex
-            dec_chunk = event_decs[start:stop].reshape(-1, 1) # Codex
-            sigma_chunk = event_sigmas[start:stop].reshape(-1, 1) # Codex
-            cos_distance = cos(ras.reshape(1, -1)-ra_chunk)*cos_decs*cos(dec_chunk)+sin_decs*sin(dec_chunk) # Codex
-            distance2 = arccos(clip(cos_distance, -1., 1.))**2. # Codex
-            spatial = exp(-distance2/(2.*sigma_chunk**2.))/(2.*pi*sigma_chunk**2.) # Codex
-            signal[start:stop] = dot(spatial, normalized_source_weights[k]) # Codex
-        background = asarray(data["bkgd_pdfs_nu"][k], dtype=float) # Codex
-        valid = background > 0. # Codex
-        signal_pdfs.append(signal[valid]) # Codex
-        background_pdfs.append(background[valid]) # Codex
-    return signal_pdfs, background_pdfs # Codex
+def stacking_signal_background_pdfs(RAs_src: ndarray, Decs_src: ndarray, W_facs_normd: ndarray, data: dict[str, Any], chunk_size: int = 512) -> tuple[list[ndarray], list[ndarray], ndarray]: # Codex
+    """likelihood_v4.py:675-700 plus its B>0 loading filter at 763-844.""" # Codex
+    Nks = data["Nks"] # Codex
+    RAs_nu = data["RAs_nu"] # Codex
+    Decs_nu = data["Decs_nu"] # Codex
+    sgms_nu = data["sgms_nu"] # Codex
+    bkgd_pdfs_nu = data["bkgd_pdfs_nu"] # Codex
+
+    S_ki = []; B_ki = []; Nks1 = [] # Codex
+    cos_Decs_src = cos(Decs_src) # Codex
+    sin_Decs_src = sin(Decs_src) # Codex
+    for k in range(len(Nks)): # Codex
+        RAs_nu1D = RAs_nu[k] # Codex
+        Decs_nu1D = Decs_nu[k] # Codex
+        sgms_nu1D = sgms_nu[k] # Codex
+
+        S_ki1D = zeros(Nks[k]) # Codex
+        B_ki1D = asarray(bkgd_pdfs_nu[k], dtype=float) # Codex
+        for i0 in range(0, Nks[k], chunk_size): # Codex
+            i1 = builtins.min(i0+chunk_size, Nks[k]) # Codex
+            RAs_nu2D = RAs_nu1D[i0:i1].reshape(-1,1) # Codex
+            Decs_nu2D = Decs_nu1D[i0:i1].reshape(-1,1) # Codex
+            sgms_nu2D = sgms_nu1D[i0:i1].reshape(-1,1) # Codex
+            cos_ang_dis = cos(RAs_src.reshape(1,-1)-RAs_nu2D)*cos_Decs_src.reshape(1,-1)*cos(Decs_nu2D) + sin_Decs_src.reshape(1,-1)*sin(Decs_nu2D) # Codex
+            cos_ang_dis = clip(cos_ang_dis, -1., 1.) # Codex
+            ang_dis2 = arccos(cos_ang_dis)**2. # Codex
+            spatial_facs = 1./(2.*pi*sgms_nu2D**2.)*exp(-ang_dis2/(2.*sgms_nu2D**2.)) # Codex
+            S_ki1D[i0:i1] = dot(spatial_facs, W_facs_normd[k]) # Codex
+
+        idx = where(B_ki1D > 0.) # Codex
+        S_ki += [S_ki1D[idx]] # Codex
+        B_ki += [B_ki1D[idx]] # Codex
+        Nks1 += [len(idx[0])] # Codex
+    return S_ki, B_ki, array(Nks1) # Codex
 
 
-def stacking_ts(ns: float, fks: ndarray, sb_ratios: list[ndarray], n_events: ndarray) -> float: # Codex
-    total = 0. # Codex
-    for k in range(len(n_events)): # Codex
-        factors = 1.+ns*fks[k]/float(n_events[k])*(sb_ratios[k]-1.) # Codex
-        if factors.min() <= 0.: # Codex
+def TS_tot(n_s: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray) -> float: # Codex
+    """likelihood_v4.py:707-720, with legacy globals passed as arguments.""" # Codex
+    TS_total = 0. # Codex
+    n_s = float(n_s) # Codex
+    for k in range(len(Nks1)): # Codex
+        L_k = n_s*fks[k]/float(Nks1[k])*S_ki[k] + (1.-n_s*fks[k]/float(Nks1[k]))*B_ki[k] # Codex
+        L_k0 = B_ki[k] # Codex
+        if any(L_k <= 0.) or any(L_k0 <= 0.): # callable optimizer guard; legacy inputs are positive # Codex
             return -1e99 # Codex
-        total += 2.*log(factors).sum() # Codex
-    return float(total) # Codex
+        TS_k = 2.*sum(log(L_k) - log(L_k0)) # Codex
+        TS_total = TS_total + TS_k # Codex
+    return float(TS_total) # Codex
+
+
+def max_TS_tot(ns0: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray) -> tuple[float, float]: # Codex
+    """likelihood_v4.py:722-728 using the repository's NumPy optimizer.""" # Codex
+    def TS_tot1(n_s): # Codex
+        return -1.*TS_tot(n_s, fks, S_ki, B_ki, Nks1) # Codex
+    max_ns, minimum = bounded_minimize(TS_tot1, 0., float(Nks1.sum())) # Codex
+    seed_minimum = TS_tot1(ns0) # Codex
+    if seed_minimum < minimum: # retain the legacy pre-scan seed as a fit candidate # Codex
+        max_ns = float(ns0) # Codex
+        minimum = seed_minimum # Codex
+    max_TS = -1.*minimum # Codex
+    return float(max_TS), float(max_ns) # Codex
+
+
+def legacy_ns_grid(upper_bound: float) -> ndarray: # Codex
+    """Callable equivalent of use.ebs(1., 2000., 200) in likelihood_v4.py.""" # Codex
+    if upper_bound <= 0.: # Codex
+        return array([], dtype=float) # Codex
+    upper = builtins.min(2000., upper_bound) # Codex
+    if upper < 1.: # Codex
+        return array([upper], dtype=float) # Codex
+    return logspace(log10(1.), log10(upper), 201) # Codex
 
 
 def find_ns_95(ts_function, ns_hat: float, ts: float, upper_bound: float) -> float: # Codex
@@ -202,10 +263,16 @@ def find_ns_95(ts_function, ns_hat: float, ts: float, upper_bound: float) -> flo
 
 
 def build_ns_curve(ns_hat: float, ns_95: float, upper_bound: float) -> ndarray: # Codex
-    curve_max = ns_95*1.35 if isfinite(ns_95) else builtins.max(ns_hat*3., 100.) # Codex
-    curve_max = builtins.min(builtins.max(curve_max, 10.), upper_bound) # Codex
-    positive = geomspace(1e-3, curve_max, 140) # Codex
-    return unique(concatenate(([0., ns_hat], positive))) # Codex
+    # The legacy result curve uses use.ebs(1., 2000., 200). Extend it only when
+    # needed to display a catalog's fitted value or upper limit.
+    curve_max = 2000. # Codex
+    if isfinite(ns_95): # Codex
+        curve_max = builtins.max(curve_max, ns_95*1.35) # Codex
+    curve_max = builtins.max(curve_max, ns_hat*1.35, 1.) # Codex
+    curve_max = builtins.min(curve_max, upper_bound) # Codex
+    if curve_max < 1.: # Codex
+        return unique(array([0., ns_hat, curve_max])) # Codex
+    return unique(concatenate(([ns_hat], logspace(log10(1.), log10(curve_max), 201)))) # Codex
 
 
 def ns_to_fig4_flux100(ns: float, gamma: float) -> float: # Codex

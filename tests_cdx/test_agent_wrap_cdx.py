@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from agent_core_cdx.agent_orchestrator_cdx import classify_error, evaluate_completion, execute_task, resume_interrupted_task
+from agent_core_cdx.environment_cdx import _required_paths
 from agent_core_cdx.planner_cdx import plan_catalog_task, plan_single_task, revalidate_task_plan
 from agent_core_cdx.task_state_cdx import confirm_parameters, load_task, save_task
 from run_agent_wrap_cdx import build_parser
@@ -176,6 +177,10 @@ class AgentCompletionTests(unittest.TestCase):
 
 
 class AgentCliTests(unittest.TestCase):
+    def test_environment_required_path_sets_cover_both_samples(self):
+        self.assertEqual(len(_required_paths("icecube_public_ps_14yr_dr2")), 47)
+        self.assertEqual(len(_required_paths("icecube_public_ps_10yr")), 20)
+
     def test_catalog_inspection_uses_public_entry_point(self):
         args = build_parser().parse_args(["inspect-catalog", "--catalog", "catalog.csv"])
         self.assertEqual(args.command, "inspect-catalog")
@@ -183,6 +188,11 @@ class AgentCliTests(unittest.TestCase):
     def test_run_review_uses_public_entry_point(self):
         args = build_parser().parse_args(["review-run", "--run-directory", "run"])
         self.assertEqual(args.command, "review-run")
+
+    def test_environment_check_uses_public_entry_point(self):
+        args = build_parser().parse_args(["environment-check", "--data-sample", "icecube_public_ps_10yr"])
+        self.assertEqual(args.command, "environment-check")
+        self.assertEqual(args.data_sample, "icecube_public_ps_10yr")
 
 
 if __name__ == "__main__":

@@ -7,15 +7,21 @@
 Run:
 
 ```bash
-python3 -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
+.venv/bin/python run_agent_wrap_cdx.py environment-check
+.venv/bin/python -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
 ```
+
+In the pinned SkyLLH v26 environment the same command also runs the real DR2
+fixed-Gamma, fitted-Gamma, and source-order-invariance regressions. In an
+environment without SkyLLH those three integration tests are reported as
+skipped while agent-interface tests still run.
 
 ## Language Cases
 
 `tests_cdx/natural_language_eval_cases_cdx.json` contains Chinese, English, and mixed-language prompts, including ambiguous and safety-critical requests.
 
 ```bash
-python3 tools_cdx/evaluate_agent_cases_cdx.py --validate-golden
+.venv/bin/python tools_cdx/evaluate_agent_cases_cdx.py --validate-golden
 ```
 
 A development-session conformance trace is not an unbiased quantitative estimate of language-model accuracy. Independent fresh Codex sessions are required before publishing an accuracy claim.

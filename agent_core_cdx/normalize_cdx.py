@@ -14,7 +14,7 @@ def normalize_config(config: AnalysisConfig, repo_root: str | Path | None = None
         sources = normalize_single_source(config) # Codex
     else: # Codex
         sources = normalize_source_set(config, root) # Codex
-    return NormalizedAnalysis(schema_version=config.schema_version, analysis_type=config.analysis.type.value, time_mode=config.analysis.time_mode, sample=config.data.sample, sources=sources, spectral_indices=list(config.stacking.spectral_indices), include_uniform_baseline=config.stacking.include_uniform_baseline, background_method=config.background.method, n_trials=config.background.n_trials, random_seed=config.background.random_seed, warnings=list(warnings or [])) # Codex
+    return NormalizedAnalysis(schema_version=config.schema_version, analysis_type=config.analysis.type.value, time_mode=config.analysis.time_mode, likelihood_mode=config.analysis.likelihood_mode, sample=config.data.sample, sources=sources, spectral_indices=list(config.stacking.spectral_indices), gamma_mode=config.stacking.gamma_mode, include_uniform_baseline=config.stacking.include_uniform_baseline, background_method=config.background.method, n_trials=config.background.n_trials, random_seed=config.background.random_seed, warnings=list(warnings or [])) # Codex
 
 
 def normalize_single_source(config: AnalysisConfig) -> list[NormalizedSource]: # Codex

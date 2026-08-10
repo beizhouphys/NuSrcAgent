@@ -9,13 +9,16 @@ from agent_core_cdx.catalog_inspector_cdx import inspect_catalog
 from agent_core_cdx.task_state_cdx import create_task_record, parameter, questions_for_missing, refresh_readiness
 
 
-def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: float, gamma: Optional[float]) -> Dict[str, Any]:
+def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: float, gamma: Optional[float], data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy") -> Dict[str, Any]:
     planning_errors: List[str] = []
     validate_source_values([{"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg}], planning_errors)
-    validate_planning_values(1, gamma, None, None, None, planning_errors)
+    validate_planning_values(1, gamma, None, None, None, planning_errors, data_sample, gamma_mode, likelihood_mode)
     parameters = {
         "gamma": parameter(gamma, "user" if gamma is not None else None, gamma is not None),
         "include_uniform_baseline": parameter(False, "system", True),
+        "data_sample": parameter(data_sample, "user" if data_sample != "icecube_public_ps_14yr_dr2" else "system_default", True),
+        "gamma_mode": parameter(gamma_mode, "system_default", True),
+        "likelihood_mode": parameter(likelihood_mode, "system_default", True),
     }
     inputs = {"kind": "inline_sources", "sources": [{"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg}], "source_count": 1}
     task = create_task_record(original_request, "analyze_sources", "single_source", "Exactly one input source was provided.", inputs, parameters, planning_errors=planning_errors)
@@ -23,7 +26,7 @@ def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: f
     return refresh_readiness(task)
 
 
-def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[str], sources: Optional[List[Dict[str, Any]]], name_column: Optional[str], ra_column: Optional[str], dec_column: Optional[str], gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], weight_meaning: Optional[str], manual_weights: Optional[List[float]], include_uniform_baseline: bool = True) -> Dict[str, Any]:
+def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[str], sources: Optional[List[Dict[str, Any]]], name_column: Optional[str], ra_column: Optional[str], dec_column: Optional[str], gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], weight_meaning: Optional[str], manual_weights: Optional[List[float]], include_uniform_baseline: bool = True, data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy") -> Dict[str, Any]:
     planning_errors: List[str] = []
     inspection = None
     supplied_columns = {"name": name_column is not None, "ra": ra_column is not None, "dec": dec_column is not None}
@@ -48,7 +51,12 @@ def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[
             planning_errors.append("at least one source or a catalog is required")
         validate_source_values(list(sources or []), planning_errors)
     workflow = "single_source" if source_count == 1 else "catalog_scan_and_stacking"
-    reason = "Exactly one input source was provided." if source_count == 1 else "%d input sources require a catalog-wide single-source scan plus stacking." % source_count
+    if source_count == 1:
+        reason = "Exactly one input source was provided."
+    elif data_sample == "icecube_public_ps_14yr_dr2":
+        reason = "%d input sources select the SkyLLH DR2 catalog-stacking workflow." % source_count
+    else:
+        reason = "%d input sources require the legacy catalog-wide single-source scan plus stacking." % source_count
     parameters = {
         "gamma": parameter(gamma, "user" if gamma is not None else None, gamma is not None),
         "name_column": parameter(name_column, "user" if supplied_columns["name"] else "agent_inferred", name_column is not None),
@@ -59,18 +67,31 @@ def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[
         "weight_meaning": parameter(weight_meaning, "user" if weight_meaning is not None else None, weight_meaning is not None),
         "manual_weights": parameter(manual_weights, "user" if manual_weights is not None else None, manual_weights is not None),
         "include_uniform_baseline": parameter(bool(include_uniform_baseline), "system_default", True),
+        "data_sample": parameter(data_sample, "user" if data_sample != "icecube_public_ps_14yr_dr2" else "system_default", True),
+        "gamma_mode": parameter(gamma_mode, "system_default", True),
+        "likelihood_mode": parameter(likelihood_mode, "system_default", True),
     }
     if workflow == "single_source":
         parameters["weight_mode"] = parameter("uniform", "system", True)
-    validate_planning_values(source_count, gamma, weight_mode, weight_column, manual_weights, planning_errors)
+    validate_planning_values(source_count, gamma, weight_mode, weight_column, manual_weights, planning_errors, data_sample, gamma_mode, likelihood_mode)
     task = create_task_record(original_request, "analyze_sources", workflow, reason, inputs, parameters, planning_errors=planning_errors)
     task["questions"] = combined_questions(task, planning_errors)
     return refresh_readiness(task)
 
 
-def validate_planning_values(source_count: int, gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], manual_weights: Optional[List[float]], errors: List[str]) -> None:
+def validate_planning_values(source_count: int, gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], manual_weights: Optional[List[float]], errors: List[str], data_sample: str = "icecube_public_ps_10yr", gamma_mode: str = "fixed", likelihood_mode: str = "spatial_only") -> None:
+    if likelihood_mode not in {"spatial_energy", "spatial_only"}:
+        errors.append("likelihood mode must be spatial_energy or spatial_only")
+    if data_sample == "icecube_public_ps_10yr" and likelihood_mode != "spatial_only":
+        errors.append("the 10-year backend currently supports likelihood_mode='spatial_only' only")
+    if likelihood_mode == "spatial_only" and gamma_mode != "fixed":
+        errors.append("spatial-only analysis requires gamma_mode='fixed'; gamma is the fixed acceptance gamma")
     if gamma is not None and (not math.isfinite(float(gamma)) or gamma >= 0.0):
         errors.append("gamma must use the negative power-law convention")
+    elif gamma is not None and data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fitted" and not -4.0 <= float(gamma) <= -1.0:
+        errors.append("the default DR2 fitted-gamma seed must be in [-4, -1]")
+    elif gamma is not None and data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fixed" and not -6.1 <= float(gamma) <= -0.9:
+        errors.append("fixed DR2 gamma must be within [-6.1, -0.9]")
     if weight_mode is not None and weight_mode not in {"uniform", "column", "manual"}:
         errors.append("weight mode must be uniform, column, or manual")
     if weight_mode == "column" and not weight_column:
@@ -167,7 +188,10 @@ def revalidate_task_plan(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any
     manual_weights = parameters.get("manual_weights", {}).get("value")
     if inputs.get("kind") == "inline_sources":
         validate_source_values(list(inputs.get("sources", [])), errors)
-    validate_planning_values(source_count, gamma, weight_mode, weight_column, manual_weights, errors)
+    data_sample = str(parameters.get("data_sample", {}).get("value") or "icecube_public_ps_10yr")
+    gamma_mode = str(parameters.get("gamma_mode", {}).get("value") or "fixed")
+    likelihood_mode = str(parameters.get("likelihood_mode", {}).get("value") or ("spatial_energy" if data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only"))
+    validate_planning_values(source_count, gamma, weight_mode, weight_column, manual_weights, errors, data_sample, gamma_mode, likelihood_mode)
     task["planning_errors"] = errors
     task["questions"] = combined_questions(task, errors)
     return refresh_readiness(task)

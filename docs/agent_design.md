@@ -18,16 +18,22 @@ Codex interprets Chinese, English, or mixed-language requests. The Python layer 
 ## Workflow Selection
 
 - Exactly one source selects `single_source`.
-- Multiple sources or a multi-row catalog select `catalog_scan_and_stacking`.
+- Multiple sources or a multi-row catalog select the catalog workflow. For the default DR2 backend this runs the requested stack; the explicitly selected legacy 10-year backend retains its source scan plus stacking outputs.
 - Inspection-only requests use `inspect-catalog`.
 - Existing results use `review-run`.
 - Unclear source count or intent requires a user question.
 
 ## Parameter Gate
 
-Execution is blocked until required scientific choices are explicit:
+Execution is blocked until required scientific choices are explicit. The owner-approved default is the 14-year DR2 spatial+energy sample with fitted Gamma and a legacy-convention seed of `-3.0`. Explicit DR2 spatial-only requests use `gamma_mode=fixed` and default acceptance Gamma `-2.5`; this Gamma controls detector-acceptance weights and is not a fitted spectrum.
 
-- a finite negative spectral index gamma;
+The default DR2 fit uses SkyLLH Gamma bounds `[1.0, 6.0]` (legacy convention
+`[-6.0, -1.0]`) and `ns` bounds `[0, 10000]`; each run records these bounds and
+the Gamma/`ns` seeds in its result provenance.
+
+User confirmation remains required for:
+
+- a finite negative spectral index gamma for fixed-Gamma analyses (or a non-default fit seed/range);
 - for stacking, uniform, catalog-column, or manual weighting;
 - the physical meaning or units of a selected weight column;
 - coordinate-column interpretation when it cannot be inferred safely.

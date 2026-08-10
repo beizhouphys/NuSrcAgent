@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from agent_core_cdx.agent_orchestrator_cdx import execute_task, resume_interrupted_task
 from agent_core_cdx.catalog_inspector_cdx import inspect_catalog
+from agent_core_cdx.environment_cdx import check_environment
 from agent_core_cdx.planner_cdx import plan_catalog_task, plan_single_task, revalidate_task_plan
 from agent_core_cdx.review_cdx import review_run
 from agent_core_cdx.task_state_cdx import confirm_parameters, load_task, save_task
@@ -18,6 +19,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).expanduser().resolve()
     try:
+        if args.command == "environment-check":
+            result = check_environment(repo_root, args.data_sample, args.likelihood_mode)
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 2 if result.get("status") == "fail" else 0
         if args.command == "inspect-catalog":
             result = inspect_catalog(args.catalog, args.name_column, args.ra_column, args.dec_column, args.weight_column)
             print(json.dumps(result, indent=2, sort_keys=True))
@@ -27,12 +32,25 @@ def main(argv=None) -> int:
             print(json.dumps(result, indent=2, sort_keys=True))
             return 2 if result.get("status") == "fail" else 0
         if args.command == "create-single":
-            task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, args.gamma)
+            likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
+            gamma_mode = args.gamma_mode or ("fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
+            gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
+            task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, gamma, args.data_sample, gamma_mode, likelihood_mode)
+            if args.gamma_mode is not None:
+                task["parameters"]["gamma_mode"]["source"] = "user"
+            set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
             sources = None if args.source is None else [parse_source(value) for value in args.source]
             manual_weights = parse_weights(args.weights)
-            task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, args.gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, not args.no_uniform_baseline)
+            likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
+            gamma_mode = args.gamma_mode or ("fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
+            gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
+            include_uniform_baseline = False if args.data_sample == "icecube_public_ps_14yr_dr2" else not args.no_uniform_baseline
+            task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, include_uniform_baseline, args.data_sample, gamma_mode, likelihood_mode)
+            if args.gamma_mode is not None:
+                task["parameters"]["gamma_mode"]["source"] = "user"
+            set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -60,12 +78,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    environment = subparsers.add_parser("environment-check", help="Check the pinned runtime and selected sample data.")
+    environment.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
+    environment.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
+
     single = subparsers.add_parser("create-single", help="Create a one-source task from a Codex-interpreted request.")
     single.add_argument("--request", required=True, help="Original natural-language request for the audit record.")
     single.add_argument("--name", default="source_0001")
     single.add_argument("--ra-deg", required=True, type=float)
     single.add_argument("--dec-deg", required=True, type=float)
     single.add_argument("--gamma", type=float, help="Omit when the user has not specified gamma.")
+    single.add_argument("--gamma-mode", choices=["fitted", "fixed"])
+    single.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
+    single.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
 
     catalog = subparsers.add_parser("create-catalog", help="Create a multi-source or catalog task from a Codex-interpreted request.")
     catalog.add_argument("--request", required=True, help="Original natural-language request for the audit record.")
@@ -76,6 +101,9 @@ def build_parser() -> argparse.ArgumentParser:
     catalog.add_argument("--ra-column")
     catalog.add_argument("--dec-column")
     catalog.add_argument("--gamma", type=float)
+    catalog.add_argument("--gamma-mode", choices=["fitted", "fixed"])
+    catalog.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
+    catalog.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
     catalog.add_argument("--weight-mode", choices=["uniform", "column", "manual"])
     catalog.add_argument("--weight-column")
     catalog.add_argument("--weight-meaning")
@@ -146,6 +174,25 @@ def parse_source(value: str) -> Dict[str, Any]:
 
 def parse_weights(value: Optional[str]) -> Optional[List[float]]:
     return None if value is None else [float(item.strip()) for item in value.split(",")]
+
+
+def default_gamma(value: Optional[float], data_sample: str, likelihood_mode: str, gamma_mode: str) -> Optional[float]:
+    if value is not None:
+        return value
+    if data_sample == "icecube_public_ps_14yr_dr2" and likelihood_mode == "spatial_only":
+        return -2.5
+    if data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fitted":
+        return -3.0
+    return None
+
+
+def set_mode_parameter_sources(task: Dict[str, Any], args: argparse.Namespace, likelihood_mode: str, gamma_mode: str) -> None:
+    if args.likelihood_mode is not None:
+        task["parameters"]["likelihood_mode"]["source"] = "user"
+    if args.gamma is None and likelihood_mode == "spatial_only" and args.data_sample == "icecube_public_ps_14yr_dr2":
+        task["parameters"]["gamma"]["source"] = "system_default_acceptance_gamma"
+    elif args.gamma is None and gamma_mode == "fitted":
+        task["parameters"]["gamma"]["source"] = "system_default_fit_seed"
 
 
 def print_task(task: Dict[str, Any], path: Path) -> None:

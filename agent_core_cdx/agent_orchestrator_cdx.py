@@ -71,19 +71,22 @@ def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend
 def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any]:
     parameters = task["parameters"]
     gamma = float(parameters["gamma"]["value"])
+    data_sample = str(parameters.get("data_sample", {}).get("value") or "icecube_public_ps_14yr_dr2")
+    gamma_mode = str(parameters.get("gamma_mode", {}).get("value") or "fitted")
+    likelihood_mode = str(parameters.get("likelihood_mode", {}).get("value") or ("spatial_energy" if data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only"))
     inputs = task["inputs"]
     if task["workflow"] == "single_source":
         if inputs["kind"] == "catalog":
             source = source_from_single_row_catalog(task, repo_root)
         else:
             source = inputs["sources"][0]
-        return build_single_source_request(str(source.get("name") or "source_0001"), float(source["ra_deg"]), float(source["dec_deg"]), gamma, "data_output/runs_cdx")
+        return build_single_source_request(str(source.get("name") or "source_0001"), float(source["ra_deg"]), float(source["dec_deg"]), gamma, "data_output/runs_cdx", data_sample, gamma_mode, likelihood_mode)
     mode = parameters["weight_mode"]["value"]
     weight_column = parameters["weight_column"]["value"] if mode == "column" else None
     manual_weights = parameters["manual_weights"]["value"] if mode == "manual" else None
     catalog = inputs.get("catalog") if inputs["kind"] == "catalog" else None
     sources = inputs.get("sources") if inputs["kind"] == "inline_sources" else None
-    return build_catalog_request(catalog, sources, parameters["name_column"]["value"], parameters["ra_column"]["value"], parameters["dec_column"]["value"], weight_column, manual_weights, [gamma], bool(parameters["include_uniform_baseline"]["value"]), "data_output/runs_cdx")
+    return build_catalog_request(catalog, sources, parameters["name_column"]["value"], parameters["ra_column"]["value"], parameters["dec_column"]["value"], weight_column, manual_weights, [gamma], bool(parameters["include_uniform_baseline"]["value"]), "data_output/runs_cdx", data_sample, gamma_mode, likelihood_mode)
 
 
 def evaluate_completion(task: Dict[str, Any], review: Dict[str, Any]) -> Dict[str, Any]:
