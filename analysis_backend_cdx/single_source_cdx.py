@@ -9,6 +9,7 @@ from pathlib import Path # Codex
 from typing import Any # Codex
 
 from numpy import * # Codex
+from numpy import trapezoid # Codex: NumPy 2 replacement for removed trapz alias
 
 
 d2r = 180./pi # Codex
@@ -60,11 +61,11 @@ def load_backend_data(repo_root='.', gamma=DEFAULT_GAMMA): # Codex
 def load_neutrino_events(root): # Codex
     # Copied from neutrinos_data.py with minimal edits to avoid importing plotting/scipy-heavy modules.
     filenms = array([ # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC40_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC59_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC79_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_I_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv',]) # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC40_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC59_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC79_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_I_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv',]) # Codex
     col_MJDs = 0 # Codex
     col_sgms = 2 # Codex
     col_RAs = 3 # Codex
@@ -102,11 +103,11 @@ def load_background_pdfs(root): # Codex
 def load_uptimes(root): # Codex
     # Copied from likelihood_v4.py uptime block.
     uptime_flms = array([ # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/uptime/IC40_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/uptime/IC59_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/uptime/IC79_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II2VII_exp_BZ.csv',]) # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II2VII_exp_BZ.csv',]) # Codex
     uptimes = zeros(len(uptime_flms)); # Codex
     for i in range(len(uptime_flms)): # Codex
         tmp = loadtxt(uptime_flms[i]) # Codex
@@ -117,11 +118,11 @@ def load_uptimes(root): # Codex
 def load_acceptance_weights(root, gamma): # Codex
     # Copied from likelihood_v4.py EA and f_k block with a NumPy interpolation/integration fallback.
     EAfilenms = array([ # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/irfs/IC40_effectiveArea.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/irfs/IC59_effectiveArea.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/irfs/IC79_effectiveArea.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_I_effectiveArea.csv', # Codex
-        root/'data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_II_effectiveArea.csv',]) # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC59_effectiveArea.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC79_effectiveArea.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_I_effectiveArea.csv', # Codex
+        root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_II_effectiveArea.csv',]) # Codex
     EAs = loadtxt(EAfilenms[0]) # Codex
     Es = 10**(unique(EAs[:,0])/2.+unique(EAs[:,1])/2.) # Codex
     coszeniths = (cos(90./d2r + unique(EAs[:,2])/d2r) + cos(90./d2r + unique(EAs[:,3])/d2r))/2. # Codex
@@ -238,10 +239,10 @@ def simps_compat(y, x, axis=1): # Codex
     y1 = moveaxis(asarray(y), axis, -1) # Codex
     x1 = asarray(x) # Codex
     if y1.shape[-1] < 3: # Codex
-        return trapz(y1, x1, axis=-1) # Codex
+        return trapezoid(y1, x1, axis=-1) # Codex
     if y1.shape[-1] % 2 == 0: # Codex
-        return simps_compat(y1[...,:-1], x1[:-1], axis=-1) + trapz(y1[...,-2:], x1[-2:], axis=-1) # Codex
+        return simps_compat(y1[...,:-1], x1[:-1], axis=-1) + trapezoid(y1[...,-2:], x1[-2:], axis=-1) # Codex
     h = diff(x1) # Codex
     if not allclose(h, h[0]): # Codex
-        return trapz(y1, x1, axis=-1) # Codex
+        return trapezoid(y1, x1, axis=-1) # Codex
     return h[0]/3.*(y1[...,0] + y1[...,-1] + 4.*sum(y1[...,1:-1:2], axis=-1) + 2.*sum(y1[...,2:-2:2], axis=-1)) # Codex

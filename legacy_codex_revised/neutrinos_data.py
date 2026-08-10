@@ -25,12 +25,12 @@ filenms, for bkgd pdf.
 # '''
 for i in range(0): # New data. # First merge the IC86b data.
     filenms = array([
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_II_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_III_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_IV_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_V_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_VI_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_VII_exp.csv',
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_II_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_III_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_IV_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_V_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_VI_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_VII_exp.csv', # cdx
         ]) #!
     tmp0 = loadtxt( filenms[0] )  
     tmp1 = loadtxt( filenms[1] )  
@@ -40,16 +40,16 @@ for i in range(0): # New data. # First merge the IC86b data.
     tmp5 = loadtxt( filenms[5] )
     tmp = concatenate( (tmp0, tmp1, tmp2, tmp3, tmp4, tmp5), axis=0 )
     print( tmp.shape )
-    savetxt( './data_input/IceCube_data_released/icecube_10year_ps/events/IC86_II2VII_exp_BZ.csv', tmp, fmt='%.9f')
+    savetxt( './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_II2VII_exp_BZ.csv', tmp, fmt='%.9f') # cdx
     del(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp)
     exit()
 
 filenms = array([ #!
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC40_exp.csv',\
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC59_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC79_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_I_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv',
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC40_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC59_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC79_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_I_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv', # cdx
     ]) 
 col_MJDs = 0 #!
 col_sgms = 2 #!
@@ -139,25 +139,25 @@ for i in range(0): # check the events time and uptime
         clr = plot[0].get_color()
         ax.plot( [MJDs_nu[i, 0:Nks[i]].max()]*2, [-100,100],'-',c=clr, label=r''+str(i)+' '+lbls[i], lw=1.,ms=1) 
     
-    tmp = loadtxt('./data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II_exp.csv').T
+    tmp = loadtxt('./data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II_exp.csv').T # cdx
     ax.plot( tmp[0], 4*ones(len(tmp[0])),'r|', label=r'',lw=1.,ms=10) 
     ax.plot( tmp[1], 4*ones(len(tmp[0])),'b|', label=r'',lw=1.,ms=10) 
-    tmp = loadtxt('./data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv').T
+    tmp = loadtxt('./data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv').T # cdx
     ax.plot( tmp[0], 3*ones(len(tmp[0])),'r|', label=r'',lw=1.,ms=10) 
     ax.plot( tmp[1], 3*ones(len(tmp[0])),'b|', label=r'',lw=1.,ms=10) 
     
     
     uptime_filenms = array([
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC40_exp.csv',\
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC59_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC79_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_III_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_IV_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_V_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_VI_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_VII_exp.csv',
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_III_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_IV_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_V_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_VI_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_VII_exp.csv', # cdx
         ]) #!
     
     for i in range(len(uptime_filenms)):

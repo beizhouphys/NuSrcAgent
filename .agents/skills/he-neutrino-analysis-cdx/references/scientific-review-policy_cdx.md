@@ -19,6 +19,8 @@ Require these checks for catalog runs:
 - Catalog post-trial p-values match the declared catalog-size correction.
 - Excel, CSV, provenance, and expected PDF figures exist and are readable.
 
+For DR2 spatial-only runs, additionally require `gamma_mode=fixed`, agreement between the normalized legacy-convention Gamma and `acceptance_gamma_legacy`, `energy_pdf=not_used`, and `working_set.signal_energy_tables_loaded=false`. Require only the background spatial-PDF provenance; do not require signal-energy-table provenance. Describe this Gamma as an acceptance Gamma, never as a fitted spectrum.
+
 ## Warning Interpretation
 
 A fit at an optimizer boundary is a scientific warning, not an engineering repair. Do not widen bounds automatically.
@@ -28,6 +30,13 @@ Strong weight concentration can make a nominal stack behave like a few-source an
 The current backend uses an analytic local p-value approximation. The requested `background.n_trials` is not yet executed by Phase 1.1. Stacking post-trial significance therefore remains unavailable until the full weighting and spectral-index scan is included in empirical background trials.
 
 Flux conversion is calibrated only for supported reference spectral indices. Do not extrapolate a conversion to an unsupported index.
+
+For the DR2 2103.12813 benchmark, distinguish direct public-effective-area
+conversion from the paper's 10-year calibrated conversion. Require signed
+relative and absolute differences for every numerical comparison. Treat the
+signed-`ns` scan as a compatibility diagnostic and the constrained `ns >= 0`
+scan as primary. Label the analytic catalog-size post-trial correction
+uncalibrated until scrambled trials exist.
 
 ## Recovery Policy
 

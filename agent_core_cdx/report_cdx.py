@@ -1,6 +1,7 @@
 from __future__ import annotations # Codex
 
 import hashlib # Codex
+import importlib.metadata # cdx
 import json # Codex
 import os # Codex
 import platform # Codex
@@ -26,7 +27,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
     run_dir.mkdir(parents=True, exist_ok=False) # Codex
     config_source = Path(config_path) # Codex
     shutil.copy2(config_source, run_dir / f"config.original_cdx{config_source.suffix}") # cdx
-    if normalized.analysis_type == "catalog_stacking" and result.get("backend") != "mock_phase0": # Codex
+    if normalized.analysis_type == "catalog_stacking" and result.get("backend") != "mock_phase0" and "_stacking_results" in result: # Codex
         generated_files = write_catalog_outputs(run_dir, normalized, result, root) # Codex
         result["generated_files"] = generated_files # Codex
         result["figures"] = [generated_files["fig1"], generated_files["fig3"], generated_files["fig4"]] # Codex
@@ -50,11 +51,17 @@ def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> d
     if backend == "mock_phase0": # Codex
         warnings.append("mock backend only; replace with likelihood backend before science use") # Codex
     report_result = {key: value for key, value in result.items() if key not in {"backend", "warnings"} and not key.startswith("_")} # Codex
-    return {"schema_version": normalized.schema_version, "run": {"status": "completed", "backend": backend}, "analysis": {"type": normalized.analysis_type, "time_mode": normalized.time_mode, "sample": normalized.sample, "n_sources": len(normalized.sources)}, "result": report_result, "diagnostics": {"n_background_trials": normalized.n_trials, "source_weight_sum": sum(source.weight for source in normalized.sources)}, "warnings": warnings} # Codex
+    return {"schema_version": normalized.schema_version, "run": {"status": "completed", "backend": backend}, "analysis": {"type": normalized.analysis_type, "time_mode": normalized.time_mode, "likelihood_mode": normalized.likelihood_mode, "sample": normalized.sample, "n_sources": len(normalized.sources)}, "result": report_result, "diagnostics": {"n_background_trials": normalized.n_trials, "source_weight_sum": sum(source.weight for source in normalized.sources)}, "warnings": warnings} # Codex
 
 
 def build_provenance(config_path: Path, normalized: NormalizedAnalysis) -> dict[str, object]: # Codex
-    return {"created_at_utc": datetime.now(timezone.utc).isoformat(), "python_version": platform.python_version(), "config_path": str(config_path), "config_sha256": sha256_file(config_path), "normalized_sha256": sha256_text(dump_simple_yaml(to_clean_dict(normalized)))} # Codex
+    packages = {} # cdx
+    for name in ("skyllh", "numpy", "scipy", "astropy"): # cdx
+        try: # cdx
+            packages[name] = importlib.metadata.version(name) # cdx
+        except importlib.metadata.PackageNotFoundError: # cdx
+            packages[name] = None # cdx
+    return {"created_at_utc": datetime.now(timezone.utc).isoformat(), "python_version": platform.python_version(), "packages": packages, "config_path": str(config_path), "config_sha256": sha256_file(config_path), "normalized_sha256": sha256_text(dump_simple_yaml(to_clean_dict(normalized)))} # Codex
 
 
 def write_yaml(path: Path, payload: dict[str, Any]) -> None: # Codex

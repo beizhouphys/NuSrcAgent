@@ -26,7 +26,10 @@ def review_run(run_directory: str, repo_root: str = ".", write_artifacts: bool =
     analysis_type = str(report.get("analysis", {}).get("type", "")) # cdx
     review["metrics"]["analysis_type"] = analysis_type # cdx
     review["metrics"]["n_sources"] = int(report.get("analysis", {}).get("n_sources", 0)) # cdx
-    if analysis_type == "catalog_stacking": # cdx
+    data_sample = str(report.get("analysis", {}).get("sample", "")) # cdx
+    if data_sample == "icecube_public_ps_14yr_dr2": # cdx
+        review_dr2_run(review, report, normalized, root) # cdx
+    elif analysis_type == "catalog_stacking": # cdx
         review_catalog_run(review, run_dir, root, report, normalized) # cdx
     elif analysis_type == "single_source": # cdx
         review_single_run(review, report) # cdx
@@ -37,6 +40,55 @@ def review_run(run_directory: str, repo_root: str = ".", write_artifacts: bool =
         add_check(review, "backend_warnings", "warning", "%d backend/report warnings require acknowledgement" % len(warnings), False) # cdx
         review["metrics"]["backend_warnings"] = warnings # cdx
     return finalize_review(review, run_dir, write_artifacts) # cdx
+
+
+def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: Dict[str, Any], root: Path) -> None: # cdx
+    result = report.get("result", {}) # cdx
+    likelihood_mode = str(report.get("analysis", {}).get("likelihood_mode") or result.get("likelihood_mode") or "spatial_energy") # cdx
+    mode_consistent = likelihood_mode in {"spatial_energy", "spatial_only"} and result.get("likelihood_mode") == likelihood_mode # cdx
+    add_check(review, "dr2_likelihood_mode", "pass" if mode_consistent else "fail", "likelihood mode is explicit and consistent" if mode_consistent else "likelihood mode is missing or inconsistent", False) # cdx
+    required = ["TS", "ns", "gamma", "gamma_mode", "event_selection", "n_sources"] # cdx
+    missing = [key for key in required if key not in result] # cdx
+    add_check(review, "dr2_result_fields", "fail" if missing else "pass", "missing fields: %s" % ", ".join(missing) if missing else "DR2 SkyLLH result fields are present", False) # cdx
+    if missing: # cdx
+        return # cdx
+    ts = finite_float(result.get("TS")) # cdx
+    ns_hat = finite_float(result.get("ns")) # cdx
+    gamma = finite_float(result.get("gamma")) # cdx
+    valid = ts is not None and ts >= 0.0 and ns_hat is not None and ns_hat >= 0.0 and gamma is not None and 0.9 <= gamma <= 6.1 # cdx
+    add_check(review, "dr2_numeric_ranges", "pass" if valid else "fail", "DR2 fit values are finite and in valid ranges" if valid else "DR2 fit contains invalid values", False) # cdx
+    all_events = result.get("event_selection") == "all_events" # cdx
+    add_check(review, "dr2_event_selection", "pass" if all_events else "fail", "all DR2 events are included" if all_events else "DR2 analysis did not use the required all-event selection", False) # cdx
+    expected_sources = len(normalized.get("sources", [])) # cdx
+    add_check(review, "dr2_source_count", "pass" if int(result.get("n_sources", 0)) == expected_sources else "fail", "source count matches normalized input" if int(result.get("n_sources", 0)) == expected_sources else "source count does not match normalized input", False) # cdx
+    source_event_pairs = int(result.get("source_event_pairs", 0)) # cdx
+    working_set = result.get("working_set", {}) # cdx
+    dataset_chunks = working_set.get("datasets", {}) if isinstance(working_set, dict) else {} # cdx
+    chunk_records = list(dataset_chunks.values()) if isinstance(dataset_chunks, dict) else [] # cdx
+    chunked = (source_event_pairs > 0 and working_set.get("cartesian_source_event_arrays_materialized") is False and len(chunk_records) == 4 and all(int(item.get("n_events", 0)) > 0 and int(item.get("event_chunk", 0)) > 0 and int(item.get("source_chunk", 0)) > 0 and 0 < int(item.get("maximum_working_pairs", 0)) <= int(item.get("target_pairs", 0)) for item in chunk_records)) # cdx
+    add_check(review, "dr2_chunked_working_set", "pass" if chunked else "fail", "all source-event pairs are evaluated in bounded exact chunks" if chunked else "DR2 chunk provenance is missing or exceeds its pair budget", False) # cdx
+    model_weights = [finite_float(value) for value in result.get("w_model", [])] # cdx
+    valid_model_weights = len(model_weights) == expected_sources and all(value is not None and value >= 0.0 for value in model_weights) and abs(sum(value for value in model_weights if value is not None) - 1.0) < 1e-9 # cdx
+    add_check(review, "dr2_model_weights", "pass" if valid_model_weights else "fail", "w_{j,model} is non-negative and normalized" if valid_model_weights else "w_{j,model} is invalid or not normalized", False) # cdx
+    dataset_fractions = [finite_float(value) for value in result.get("f_k", {}).values()] # cdx
+    valid_fractions = len(dataset_fractions) == 4 and all(value is not None and value >= 0.0 for value in dataset_fractions) and abs(sum(value for value in dataset_fractions if value is not None) - 1.0) < 1e-9 # cdx
+    add_check(review, "dr2_dataset_fractions", "pass" if valid_fractions else "fail", "f_k is non-negative and normalized across four datasets" if valid_fractions else "f_k is invalid or not normalized", False) # cdx
+    minimizer_ok = int(result.get("minimizer_status", {}).get("warnflag", -1)) == 0 # cdx
+    add_check(review, "dr2_minimizer", "pass" if minimizer_ok else "warning", "SkyLLH minimizer converged without warnings" if minimizer_ok else "SkyLLH minimizer status requires inspection", False) # cdx
+    provenance = result.get("pdf_provenance", {}) # cdx
+    provenance_paths = [root / str(value) for value in provenance.values()] if isinstance(provenance, dict) else [] # cdx
+    expected_provenance_count = 1 if likelihood_mode == "spatial_only" else 2 # cdx
+    provenance_ok = len(provenance_paths) == expected_provenance_count and all(path.exists() for path in provenance_paths) # cdx
+    provenance_message = "background spatial-PDF provenance is present" if likelihood_mode == "spatial_only" else "background and signal-energy table provenance files are present" # cdx
+    add_check(review, "dr2_pdf_provenance", "pass" if provenance_ok else "fail", provenance_message if provenance_ok else "one or more required DR2 PDF provenance files are missing", False) # cdx
+    if likelihood_mode == "spatial_only": # cdx
+        normalized_gamma = normalized.get("spectral_indices", [None])[0] # cdx
+        acceptance_gamma = finite_float(result.get("acceptance_gamma_legacy")) # cdx
+        fixed_acceptance = result.get("gamma_mode") == "fixed" and result.get("gamma_role") == "acceptance_only" and acceptance_gamma is not None and finite_float(normalized_gamma) is not None and abs(acceptance_gamma - float(normalized_gamma)) < 1e-12 # cdx
+        add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance Gamma matches the normalized request" if fixed_acceptance else "spatial-only acceptance Gamma is not fixed or does not match the request", False) # cdx
+        no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False # cdx
+        add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False) # cdx
+    review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")}) # cdx
 
 
 def review_single_run(review: Dict[str, Any], report: Dict[str, Any]) -> None: # cdx

@@ -73,11 +73,11 @@ def dIdEnu(Enus): # -2.X # test
 
 
 EAfilenms = array([ 
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC40_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC59_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC79_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_I_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_II_effectiveArea.csv',
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC59_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC79_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_I_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_II_effectiveArea.csv', # cdx
     ])
 Ntots = array([ 36843., 106980.,  93107., 135874., 760639.]) #!
 #Ntots = array([ 14121.,  42754.,  48361.,  61313., 500072. ]) # For northern sky
@@ -86,11 +86,11 @@ Ntots = array([ 36843., 106980.,  93107., 135874., 760639.]) #!
 # uptime
 for j in range(1):
     uptime_flms = array([
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC40_exp.csv',\
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC59_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC79_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv',
-        './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II2VII_exp_BZ.csv',
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv', # cdx
+        './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II2VII_exp_BZ.csv', # cdx
         ]) #!
     
     uptimes = zeros( len(uptime_flms) );

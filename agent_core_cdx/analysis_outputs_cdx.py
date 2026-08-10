@@ -83,7 +83,7 @@ def build_run_information(normalized: NormalizedAnalysis) -> list[list[object]]:
         ["random_seed", normalized.random_seed], # Codex
         ["reference", "https://arxiv.org/abs/2103.12813"], # Codex
         ["ts_definition", "TS evaluated at the maximum-likelihood estimate ns_hat"], # Codex
-        ["flux_conversion", "Paper-calibrated ns-to-flux references from legacy_cdx/likelihood_v4.py and legacy_cdx/ns2flux.py"], # Codex
+        ["flux_conversion", "Paper-calibrated ns-to-flux references from legacy_codex_revised/likelihood_v4.py and legacy_codex_revised/ns2flux.py"], # Codex
     ] # Codex
 
 
@@ -174,16 +174,17 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None: # Codex
     panels = [(65., 65., 355., 300.), (510., 65., 355., 300.)] # Codex
     color_map = {"uniform": colors.red, "input_weight": colors.blue} # Codex
     dash_map = {-2.0: [], -2.53: [7, 4], -3.0: [2, 3]} # Codex
-    flux_values = [value for curve in curves for value in curve["flux_100tev"] if value is not None and value > 0.] # Codex
+    profile_points = [[(float(x), float(y)) for x, y in zip(curve["flux_100tev"], curve["delta_ts"]) if x is not None and y is not None and isfinite(x) and isfinite(y) and x > 0. and y > -1e90] for curve in curves] # Codex
+    flux_values = [x for points in profile_points for x, _ in points] # Codex
     flux_min = builtins.min(flux_values) if flux_values else 1e-12 # Codex
     flux_max = builtins.max(flux_values) if flux_values else 1e-7 # Codex
-    delta_values = [value for curve in curves for value in curve["delta_ts"] if value is not None] # Codex
-    delta_min = builtins.min(delta_values) if delta_values else -10. # Codex
+    delta_values = [y for points in profile_points for _, y in points] # Codex
+    delta_min = builtins.max(builtins.min(builtins.min(delta_values), -4.5), -12.) if delta_values else -10. # Codex
     left, bottom, width, height = panels[0] # Codex
-    for curve in curves: # Codex
+    for curve, raw_points in zip(curves, profile_points): # Codex
         c.setStrokeColor(color_map.get(str(curve["weighting_scheme"]), colors.black)) # Codex
         c.setDash(dash_map.get(round(float(curve["spectral_index"]), 2), [])) # Codex
-        points = [(log_map(float(x), flux_min, flux_max, left, width), linear_map(float(y), delta_min, 0., bottom, height)) for x, y in zip(curve["flux_100tev"], curve["delta_ts"]) if x is not None and x > 0.] # Codex
+        points = [(log_map(x, flux_min, flux_max, left, width), linear_map(builtins.max(y, delta_min), delta_min, 0., bottom, height)) for x, y in raw_points] # Codex
         draw_polyline(c, points) # Codex
     c.setDash([5, 3]) # Codex
     c.setStrokeColor(colors.black) # Codex
@@ -193,14 +194,18 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None: # Codex
     draw_axes(c, left, bottom, width, height, "All-flavor energy flux at 100 TeV", "TS - TS(best fit)", "Stacking likelihood profiles") # Codex
     draw_log_ticks(c, left, bottom, width, decade_ticks(flux_min, flux_max), flux_min, flux_max, horizontal=True) # Codex
     draw_linear_ticks(c, left, bottom, height, delta_ticks(delta_min), delta_min, 0., horizontal=False) # Codex
+    if not flux_values: # Codex
+        c.setFont("Helvetica", 9.) # Codex
+        c.drawCentredString(left+width/2., bottom+height/2., "Flux conversion unavailable for requested spectral index") # Codex
     left, bottom, width, height = panels[1] # Codex
     energies = geomspace(1e4, 1e7, 180) # Codex
     diffuse = 4.98e-8*(energies/1e5)**(-0.53) # Codex
-    right_curve_values = [float(value) for curve in curves for value in float(curve["flux_100tev_95"])*(energies/1e5)**(float(curve["spectral_index"])+2.) if isfinite(value) and value > 0.] # Codex
+    valid_limit_curves = [curve for curve in curves if isfinite(float(curve["flux_100tev_95"])) and float(curve["flux_100tev_95"]) > 0.] # Codex
+    right_curve_values = [float(value) for curve in valid_limit_curves for value in float(curve["flux_100tev_95"])*(energies/1e5)**(float(curve["spectral_index"])+2.) if isfinite(value) and value > 0.] # Codex
     right_curve_values.extend(float(value) for value in diffuse if value > 0.) # Codex
     right_y_min = 10.**math.floor(math.log10(builtins.min(right_curve_values))) # Codex
     right_y_max = 10.**math.ceil(math.log10(builtins.max(right_curve_values))) # Codex
-    for curve in curves: # Codex
+    for curve in valid_limit_curves: # Codex
         gamma = float(curve["spectral_index"]) # Codex
         flux100 = float(curve["flux_100tev_95"]) # Codex
         values = flux100*(energies/1e5)**(gamma+2.) # Codex
@@ -214,10 +219,16 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None: # Codex
     draw_axes(c, left, bottom, width, height, "Neutrino energy [GeV]", "All-flavor energy flux", "95% CL stacking upper limits") # Codex
     draw_log_ticks(c, left, bottom, width, [1e4, 1e5, 1e6, 1e7], 1e4, 1e7, horizontal=True) # Codex
     draw_log_ticks(c, left, bottom, height, decade_ticks(right_y_min, right_y_max), right_y_min, right_y_max, horizontal=False) # Codex
-    c.setFillColor(colors.red) # Codex
-    c.drawString(225., 24., "Uniform weighting") # Codex
-    c.setFillColor(colors.blue) # Codex
-    c.drawString(350., 24., "Input weighting") # Codex
+    if not valid_limit_curves: # Codex
+        c.setFillColor(colors.black) # Codex
+        c.setFont("Helvetica", 9.) # Codex
+        c.drawCentredString(left+width/2., bottom+height-24., "Flux upper limit unavailable for requested spectral index") # Codex
+    if builtins.any(str(curve["weighting_scheme"]) == "uniform" for curve in valid_limit_curves): # Codex
+        c.setFillColor(colors.red) # Codex
+        c.drawString(225., 24., "Uniform weighting") # Codex
+    if builtins.any(str(curve["weighting_scheme"]) == "input_weight" for curve in valid_limit_curves): # Codex
+        c.setFillColor(colors.blue) # Codex
+        c.drawString(350., 24., "Input weighting") # Codex
     c.setFillColor(colors.green) # Codex
     c.drawString(465., 24., "Diffuse reference") # Codex
     c.save() # Codex

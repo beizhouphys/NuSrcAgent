@@ -37,8 +37,8 @@ def main(argv=None) -> int:
 
 
 def check_python():
-    supported = sys.version_info[:2] == (3, 8)
-    return {"id": "python", "status": "pass" if supported else "warning", "message": "Python 3.8 is the private-alpha supported runtime"}
+    supported = sys.version_info[:2] == (3, 12)
+    return {"id": "python", "status": "pass" if supported else "warning", "message": "Python 3.12 is the combined supported runtime"}
 
 
 def check_numpy():
@@ -46,8 +46,8 @@ def check_numpy():
         import numpy
     except ImportError:
         return {"id": "numpy", "status": "fail", "message": "NumPy is not installed"}
-    supported = numpy.__version__ == "1.24.4"
-    return {"id": "numpy", "status": "pass" if supported else "warning", "message": "installed version %s; tested version 1.24.4" % numpy.__version__}
+    supported = numpy.__version__ == "2.5.1"
+    return {"id": "numpy", "status": "pass" if supported else "warning", "message": "installed version %s; tested version 2.5.1" % numpy.__version__}
 
 
 def sha256_file(path: Path) -> str:

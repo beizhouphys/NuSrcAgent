@@ -24,6 +24,7 @@ class WeightMode(str, Enum): # Codex
 class AnalysisBlock: # Codex
     type: AnalysisType # Codex
     time_mode: str = "time_integrated" # Codex
+    likelihood_mode: str = "spatial_energy" # cdx
 
 
 @dataclass # Codex
@@ -58,6 +59,7 @@ class WeightsBlock: # Codex
 class StackingBlock: # Codex
     spectral_indices: list[float] = field(default_factory=lambda: [-2.53]) # Codex
     include_uniform_baseline: bool = True # Codex
+    gamma_mode: str = "fixed" # cdx
 
 
 @dataclass # Codex
@@ -92,15 +94,20 @@ class AnalysisConfig: # Codex
             data_payload = payload["data"] # Codex
         except KeyError as exc: # Codex
             raise ConfigError(f"missing required block: {exc.args[0]}") from exc # Codex
+        sample = str(data_payload.get("sample", "icecube_public_ps_14yr_dr2")) # cdx
+        default_likelihood_mode = "spatial_energy" if sample == "icecube_public_ps_14yr_dr2" else "spatial_only" # cdx
+        likelihood_mode = str(analysis_payload.get("likelihood_mode", default_likelihood_mode)) # cdx
+        default_gamma_mode = "fitted" if likelihood_mode == "spatial_energy" and sample == "icecube_public_ps_14yr_dr2" else "fixed" # cdx
+        default_spectral_index = -2.5 if likelihood_mode == "spatial_only" and sample == "icecube_public_ps_14yr_dr2" else (-3.0 if sample == "icecube_public_ps_14yr_dr2" else -2.53) # cdx
         return cls( # Codex
             schema_version=str(payload.get("schema_version", "0.1")), # Codex
-            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated"))), # Codex
-            data=DataBlock(sample=str(data_payload.get("sample", "icecube_public_ps_10yr"))), # Codex
+            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode), # Codex
+            data=DataBlock(sample=sample), # Codex
             source=parse_source(payload.get("source")), # Codex
             sources=parse_sources(payload.get("sources")), # Codex
             catalog=parse_catalog(payload.get("catalog")), # Codex
             weights=parse_weights(payload.get("weights")), # Codex
-            stacking=parse_stacking(payload.get("stacking")), # Codex
+            stacking=parse_stacking(payload.get("stacking"), default_gamma_mode=default_gamma_mode, default_spectral_index=default_spectral_index), # Codex
             background=parse_background(payload.get("background")), # Codex
             outputs=parse_outputs(payload.get("outputs")), # Codex
         ) # Codex
@@ -133,9 +140,11 @@ class NormalizedAnalysis: # Codex
     schema_version: str # Codex
     analysis_type: str # Codex
     time_mode: str # Codex
+    likelihood_mode: str # cdx
     sample: str # Codex
     sources: list[NormalizedSource] # Codex
     spectral_indices: list[float] # Codex
+    gamma_mode: str # cdx
     include_uniform_baseline: bool # Codex
     background_method: str # Codex
     n_trials: int # Codex
@@ -178,13 +187,16 @@ def parse_weights(payload: Any) -> WeightsBlock: # Codex
     return WeightsBlock(mode=parse_weight_mode(payload.get("mode", "uniform")), column=optional_str(payload, "column"), values=None if values is None else [float(value) for value in values], normalize=bool(payload.get("normalize", True))) # Codex
 
 
-def parse_stacking(payload: Any) -> StackingBlock: # Codex
+def parse_stacking(payload: Any, default_gamma_mode: str = "fixed", default_spectral_index: float = -2.53) -> StackingBlock: # Codex
     if payload is None: # Codex
-        return StackingBlock() # Codex
-    spectral_indices = payload.get("spectral_indices", [-2.53]) # Codex
+        return StackingBlock(spectral_indices=[default_spectral_index], gamma_mode=default_gamma_mode) # Codex
+    spectral_indices = payload.get("spectral_indices", [default_spectral_index]) # Codex
     if not isinstance(spectral_indices, list) or len(spectral_indices) == 0: # Codex
         raise ConfigError("stacking.spectral_indices must be a non-empty list") # Codex
-    return StackingBlock(spectral_indices=[float(value) for value in spectral_indices], include_uniform_baseline=bool(payload.get("include_uniform_baseline", True))) # Codex
+    gamma_mode = str(payload.get("gamma_mode", default_gamma_mode)) # cdx
+    if gamma_mode not in {"fitted", "fixed"}: # cdx
+        raise ConfigError("stacking.gamma_mode must be fitted or fixed") # cdx
+    return StackingBlock(spectral_indices=[float(value) for value in spectral_indices], include_uniform_baseline=bool(payload.get("include_uniform_baseline", True)), gamma_mode=gamma_mode) # Codex
 
 
 def parse_background(payload: Any) -> BackgroundBlock: # Codex

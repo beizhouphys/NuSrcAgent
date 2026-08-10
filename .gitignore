@@ -16,44 +16,12 @@ node_modules/
 
 data_input/*
 !data_input/README_cdx.md
-!data_input/IceCube_data_released/
-data_input/IceCube_data_released/*
-!data_input/IceCube_data_released/icecube_10year_ps/
-data_input/IceCube_data_released/icecube_10year_ps/*
-!data_input/IceCube_data_released/icecube_10year_ps/events/
-data_input/IceCube_data_released/icecube_10year_ps/events/*
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/
-data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/*
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC40_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC59_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC79_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_I_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/
-data_input/IceCube_data_released/icecube_10year_ps/uptime/*
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/IC40_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/IC59_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/IC79_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv
-!data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II2VII_exp_BZ.csv
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/
-data_input/IceCube_data_released/icecube_10year_ps/irfs/*
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/IC40_effectiveArea.csv
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/IC59_effectiveArea.csv
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/IC79_effectiveArea.csv
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_I_effectiveArea.csv
-!data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_II_effectiveArea.csv
 
 data_output/*
-!data_output/bkgd_pdfs_cdx/
-data_output/bkgd_pdfs_cdx/*
-!data_output/bkgd_pdfs_cdx/bkgd_pdf_IC40_exp_cdx.txt
-!data_output/bkgd_pdfs_cdx/bkgd_pdf_IC59_exp_cdx.txt
-!data_output/bkgd_pdfs_cdx/bkgd_pdf_IC79_exp_cdx.txt
-!data_output/bkgd_pdfs_cdx/bkgd_pdf_IC86_I_exp_cdx.txt
-!data_output/bkgd_pdfs_cdx/bkgd_pdf_IC86_II2VII_exp_BZ_cdx.txt
 figures/
 Notes/
+Draft_cdx/
+outputs/
 
 *.pdf
 ttt.txt

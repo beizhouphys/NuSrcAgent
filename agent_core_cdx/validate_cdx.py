@@ -9,6 +9,23 @@ from agent_core_cdx.schemas_cdx import AnalysisConfig, AnalysisType, ValidationR
 def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None) -> ValidationResult: # Codex
     root = Path(repo_root) if repo_root is not None else Path.cwd() # Codex
     result = ValidationResult() # Codex
+    if config.data.sample not in {"icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"}: # cdx
+        result.errors.append("data.sample must be icecube_public_ps_14yr_dr2 or icecube_public_ps_10yr") # cdx
+    if config.data.sample == "icecube_public_ps_10yr" and config.stacking.gamma_mode != "fixed": # cdx
+        result.errors.append("the 10-year backend currently supports gamma_mode='fixed' only") # cdx
+    if config.analysis.likelihood_mode not in {"spatial_energy", "spatial_only"}: # cdx
+        result.errors.append("analysis.likelihood_mode must be spatial_energy or spatial_only") # cdx
+    if config.data.sample == "icecube_public_ps_10yr" and config.analysis.likelihood_mode != "spatial_only": # cdx
+        result.errors.append("the 10-year backend currently supports likelihood_mode='spatial_only' only") # cdx
+    if config.analysis.likelihood_mode == "spatial_only" and config.stacking.gamma_mode != "fixed": # cdx
+        result.errors.append("spatial-only analysis requires gamma_mode='fixed'; Gamma is used only for acceptance weights") # cdx
+    if config.data.sample == "icecube_public_ps_14yr_dr2": # cdx
+        if len(config.stacking.spectral_indices) != 1: # cdx
+            result.errors.append("the DR2 backend requires exactly one Gamma seed or fixed value") # cdx
+        elif config.analysis.likelihood_mode == "spatial_energy" and config.stacking.gamma_mode == "fitted" and not -4.0 <= config.stacking.spectral_indices[0] <= -1.0: # cdx
+            result.errors.append("the default DR2 fitted-Gamma range requires a seed in [-4, -1]") # cdx
+        elif config.stacking.gamma_mode == "fixed" and not -6.1 <= config.stacking.spectral_indices[0] <= -0.9: # cdx
+            result.errors.append("fixed DR2 Gamma must be within the pre-calculated range [-6.1, -0.9]") # cdx
     if config.analysis.time_mode != "time_integrated": # Codex
         result.errors.append("only time_integrated analysis is supported in this Phase 0 scaffold") # Codex
     if config.background.method != "ra_scramble": # Codex

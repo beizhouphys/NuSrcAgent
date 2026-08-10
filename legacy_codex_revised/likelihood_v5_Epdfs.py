@@ -7,33 +7,32 @@ import tqdm
 # In the modified version, S/B pdf are only calc'd once when maximizing the TS.  Only the single src analysis calc was changed.
 '''
 
-#####################################  ######################################
-#################################### !! #####################################
+'#####################  ######################'
+'#################### !! #####################'
 
 from numpy import *
 d2r = 180./pi
 
 '################################### Input ####################################'
-#gamma = -2.00; # cdx
-gamma = -2.53; # cdx
-#gamma = -3.00; # cdx
+gamma = -2.00; 
+#gamma = -2.53; 
+#gamma = -3.00; 
 
-#IF_BKGD_PDF = True
-#IF_stacking_anlys_calc_PDFs = True
-IF_BKGD_PDF = False
-IF_stacking_anlys_calc_PDFs = False # cdx
+IF_BKGD_PDF = True
+IF_stacking_anlys_calc_PDFs = True
+#IF_BKGD_PDF = False
+#IF_stacking_anlys_calc_PDFs = False
 
-IF_equal_weighting = True # cdx
-#IF_equal_weighting = False # cdx
+#IF_equal_weighting = True
+IF_equal_weighting = False
 
 ' Need to compare the TS with the plot, cuz sometimes it cannot find the maximum. If not, change the value in line ~669, under function max_TS_tot_().'
-#IF_single_src_anlys = True # cdx
-IF_single_src_anlys = False # cdx
-
-IF_stacking_anlys_calc_results = True # cdx
-#IF_stacking_anlys_calc_results = False # cdx
-IF_plot_fig4_reproduction = True # cdx
 '################################## !Input! ###################################'
+#IF_single_src_anlys = True
+IF_single_src_anlys = False
+
+IF_stacking_anlys_calc_results = True  
+#IF_stacking_anlys_calc_results = False
 
 print('# gamma = ', gamma, '. Do not forget here!!!!!!') 
 
@@ -52,11 +51,11 @@ from neutrinos_data import *
 
 ################################### uptime ####################################
 uptime_flms = array([
-    './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC40_exp.csv',\
-    './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC59_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC79_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_I_exp.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/uptime/IC86_II2VII_exp_BZ.csv',
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II2VII_exp_BZ.csv', # cdx
     ]) 
 
 uptimes = zeros( len(uptime_flms) );
@@ -80,11 +79,11 @@ set_printoptions(suppress=True, linewidth=1000, threshold=None, precision=6, flo
 
 ############################## EA and f_k  ####################################
 EAfilenms = array([ 
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC40_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC59_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC79_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_I_effectiveArea.csv',
-    './data_input/IceCube_data_released/icecube_10year_ps/irfs/IC86_II_effectiveArea.csv',
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC59_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC79_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_I_effectiveArea.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_II_effectiveArea.csv', # cdx
     ])
 
 
@@ -204,16 +203,17 @@ del( tmp0, tmp1, tmp2, tmp3, tmp4 )
 
 
 ############################### Background PDF ################################
+# '''
 'This block continues prev block.  So can put in the same file.'
 'from background_pdf.py, using sliding window'
 'Later make below to a cycle'
 
-filenms = array([  # Donot use the neutrinos_data.py do calc the bkgd pdf, cuz the analysis region may be smaller than <87deg. # cdx
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC40_exp.csv', # cdx
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC59_exp.csv', # cdx
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC79_exp.csv', # cdx
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_I_exp.csv', # cdx
-    './data_input/IceCube_data_released/icecube_10year_ps/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv',]) # cdx
+filenms = array([  # Donot use the neutrinos_data.py do calc the bkgd pdf, cuz the analysis region may be smaller than <87deg.
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC40_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC59_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC79_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_I_exp.csv', # cdx
+    './data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/IC86_II2VII_exp_BZ.csv',]) # cdx
 
 Nks_tot = array( zeros(len(filenms)), dtype=int ) # Used to renormalize the bkgdpdf
 for j2 in range( len(filenms) ):
@@ -293,25 +293,24 @@ if IF_BKGD_PDF:
     
     bkgd_pdfs = [] + [bkgd_pdf0a] + [bkgd_pdf1a] + [bkgd_pdf2a] + [bkgd_pdf3a] + [bkgd_pdf4a] 
     # Case i=1 was checked w/ an earlier data release but same peroid, consistent.
-    bkgd_pdf_dir = './data_output/bkgd_pdfs_cdx' # cdx
-    os.makedirs(bkgd_pdf_dir, exist_ok=True) # cdx
-    bkgd_pdf_flms = array([ # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC40_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC59_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC79_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC86_I_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC86_II2VII_exp_BZ_cdx.txt',]) # cdx
-    bkgd_pdfs_nu = [] # cdx
-    for k in range(len(filenms)): # cdx
-        bkgd_pdf_tmp = bkgd_pdfs[k]( -sin(Decs_nu[k, 0:Nks[k]]) ) # cdx
-        bkgd_pdf_output = array([RAs_nu[k,0:Nks[k]]*d2r, Decs_nu[k,0:Nks[k]]*d2r, bkgd_pdf_tmp]).T # cdx
-        savetxt(bkgd_pdf_flms[k], bkgd_pdf_output, fmt='%.12e', header='RA_deg Dec_deg bkgd_pdf_value') # cdx
-        if len(bkgd_pdf_tmp) != Nks[k]: # cdx
-            print('# Warning: bkgd pdf length mismatch', k, len(bkgd_pdf_tmp), Nks[k]) # cdx
-        bkgd_pdfs_nu += [bkgd_pdf_tmp] # cdx
     
+    # This part should not be used.
+    ## Below changes the bkgd pdf by only a few in 1e4, and changes the ns_95% by a few %, which is negligible.  I geuss sqrt(a few in 1e4) -> a few %
+    #xxx = linspace( cos((87.+90.)/d2r), cos((-87.+90.)/d2r), 10000)
+    #yyy0 = bkgd_pdf0a(xxx)
+    #bkgd_pdf0b = intp.interp1d( xxx, yyy0, kind='linear', bounds_error=True, fill_value=0)
+    #yyy1 = bkgd_pdf1a(xxx)
+    #bkgd_pdf1b = intp.interp1d( xxx, yyy1, kind='linear', bounds_error=True, fill_value=0)
+    #yyy2 = bkgd_pdf2a(xxx)
+    #bkgd_pdf2b = intp.interp1d( xxx, yyy2, kind='linear', bounds_error=True, fill_value=0)
+    #yyy3 = bkgd_pdf3a(xxx)
+    #bkgd_pdf3b = intp.interp1d( xxx, yyy3, kind='linear', bounds_error=True, fill_value=0)
+    #yyy4 = bkgd_pdf4a(xxx)
+    ##print('2*pi*integrate.trapz( yyy4, xxx )-1', 2*pi*integrate.trapz( yyy4, xxx )-1 )
+    #bkgd_pdf4b = intp.interp1d( xxx, yyy4, kind='linear', bounds_error=True, fill_value=0)
+    #bkgd_pdfs = [] + [bkgd_pdf0b] + [bkgd_pdf1b] + [bkgd_pdf2b] + [bkgd_pdf3b] + [bkgd_pdf4b]  
     
-    for i in range(0): # cdx
+    for i in range(0):
         'Plot to check bkgd pdfs'
         fig = plt.figure(figsize=(6, 6), facecolor='w')
         ax = fig.add_axes([0.145, 0.12, 0.82, 0.82 ])
@@ -322,35 +321,22 @@ if IF_BKGD_PDF:
         #ax.plot(tmp8, bkgd_pdf3a(tmp8)*2*pi,'-',label=r'3',lw=1.5,ms=2) 
         #ax.plot(tmp8, bkgd_pdf4a(tmp8)*2*pi,'-',label=r'4',lw=1.5,ms=2) 
         
-        lbls = ['IC40', 'IC59', 'IC79', 'IC86-I', 'IC86-II to IC86-VII'] # cdx
         for i in range(len(filenms)):
             #ax.plot(tmp8, bkgd_pdfs[i](tmp8)*2*pi,'-',label=r''+str(i),lw=1.5,ms=2) 
-            ax.plot(tmp8, bkgd_pdfs[i](tmp8)*2*pi,'-',label=lbls[i],lw=1.5,ms=2) # cdx
+            ax.plot(arccos(tmp8)*d2r-90, bkgd_pdfs[i](tmp8)*2*pi,'-',label=r''+str(i),lw=1.5,ms=2) 
         
-        ax.set_xlim(-1,1); ax.set_ylim(0,1) # cdx
-        ax.set_xlabel(r"$\cos$(zenith angle) or $-\sin$(Dec)",fontsize=20, labelpad=None) # cdx
-        ax.set_ylabel(r"Background PDF",fontsize=20) # cdx
+        #ax.set_xlim(-1,1); ax.set_ylim(0,1)
+        #ax.set_xlabel(r"$\cos$(zenith)",fontsize=20, labelpad=None) #label pad to fix some thing flexibly
+        ax.set_xlabel(r"Dec [ Degrees ]",fontsize=20, labelpad=None) #label pad to fix some thing flexibly
+        ax.set_ylabel(r"Probability density [ ]",fontsize=20)
         ax.legend(loc='best',prop={'size':14})  # Larger if used for a paper.
         ax.tick_params(axis='both', which='major', direction='in', length = 10, width = 1.5, labelsize=20)
         ax.tick_params(axis='x', pad=6) # for numbers with superscript, 6 is from adjusting to match y axis
         ax.tick_params(axis='both', which='minor', direction='in', length = 5, width = 1, labelsize=20)
         plt.grid()#ls='-', lw=0.5)
-        plt.savefig('figures/Fig2_background_pdf_cdx.pdf',bbox_inches='tight', pad_inches=0.1) # cdx
+        plt.show()
         exit()
-
-
-if not IF_BKGD_PDF: # cdx
-    bkgd_pdf_dir = './data_output/bkgd_pdfs_cdx' # cdx
-    bkgd_pdf_flms = array([ # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC40_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC59_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC79_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC86_I_exp_cdx.txt', # cdx
-        bkgd_pdf_dir+'/bkgd_pdf_IC86_II2VII_exp_BZ_cdx.txt',]) # cdx
-    bkgd_pdfs_nu = [] # cdx
-    for k in range(len(filenms)): # cdx
-        bkgd_pdf_tmp = loadtxt(bkgd_pdf_flms[k]) # cdx
-        bkgd_pdfs_nu += [bkgd_pdf_tmp[:,2]] # cdx
+# '''
  
 
 ############################## !Background PDF! ###############################
@@ -369,28 +355,27 @@ def SnB_PDF(j):
         Decs_nu1D = Decs_nu[k, 0:Nks[k]]
         sgms_nu1D = sgms_nu[k, 0:Nks[k]]
 
-        # The active ROI below is a declination band; prefilter before the angular-distance calculation.
-        tmp_idx = where( abs( Dec_src-Decs_nu1D ) <= ROI ) # cdx
-        RAs_nu1D1  = RAs_nu1D[tmp_idx]; # cdx
-        Decs_nu1D1 = Decs_nu1D[tmp_idx]; # cdx
-        sgms_nu1D1 = sgms_nu1D[tmp_idx]; # cdx
-
-        ang_dis = cos(RA_src-RAs_nu1D1)*cos(Dec_src)*cos(Decs_nu1D1) + sin(Dec_src)*sin(Decs_nu1D1) # cdx
+        ang_dis = cos(RA_src-RAs_nu1D)*cos(Dec_src)*cos(Decs_nu1D) + sin(Dec_src)*sin(Decs_nu1D) 
         ang_dis[ where(ang_dis<-1.) ] = -1.
         ang_dis[ where(ang_dis> 1.) ] = 1. \
                 # Very low chance to have nums like -1.0000000027831957 in arccos() probably due to truncation error, which gives "RuntimeWarning: invalid value encountered in arccos". Won't change the rlst cuz the nu is so far from the src.  # Adding this slows the code...
         ang_dis = arccos( ang_dis ) 
 
         #tmp_idx = where( ang_dis**2 < ROI**2. ) # circular ROI
-        ang_dis1 = ang_dis # cdx
+        tmp_idx = where( abs( Dec_src-Decs_nu1D ) <= ROI ) # Dec band ROI
+
+        RAs_nu1D1  = RAs_nu1D[tmp_idx]; 
+        Decs_nu1D1 = Decs_nu1D[tmp_idx]; 
+        sgms_nu1D1 = sgms_nu1D[tmp_idx];
+        ang_dis1 = ang_dis[tmp_idx]
 
         Njk = len(RAs_nu1D1); Nj += [Njk]
         spatial_facs = 1./(2.*pi*sgms_nu1D1**2.)*exp( -(ang_dis1**2)/(2.*sgms_nu1D1**2.) )
         S_jik = spatial_facs
         S_ji = S_ji + [S_jik]
 
-        B_ik = bkgd_pdfs_nu[k][tmp_idx]*Nks[k]/Njk # better pdf # cdx
-        # print('!!!!!!!!!!!! Check the code here next time using, due to the Bpdf normalization issue found ~20250303.')
+        B_ik = bkgd_pdfs[k]( -sin( Decs_nu1D1 ) )*Nks[k]/Njk # better pdf  
+        print('!!!!!!!!!!!! Check the code here next time using, due to the Bpdf normalization issue found ~20250303.')
         B_i += [B_ik]
     return S_ji, B_i, Nj
 
@@ -398,14 +383,14 @@ def logL_j(j, n_s):
     logL_j = 0;
     for k in range( len(Nks) ):
 
-        a = float( n_s*fks[k] )/float(Nj[k]) # cdx
-        L_jik_fac = 1. + a*(SB_ji[k]-1.) # cdx
-        if L_jik_fac.min() < 0:
+        L_jik = float( n_s*fks[k] )/float(Nj[k])*S_ji[k] +\
+                ( 1. - float( n_s*fks[k] )/float(Nj[k]) )*B_i[k]
+        if L_jik.min() < 0:
             'To avoid log(0.) which happens when n_s < 0. Wont affect the results at all if not do this cuz the n_s < 0 srcs are thrown away.'
             return 1e99, Nj[k]
-        logL_jik = logB_ki[k] + log(L_jik_fac).sum() # cdx
+        logL_jik = log(L_jik)
 
-        logL_j = logL_j + logL_jik
+        logL_j = logL_j + logL_jik.sum()
 
     return logL_j, sum(array(Nj)) # maybe don't output Nk?
 
@@ -433,60 +418,21 @@ def max_TS_j1(j): # n_s can be any real number
 ################### For catelog !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 if IF_single_src_anlys:
     rslt_single_src_analys = zeros( (N_src, 7) )
-    rslt_single_src_analys_table = [] # cdx
-    N_src_trials = N_src # cdx
     for j1 in range(N_src):
         fks = W_accs_src[:,j1]/W_accs_src[:,j1].sum()  
         #print(fks)
         S_ji, B_i, Nj =  SnB_PDF(j1)
-        SB_ji = [ S_ji[k]/B_i[k] for k in range(len(Nks)) ] # cdx
-        logB_ki = [ log(B_i[k]).sum() for k in range(len(Nks)) ] # cdx
         tmp1 = max_TS_j1(j1)
         #print( j1, '  ', tmp1[0], '  ', tmp1[1], '  ', tmp1[2] )
 
         from scipy.stats import chi2
         dof=1.; p_loc   = chi2.sf(tmp1[1], dof)/2 # /2 bcuz degeneracy of a TS correspond to ns, one positive, the other negative.
         rslt_single_src_analys[j1] = array([ j1, tmp1[0], tmp1[1], tmp1[2], p_loc, RAs_src[j1]*d2r, Decs_src[j1]*d2r ])
-        p_glob = 1. - (1. - p_loc)**N_src_trials # cdx
-        s_loc = max(norm.isf(p_loc), 0.) # cdx
-        s_glob = max(norm.isf(p_glob), 0.) # cdx
-        rslt_single_src_analys_table += [[ # cdx
-            j1, # cdx
-            src_IVS_names[j1], # cdx
-            src_J2000_names[j1], # cdx
-            W_mdls_src[j1], # cdx
-            tmp1[2], # cdx
-            tmp1[1], # cdx
-            p_loc, # cdx
-            s_loc, # cdx
-            p_glob, # cdx
-            s_glob, # cdx
-            RAs_src[j1]*d2r, # cdx
-            Decs_src[j1]*d2r, # cdx
-            tmp1[0], # cdx
-        ]] # cdx
-        if j1%100 == 0: print( j1, '  ', tmp1[0], '  ', tmp1[1], '  ', tmp1[2], '  ', p_loc, '  ', RAs_src[j1]*d2r, '  ', Decs_src[j1]*d2r  ) # cdx
+        print( j1, '  ', tmp1[0], '  ', tmp1[1], '  ', tmp1[2], '  ', p_loc, '  ', RAs_src[j1]*d2r, '  ', Decs_src[j1]*d2r  )
         # index of src,  N of nus,        TS,         \hat{ns_}
     savetxt('ttt.txt', rslt_single_src_analys)
-    rslt_single_src_analys_table = array(rslt_single_src_analys_table, dtype=object) # cdx
-    idx_table = argsort(array(rslt_single_src_analys_table[:,5], dtype=float))[::-1] # cdx
-    rslt_single_src_analys_table = rslt_single_src_analys_table[idx_table] # cdx
-    hdr = 'rank index IVS_name J2000_name Xband_flux_Jy ns_hat TSmax pretrial_p pretrial_sigma posttrial_p posttrial_sigma RA_deg Dec_deg N_events_in_ROI' # cdx
-    ranks = arange(1, N_src+1, dtype=int).reshape(-1,1) # cdx
-    savetxt( # cdx
-        'data_output/TableI_reproduction_five_sources_cdx.txt', # cdx
-        concatenate((ranks, rslt_single_src_analys_table), axis=1), # cdx
-        fmt='%s', # cdx
-        header=hdr, # cdx
-    ) # cdx
-    savetxt( # cdx
-        'data_output/TableI_reproduction_top5_cdx.txt', # cdx
-        concatenate((ranks[:5], rslt_single_src_analys_table[:5]), axis=1), # cdx
-        fmt='%s', # cdx
-        header=hdr, # cdx
-    ) # cdx
     
-    for i in range(1): # process data and plot !!!!!!!!!!!!!!!!!!!!!! # cdx
+    for i in range(1): # process data and plot !!!!!!!!!!!!!!!!!!!!!!
         #rslt_f_nm = 'data_output_3yr_moslty/RQs3386_3yrNu_TS_dist_GM2.5.dat' 
         #rslt_f_nm = 'data_output/RQs3386_3yrNu_TS_dist_oldFks.dat' 
         #rslt_f_nm = 'data_output_test_code_v3/RQs3386_3yrNu_TS_dist_GM2.5_v2code.dat' 
@@ -499,50 +445,27 @@ if IF_single_src_anlys:
         print('# Number of srcs with ns_max>=0', len(where( results[:,3] >=0 )[0]) )
         
         #try: # Only for RQs
-        signed_TSs = results[:,2].copy()
-        signed_TSs[ where(results[:,3]<0) ] *= -1
-        idx = argsort( signed_TSs )[::-1]
+        results[:,2][ where(results[:,3]<0) ] *= -1
+        idx = argsort( results[:,2] )[::-1]
     
         results = results[idx]
-        signed_TSs = signed_TSs[idx]
-        src_IVS_names_sorted = src_IVS_names[idx]
-        src_J2000_names_sorted = src_J2000_names[idx]
-        W_mdls_src_sorted = W_mdls_src[idx]
+        #srcs_sorted = srcs[idx]
         
         tmp_TSs = results[:,2] 
         from scipy.stats import chi2
-        ps_global  = 1. - (1. - results[:,4])**N_src
-        sigs_local = norm.isf(results[:,4])
-        sigs_global = norm.isf(ps_global)
-        sigs_global[where(sigs_global<0)] = 0.
-        print('# top five Table I-like rows:')
-        for i_top in range(5):
-            print(src_IVS_names_sorted[i_top], src_J2000_names_sorted[i_top], W_mdls_src_sorted[i_top], results[i_top,3], results[i_top,2], results[i_top,4], sigs_local[i_top], ps_global[i_top], sigs_global[i_top])
+        ps_global  = 1. - chi2.cdf(tmp_TSs, 1)**N_src
+        TSs_global = chi2.ppf(1-ps_global, 1) # inverse of cdf, to get global TS
+        print(ps_global)
+        print(TSs_global)
         
-        table_rows = []
-        for i_src in range(N_src):
-            table_rows += [[
-                src_IVS_names_sorted[i_src],
-                src_J2000_names_sorted[i_src],
-                W_mdls_src_sorted[i_src],
-                results[i_src,3],
-                results[i_src,2],
-                signed_TSs[i_src],
-                results[i_src,4],
-                sigs_local[i_src],
-                ps_global[i_src],
-                sigs_global[i_src],
-                results[i_src,5],
-                results[i_src,6],
-                int(results[i_src,0]),
-                int(results[i_src,1]),
-            ]]
-        table_rows = array(table_rows, dtype=object)
-        header = 'IVS_name J2000_name Xband_flux_Jy ns_hat TSmax signed_TS pretrial_p pretrial_sigma posttrial_p posttrial_sigma RA_deg Dec_deg source_index N_neutrinos_in_ROI'
-        savetxt('data_output/TableI_all_sources_cdx.txt', table_rows, fmt='%s', header=header) # cdx
-        savetxt('data_output/TableI_top5_cdx.txt', table_rows[:5], fmt='%s', header=header) # cdx
+        tmp = concatenate( (results, 
+            TSs_global.reshape(-1,1), 
+            ps_global.reshape(-1,1), 
+                            #srcs_sorted
+                            ), axis=1 )
+        savetxt( rslt_f_nm[0:-4]+'_sorted.txt', tmp, fmt='%s'  )
         
-        del(table_rows, tmp_TSs, idx)
+        del(tmp, tmp_TSs, idx)
         #except:
         #    pass
         
@@ -556,7 +479,7 @@ if IF_single_src_anlys:
         #print( where( results[3]>=0 )[0].shape )
         #exit()
         
-        binss = arange(0., 5.+0.25,0.25) # cdx
+        binss = arange(0., 10.+0.5,0.5) # 0.2 is the bin width used by the ppr
         tmp = results[2]
         tmp = sqrt(tmp[ where( results[3]>=0 ) ])
         print('Number of srcs with ns>=0, ', len(where(results[3]>=0)[0]) )
@@ -565,7 +488,7 @@ if IF_single_src_anlys:
         bin_err = ( binss[1]-binss[0] )/2.
         
         # Fit the TS dist with a gaussian
-        plt.errorbar(bin_Cs, Nums, xerr=bin_err, yerr=sqrt(Nums), fmt ='bo', capsize=2,ms=4, label=r'Results from IceCube 10 yr data') # cdx
+        plt.errorbar(bin_Cs, Nums, xerr=bin_err, yerr=sqrt(Nums), fmt ='bo', capsize=2,ms=4, label=r'Results from IceCube 10 yr data')
         
         # chi2 fit
         from lmfit.models import GaussianModel, ConstantModel
@@ -589,7 +512,7 @@ if IF_single_src_anlys:
         print(result.fit_report())
         print( result.redchi ) # https://lmfit.github.io/lmfit-py/fitting.html
         
-        plt.plot(xval, result.best_fit, 'r--', lw=2., label=r'Normal distribution fit, $\chi^2_{dof}='+str( round(result.redchi,2) )+'$') # cdx
+        plt.plot(xval, result.best_fit, 'r--', label=r'Normal distribution fit, $\chi^2_{dof}='+str( round(result.redchi,2) )+'$')
         
         #ax.set_xlabel(r"$\sqrt{2\Delta {\rm ln} \mathcal{L}}$",fontsize=20, labelpad=None) #label pad to fix some thing flexibly
         ax.set_xlabel(r"$\sqrt{\rm TS_{max}}$",fontsize=20, labelpad=None) #label pad to fix some thing flexibly
@@ -603,14 +526,17 @@ if IF_single_src_anlys:
         ax.tick_params(axis='x', pad=6) # for numbers with superscript, 6 is from adjusting to match y axis
         ax.tick_params(axis='both', which='minor', direction='in', length = 5, width = 1, labelsize=20)
         #plt.grid()#ls='-', lw=0.5)
-        plt.savefig('figures/Fig3_TS_distribution_cdx.pdf',bbox_inches='tight', pad_inches=0.1) # cdx
-        #plt.show()
+        plt.savefig('figures/TS_dist.pdf',bbox_inches='tight', pad_inches=0.1)
+        plt.show()
         exit()
     
 '######################### !Single source analysis! ############################'
 
 
-    
+'#####################  ######################'
+'#################### !! #####################'
+
+
 '############################ Stacking analysis ###############################'
 '# Weighting factors'
 if IF_equal_weighting:
@@ -629,23 +555,6 @@ W_facs_sum = W_facs.sum(axis=1)/N_src \
         # /N_src is actually not necessary; historical reason
 fks = W_facs_sum/W_facs_sum.sum() 
 print('# New fks', fks, ', compare with above #s' ) # old fks can be deleted later.
-
-stacking_output_dir = 'data_output/stacking_cdx' # cdx
-os.makedirs(stacking_output_dir, exist_ok=True) # cdx
-if gamma == -2.00: # cdx
-    gamma_str = '2.00' # cdx
-elif gamma == -2.53: # cdx
-    gamma_str = '2.53' # cdx
-elif gamma == -3.00: # cdx
-    gamma_str = '3.00' # cdx
-else: # cdx
-    gamma_str = '%.2f' % abs(gamma) # cdx
-if IF_equal_weighting: # cdx
-    stacking_weight_str = 'WeightEq' # cdx
-else: # cdx
-    stacking_weight_str = 'WeightXband' # cdx
-stacking_pdf_flnm = stacking_output_dir+'/RQs3386_10yrNu_PDFs_'+stacking_weight_str+'_GM'+gamma_str+'_cdx.txt' # cdx
-stacking_ts_flnm = stacking_output_dir+'/RQs3386_10yrNu_TS_'+stacking_weight_str+'_GM'+gamma_str+'_cdx.txt' # cdx
 
 for i in range(0):  # plot something
     fig = plt.figure(figsize=(6, 6), facecolor='w')
@@ -672,36 +581,120 @@ for i in range(0):  # plot something
     #plt.savefig('',,bbox_inches='tight', pad_inches=0.1)
     exit()
 
+'##################### Tmp: Epdfs ######################'
+B_E_pdfss = [ 
+             loadtxt('data_output/Epdfs/bkgd_Epdf_IC40.txt'), 
+             loadtxt('data_output/Epdfs/bkgd_Epdf_IC59.txt'), 
+             loadtxt('data_output/Epdfs/bkgd_Epdf_IC79.txt'), 
+             loadtxt('data_output/Epdfs/bkgd_Epdf_IC86a.txt'), 
+             loadtxt('data_output/Epdfs/bkgd_Epdf_IC86b.txt'),  
+             ]
+
+S_E_pdfss = [
+        loadtxt('data_output/Epdfs/signal_Epdf_2D_GM2.0_IC40.txt'),
+        loadtxt('data_output/Epdfs/signal_Epdf_2D_GM2.0_IC59.txt'),
+        loadtxt('data_output/Epdfs/signal_Epdf_2D_GM2.0_IC79.txt'),
+        loadtxt('data_output/Epdfs/signal_Epdf_2D_GM2.0_IC86a.txt'),
+        loadtxt('data_output/Epdfs/signal_Epdf_2D_GM2.0_IC86b.txt'),
+        ]
+
+
+'#################### !Tmp: Epdfs! #####################'
+
+
 ' ##### Calc the signal/bkgd PDFs for the joint llh !!!!!!!!!!!!!!!!!!!!! '
 if IF_stacking_anlys_calc_PDFs:
-    'For 3386 srcs and 10 yr nus, calc in chunks and save the local PDFs.' # cdx
+    'For 2796 srcs, ~350k nus, only took 1m30s'
     S_ki = [];  B_ki = [] ; # Signal PDF # Background PDF
-    stacking_rows = [] # cdx
-    cos_Decs_src = cos(Decs_src) # cdx
-    sin_Decs_src = sin(Decs_src) # cdx
-    chunk_size = 512 # cdx
     for k in tqdm.tqdm( range( len(Nks) ) ):
-        RAs_nu1D  = RAs_nu [k, 0:Nks[k]]
-        Decs_nu1D = Decs_nu[k, 0:Nks[k]]
-        sgms_nu1D = sgms_nu[k, 0:Nks[k]]
+        if k != 4:
+            continue
 
-        S_ki1D = zeros(Nks[k])
-        B_ki1D = bkgd_pdfs_nu[k] # cdx
-        for i0 in tqdm.tqdm( range(0, Nks[k], chunk_size) ): # cdx
-            i1 = min(i0+chunk_size, Nks[k]) # cdx
-            RAs_nu2D  = RAs_nu1D[i0:i1].reshape(-1,1) # cdx
-            Decs_nu2D = Decs_nu1D[i0:i1].reshape(-1,1) # cdx
-            sgms_nu2D = sgms_nu1D[i0:i1].reshape(-1,1) # cdx
-            cos_ang_dis = cos(RAs_src.reshape(1,-1)-RAs_nu2D)*cos_Decs_src.reshape(1,-1)*cos(Decs_nu2D) + sin_Decs_src.reshape(1,-1)*sin(Decs_nu2D) # cdx
-            cos_ang_dis = clip(cos_ang_dis, -1., 1.) # cdx
-            ang_dis2 = arccos(cos_ang_dis)**2. # cdx
-            spatial_facs = 1./(2.*pi*sgms_nu2D**2.)*exp( -ang_dis2/(2.*sgms_nu2D**2.) ) # cdx
-            S_ki1D[i0:i1] = dot(spatial_facs, W_facs_normd[k]) # cdx
-        S_ki = S_ki + [S_ki1D]; B_ki = B_ki + [B_ki1D]
-        stacking_rows += [array([ones(Nks[k])*k, RAs_nu1D*d2r, Decs_nu1D*d2r, S_ki1D, B_ki1D]).T] # cdx
-    stacking_rows = concatenate(stacking_rows, axis=0) # cdx
-    savetxt(stacking_pdf_flnm, stacking_rows, fmt='%.12e', header='sample_index RA_deg Dec_deg S_pdf B_pdf') # cdx
-    print('# Saved stacking PDFs to', stacking_pdf_flnm) # cdx
+        RAs_nu1D     = RAs_nu [k, 0:Nks[k]]
+        Decs_nu1D    = Decs_nu[k, 0:Nks[k]]
+        sgms_nu1D    = sgms_nu[k, 0:Nks[k]]
+        lgEs_prxy_nu1D = lgEs_prxy_nu[k, 0:Nks[k]]
+        
+        B_E_pdfs = B_E_pdfss[k]
+        S_E_pdfs = S_E_pdfss[k]
+
+        S_sptl_ki1D = zeros(Nks[k])
+        S_E_ki1D    = zeros(Nks[k])
+        S_ki1D      = zeros(Nks[k])
+        B_sptl_ki1D = zeros(Nks[k])
+        B_E_ki1D    = zeros(Nks[k])
+        B_ki1D      = zeros(Nks[k])
+
+        #for i in tqdm.tqdm( range(Nks[k]) ): 
+        for i in tqdm.tqdm( range(0) ): 
+            'Later if confirmed using all-sky srcs, can easily change to 2D array.'
+            RA_nu  = RAs_nu1D[i];  
+            Dec_nu = Decs_nu1D[i];
+            sgm_nu = sgms_nu1D[i];
+
+            ang_dis = arccos( cos(RAs_src-RA_nu)*cos(Decs_src)*cos(Dec_nu) + sin(Decs_src)*sin(Dec_nu) )
+            if isscalar(ang_dis): # for the case of only one src, wrap it in an array
+                ang_dis = array([ang_dis])
+        
+            tmp_idx = where( ang_dis**2 < inf*sgm_nu**2. )  \
+                    # 20250228, fogot why i did this, maybe i want to limit the distance betwee the srcs and the event. 
+                    # Now i am using inf, so equivalent to removing this code block.
+            ang_dis1 = ang_dis[tmp_idx]
+            N_src1 = len(tmp_idx[0])
+        
+            if N_src1 > 0:
+                spatial_facs = 1./(2.*pi*sgm_nu**2.)*exp( -(ang_dis1**2)/(2.*sgm_nu**2.) )
+                S_sptl_ki1D[i] = sum(W_facs_normd[k]*spatial_facs)
+            else:
+                S_sptl_ki1D[i] = 0.
+            tmp5 = bkgd_pdfs[k]
+            B_sptl_ki1D[i] = tmp5( -sin( array([Dec_nu]) ) ) * Nks_tot[k]/Nks[k] \
+                   # Rescale for a part of the sky. There is an issue for the 87 deg but the difference is negligible.
+
+        iz = 0; # to adjust the mismatch between B_E_pdfs and the data used for LLH analysis; change to other variables later.
+        i=0
+        while 1:
+            Dec_nu = Decs_nu1D[i];
+            lgE_prxy = lgEs_prxy_nu1D[i];
+
+            # Add E pdfs
+            ##print()
+            ##print( i+iz, B_E_pdfs[i+iz, 1:] )
+            ##print( i,    Dec_nu*d2r, lgE_prxy )
+            #if B_E_pdfs[i,1] == Dec_nu*d2r and B_E_pdfs[i,2]==lgE_prxy:
+            if abs(use.rel_diff(B_E_pdfs[i+iz,1],Dec_nu*d2r)) < 1e-2 and abs(use.rel_diff(B_E_pdfs[i+iz,2],lgE_prxy))<1e-2:  ####!!!!
+                B_E_ki1D[i] = B_E_pdfs[i+iz,3]  # cuz Col3 is the BEpdf for event i_
+                ##print( B_E_ki1D[i] )
+                i += 1
+            else:
+                ##print('# Mismatch! ')
+                iz += 1
+            if i == Decs_nu1D.size: # cuz there is  i+=1 in the end
+                break
+
+        # for S_E_pdf
+        pdf2D = S_E_pdfs  # (1000, 801)
+        coszs = linspace(-1, 1, 1000)
+        Eprs  = use.ebs(1e1, 1e9, 8*100) # don't change, matches the file
+        lgEprs = log10( Eprs )
+        # Check if normalized; No need check actually, cuz already did when calculating
+        #tmp = integrate.simps( pdf2D, lgEprs, axis=1 )
+        #print('# Check if normalized', tmp )
+        pdf2D_intp = intp.interp2d( lgEprs, coszs, pdf2D, bounds_error=True )
+        
+        ' calc E pdfs for events'
+        coszs_ev  = -sin(Decs_nu1D)
+        lgEprs_ev = lgEs_prxy_nu1D
+        for i in range(Nks[k]): 
+            S_E_ki1D[i] = pdf2D_intp(lgEprs_ev[i], coszs_ev[i])[0]
+            #print(i, result)
+
+
+        S_ki1D = S_sptl_ki1D * S_E_ki1D;
+        B_ki1D = B_sptl_ki1D * B_E_ki1D;
+        for i in range(Nks[k]): 
+            print( i, N_src1, S_ki1D[i], B_ki1D[i], S_sptl_ki1D[i], B_sptl_ki1D[i], S_E_ki1D[i], B_E_ki1D[i] )
+        ####S_ki = S_ki + [S_sptl_ki1D]; B_ki = B_ki + [B_sptl_ki1D]
 
 
 def TS_tot(n_s):
@@ -722,7 +715,7 @@ def TS_tot(n_s):
 def max_TS_tot(ns0): # 
     def TS_tot1(n_s):
         return -1.*TS_tot(n_s)
-    bnds = ( (0., float( Nks1.sum() )), ) # has to have ',' here smh... # cdx
+    bnds = ( (-100., float( Nks1.sum() )), ) # has to have ',' here smh...
     res = minimize(TS_tot1, (ns0), bounds=bnds)  # method='SLSQP', 
     max_TS_j = -1*res.get('fun'); max_ns = res.get('x')[0];
     return max_TS_j, max_ns
@@ -753,37 +746,48 @@ def Delta_TS_tot(Delta_TS): #
 ' ##### Read the signal/bkgd PDFs for the joint llh !!!!!!!!!!!!!!!!!!!! '
 if IF_stacking_anlys_calc_results:
     for i in range(1):  # 'Read the PDF data'
-        if not os.path.exists(stacking_pdf_flnm): # cdx
-            print('# Missing stacking PDF file:', stacking_pdf_flnm) # cdx
-            print('# Turn on IF_stacking_anlys_calc_PDFs for this gamma/weighting first.') # cdx
-            exit() # cdx
-        tmp = loadtxt(stacking_pdf_flnm).T # cdx
+        if gamma == -2.00:
+            gamma_str = '2.00'
+        elif gamma == -2.53:
+            gamma_str = '2.53'
+        elif gamma == -3.00:
+            gamma_str = '3.00'
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250221_SMBBHS_data_catalog_PDFs_WeightEq_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250318_All_SMBBHs_data__PDFs_WeightDL_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_693_PDFs_WeightEq_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_335_PDFs_WeightEq_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_468_PDFs_WeightEq_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_693_PDFs_Weight1DL2_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_335_PDFs_Weight1DL2_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_468_PDFs_Weight1DL2_GM'+gamma_str+'.txt').T
+        #tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_335_PDFs_WeightLbolDL2_GM'+gamma_str+'.txt').T
+        tmp = loadtxt('../20250221_SMBHB_Ranjan/data_output/20250404_All_SMBBHs_updated_data_335_PDFs_WeightNuFlux_GM'+gamma_str+'.txt').T
         
     
-        # Signal pdf in col 3; B pdf in col 4 for local stacking files. # cdx
+        # Signal pdf in col 2; B pdf in col 3.
         # Later make it a cycle
-        B_pdf1 = tmp[4][ 0: Nks[0] ]; # cdx
-        S_pdf1 = tmp[3][ 0: Nks[0] ]; # cdx
+        B_pdf1 = tmp[3][ 0: Nks[0] ];
+        S_pdf1 = tmp[2][ 0: Nks[0] ];
         idx = where( B_pdf1 > 0 );  # this is not needed actually
         B_pdf1 = B_pdf1[idx]; S_pdf1 = S_pdf1[idx]; Nks11 = len(idx[0])
         
-        B_pdf2 = tmp[4][ Nks[0]: Nks[0]+Nks[1] ] # cdx
-        S_pdf2 = tmp[3][ Nks[0]: Nks[0]+Nks[1] ] # cdx
+        B_pdf2 = tmp[3][ Nks[0]: Nks[0]+Nks[1] ]
+        S_pdf2 = tmp[2][ Nks[0]: Nks[0]+Nks[1] ]
         idx = where( B_pdf2 > 0 );
         B_pdf2 = B_pdf2[idx]; S_pdf2 = S_pdf2[idx]; Nks12 = len(idx[0])
         
-        B_pdf3 = tmp[4][ Nks[0]+Nks[1]: Nks[0]+Nks[1]+Nks[2] ] # cdx
-        S_pdf3 = tmp[3][ Nks[0]+Nks[1]: Nks[0]+Nks[1]+Nks[2] ] # cdx
+        B_pdf3 = tmp[3][ Nks[0]+Nks[1]: Nks[0]+Nks[1]+Nks[2] ]
+        S_pdf3 = tmp[2][ Nks[0]+Nks[1]: Nks[0]+Nks[1]+Nks[2] ]
         idx = where( B_pdf3 > 0 );
         B_pdf3 = B_pdf3[idx]; S_pdf3 = S_pdf3[idx]; Nks13 = len(idx[0])
         
-        B_pdf4 = tmp[4][ Nks[0]+Nks[1]+Nks[2] : Nks[0]+Nks[1]+Nks[2]+Nks[3] ] # cdx
-        S_pdf4 = tmp[3][ Nks[0]+Nks[1]+Nks[2] : Nks[0]+Nks[1]+Nks[2]+Nks[3] ] # cdx
+        B_pdf4 = tmp[3][ Nks[0]+Nks[1]+Nks[2] : Nks[0]+Nks[1]+Nks[2]+Nks[3] ]
+        S_pdf4 = tmp[2][ Nks[0]+Nks[1]+Nks[2] : Nks[0]+Nks[1]+Nks[2]+Nks[3] ]
         idx = where( B_pdf4 > 0 );
         B_pdf4 = B_pdf4[idx]; S_pdf4 = S_pdf4[idx]; Nks14 = len(idx[0])
     
-        B_pdf5 = tmp[4][ Nks[0]+Nks[1]+Nks[2]+Nks[3] : Nks[0]+Nks[1]+Nks[2]+Nks[3]+Nks[4] ] # cdx
-        S_pdf5 = tmp[3][ Nks[0]+Nks[1]+Nks[2]+Nks[3] : Nks[0]+Nks[1]+Nks[2]+Nks[3]+Nks[4] ] # cdx
+        B_pdf5 = tmp[3][ Nks[0]+Nks[1]+Nks[2]+Nks[3] : Nks[0]+Nks[1]+Nks[2]+Nks[3]+Nks[4] ]
+        S_pdf5 = tmp[2][ Nks[0]+Nks[1]+Nks[2]+Nks[3] : Nks[0]+Nks[1]+Nks[2]+Nks[3]+Nks[4] ]
         idx = where( B_pdf5 > 0 );
         B_pdf5 = B_pdf5[idx]; S_pdf5 = S_pdf5[idx]; Nks15 = len(idx[0])
 
@@ -853,27 +857,11 @@ if IF_stacking_anlys_calc_results:
     #print('TS_s', TS_s)
 
     TS_max, ns_max = max_TS_tot(ns_s_hat)
-    if TS_max <= 0.: # cdx
-        TS_max = 0. # cdx
-        ns_max = 0. # cdx
     print('TS_max, ns_max: ', TS_max, ns_max)
-    TS_s = TS_s - TS_max # cdx
-    def TS_tot_rel(n_s): # cdx
-        return TS_tot(n_s)-TS_max+3.84 # cdx
-    from scipy.optimize import brentq # cdx
-    ns_hi = max(10., ns_max+10.) # cdx
-    while TS_tot_rel(ns_hi) > 0. and ns_hi < Nks1.sum(): # cdx
-        ns_hi *= 2. # cdx
-    try: # cdx
-        ns_95 = brentq(TS_tot_rel, max(ns_max, 0.), ns_hi) # cdx
-        print('# ns_95:', ns_95) # cdx
-    except: # cdx
-        ns_95 = nan # cdx
-        print('# Could not find ns_95 root.') # cdx
+    print( Delta_TS_tot( -3.84 ) ) 
     
     try:
-        savetxt( stacking_ts_flnm, array([ns_s, TS_s]).T, header='ns TS_minus_TSmax') # cdx
-        print('# Saved stacking TS curve to', stacking_ts_flnm) # cdx
+        savetxt( flsvnm, array([ns_s, TS_s]).T )
     except:
         pass
     
@@ -901,130 +889,7 @@ if IF_stacking_anlys_calc_results:
     ax.tick_params(axis='both', which='minor', direction='in', length = 5, width = 1, labelsize=20)
     #plt.grid()#ls='-', lw=0.5)
     #plt.savefig('figures/TS_flux.pdf',bbox_inches='tight', pad_inches=0.1)
-    plt.savefig('figures/TS_flux_'+stacking_weight_str+'_GM'+gamma_str+'_cdx.pdf',bbox_inches='tight', pad_inches=0.1) # cdx
-    #plt.show() # cdx
+    plt.show()
     # '''
-
-
-def stacking_ts_curve_file(weight_tag, gm_tag): # cdx
-    return stacking_output_dir+'/RQs3386_10yrNu_TS_'+weight_tag+'_GM'+gm_tag+'_cdx.txt' # cdx
-
-
-def ns_to_flux100_fig4(ns, gm_tag): # cdx
-    gamma_val = -float(gm_tag) # cdx
-    astro_ns_refs = {-2.00: 3217.3, -2.53: 8845.7, -3.00: 49282.2} # cdx
-    phi0_mu = {-2.00: 5e-18/3., -2.53: 1.66e-18, -3.00: 5e-18/3.} # cdx
-    astro_flux100 = 3.*phi0_mu[gamma_val]*1e10 # cdx
-    return ns/astro_ns_refs[gamma_val]*astro_flux100 # cdx
-
-
-def ns95_from_ts_curve(ns_s1, TS_s1): # cdx
-    target = -3.84 # cdx
-    diff = TS_s1-target # cdx
-    idx = where(diff[:-1]*diff[1:] <= 0.)[0] # cdx
-    if len(idx) == 0: # cdx
-        return nan # cdx
-    i = idx[0] # cdx
-    return ns_s1[i] + (target-TS_s1[i])*(ns_s1[i+1]-ns_s1[i])/(TS_s1[i+1]-TS_s1[i]) # cdx
-
-
-def setup_fig4_axes(ax): # cdx
-    ax.tick_params(axis='both', which='major', direction='in', length=10, width=1.4, labelsize=18, top=True, right=True) # cdx
-    ax.tick_params(axis='both', which='minor', direction='in', length=5, width=1.0, labelsize=18, top=True, right=True) # cdx
-    for spine in ax.spines.values(): # cdx
-        spine.set_linewidth(1.1) # cdx
-
-
-def plot_fig4_reproduction_from_stacking_outputs(): # cdx
-    gm_tags = ['2.00', '2.53', '3.00'] # cdx
-    weight_rows = [('WeightEq', 'Equal weighting', 'red'), ('WeightXband', 'X-band flux-density weighting', 'blue')] # cdx
-    linestyles = {'2.00': '--', '2.53': '-', '3.00': '-.'} # cdx
-    gamma_labels = {'2.00': '-2.0', '2.53': '-2.53', '3.00': '-3.0'} # cdx
-    missing = [] # cdx
-    for weight_tag, label, color in weight_rows: # cdx
-        for gm_tag in gm_tags: # cdx
-            if not os.path.exists(stacking_ts_curve_file(weight_tag, gm_tag)): # cdx
-                missing.append(stacking_ts_curve_file(weight_tag, gm_tag)) # cdx
-    if len(missing) > 0: # cdx
-        print('# Missing TS files for Fig. 4 reproduction:') # cdx
-        for flm in missing: # cdx
-            print('#', flm) # cdx
-        return # cdx
-
-    ns95 = {} # cdx
-    fig = plt.figure(figsize=(6.2, 6.2), facecolor='w') # cdx
-    ax = fig.add_axes([0.15, 0.13, 0.80, 0.82]) # cdx
-    ax.set_xscale('log'); ax.set_yscale('linear') # cdx
-    handles = [] # cdx
-    for weight_tag, label, color in weight_rows: # cdx
-        for gm_tag in gm_tags: # cdx
-            ns_s1, TS_s1 = loadtxt(stacking_ts_curve_file(weight_tag, gm_tag)).T # cdx
-            ns95[(weight_tag, gm_tag)] = ns95_from_ts_curve(ns_s1, TS_s1) # cdx
-            flux_s1 = ns_to_flux100_fig4(ns_s1, gm_tag) # cdx
-            line, = ax.plot(flux_s1, TS_s1, color=color, ls=linestyles[gm_tag], lw=2.0) # cdx
-            if gm_tag == '2.53': # cdx
-                handles.append(line) # cdx
-    astro_center = 3.*1.66e-18*1e10 # cdx
-    ax.axhline(-3.84, color='k', ls='--', lw=1.8) # cdx
-    ax.axvspan(astro_center*0.78, astro_center*1.22, color='mediumseagreen', alpha=0.65, ec='green', lw=1.5) # cdx
-    ax.axvline(astro_center, color='green', lw=2.0) # cdx
-    ax.annotate(r'95\% limit', xy=(3.1e-10, -3.84), xytext=(6.3e-11, -3.72), fontsize=18, color='k', arrowprops=dict(arrowstyle='-|>', color='k', lw=1.5)) # cdx
-    ax.text(3.6e-8, 0.78, 'Tot. astroph. $\\nu$ flux at 100 TeV\n(IceCube)', color='green', fontsize=18, ha='right', va='top') # cdx
-    ax.text(1.5e-8, -2.35, gamma_labels['2.00'], color='red', fontsize=18) # cdx
-    ax.text(2.1e-9, -2.35, gamma_labels['2.53'], color='red', fontsize=18) # cdx
-    ax.text(4.0e-10, -2.35, gamma_labels['3.00'], color='red', fontsize=18) # cdx
-    ax.text(8.0e-9, -5.25, gamma_labels['2.00'], color='blue', fontsize=18) # cdx
-    ax.text(1.2e-9, -5.25, gamma_labels['2.53'], color='blue', fontsize=18) # cdx
-    ax.text(1.3e-10, -5.25, r'$\Gamma=-3.0$', color='blue', fontsize=18) # cdx
-    ax.set_xlabel(r'$E_\nu^2 dF_\nu/dE_\nu$ at 100 TeV  [ GeV cm$^{-2}$ s$^{-1}$ sr$^{-1}$ ]', fontsize=20) # cdx
-    ax.set_ylabel('TS', fontsize=22) # cdx
-    ax.set_xlim(5e-11, 1e-7); ax.set_ylim(-10, 1) # cdx
-    ax.legend(handles, [weight_rows[0][1], weight_rows[1][1]], loc='lower left', fontsize=16, framealpha=0.80) # cdx
-    setup_fig4_axes(ax) # cdx
-    plt.savefig('figures/Fig4_left_panel_reproduction_cdx.pdf', bbox_inches='tight', pad_inches=0.06) # cdx
-    plt.savefig('figures/Fig4_left_panel_reproduction_cdx.png', dpi=240, bbox_inches='tight', pad_inches=0.06) # cdx
-    plt.close(fig) # cdx
-
-    fig = plt.figure(figsize=(6.2, 6.2), facecolor='w') # cdx
-    ax = fig.add_axes([0.16, 0.13, 0.79, 0.82]) # cdx
-    ax.set_xscale('log'); ax.set_yscale('log') # cdx
-    Es = use.ebs(1e3, 1e7, 500) # cdx
-    handles = [] # cdx
-    for weight_tag, label, color in weight_rows: # cdx
-        for gm_tag in gm_tags: # cdx
-            flux100 = ns_to_flux100_fig4(ns95[(weight_tag, gm_tag)], gm_tag) # cdx
-            gamma_val = -float(gm_tag) # cdx
-            yy = flux100*(Es/1e5)**(gamma_val+2.) # cdx
-            line, = ax.plot(Es, yy, color=color, ls=linestyles[gm_tag], lw=2.0) # cdx
-            if gm_tag == '2.53': # cdx
-                handles.append(line) # cdx
-    center = astro_center*(Es/1e5)**(-0.53) # cdx
-    ax.fill_between(Es, center*0.78, center*1.22, color='mediumseagreen', alpha=0.65, ec='green', lw=1.3) # cdx
-    ax.plot(Es, center, color='green', lw=2.0) # cdx
-    for weight_tag, color, x1, x2 in [('WeightEq', 'red', 4.5e5, 1.5e6), ('WeightXband', 'blue', 3.0e5, 1.0e6)]: # cdx
-        y = ns_to_flux100_fig4(ns95[(weight_tag, '2.00')], '2.00') # cdx
-        ax.hlines(y, 1e3, 1e7, colors=color, linestyles='--', lw=1.6) # cdx
-        ax.annotate('', xy=(x1, y/2.0), xytext=(x1, y), arrowprops=dict(arrowstyle='-|>', color=color, lw=1.5)) # cdx
-        ax.annotate('', xy=(x2, y/8.0), xytext=(x2, y/3.0), arrowprops=dict(arrowstyle='-|>', color=color, lw=1.5)) # cdx
-    ax.text(1.4e5, 1.3e-8, gamma_labels['2.00'], color='red', fontsize=18) # cdx
-    ax.text(1.7e6, 1.0e-9, gamma_labels['2.53'], color='red', fontsize=18, rotation=-32) # cdx
-    ax.text(1.9e5, 4.5e-10, gamma_labels['3.00'], color='red', fontsize=18) # cdx
-    ax.text(7.0e4, 7.0e-9, gamma_labels['2.00'], color='blue', fontsize=18) # cdx
-    ax.text(6.8e5, 7.0e-10, gamma_labels['2.53'], color='blue', fontsize=18, rotation=-32) # cdx
-    ax.text(2.3e4, 2.6e-10, r'$\Gamma=-3.0$', color='blue', fontsize=18) # cdx
-    ax.text(1.6e4, 2.4e-7, 'Tot. astroph. $\\nu$ flux (IceCube)', color='green', fontsize=18, rotation=-28, ha='left', va='top') # cdx
-    ax.set_xlabel(r'$E_\nu$  [ GeV ]', fontsize=20) # cdx
-    ax.set_ylabel(r'$E_\nu^2 dF_\nu/dE_\nu$  [ GeV cm$^{-2}$ s$^{-1}$ sr$^{-1}$ ]', fontsize=20) # cdx
-    ax.set_xlim(1e3, 1e7); ax.set_ylim(4e-11, 3e-7) # cdx
-    ax.legend(handles, [weight_rows[0][1], weight_rows[1][1]], loc='lower left', fontsize=16, framealpha=0.80) # cdx
-    setup_fig4_axes(ax) # cdx
-    plt.savefig('figures/Fig4_right_panel_reproduction_cdx.pdf', bbox_inches='tight', pad_inches=0.06) # cdx
-    plt.savefig('figures/Fig4_right_panel_reproduction_cdx.png', dpi=240, bbox_inches='tight', pad_inches=0.06) # cdx
-    plt.close(fig) # cdx
-    print('# Saved Fig. 4 reproduction panels to figures/.') # cdx
-
-
-if IF_plot_fig4_reproduction: # cdx
-    plot_fig4_reproduction_from_stacking_outputs() # cdx
 
 ########################### !Stacking analysis! ##############################

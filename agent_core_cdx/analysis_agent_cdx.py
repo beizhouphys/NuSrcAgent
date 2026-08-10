@@ -56,15 +56,15 @@ class AnalysisAgent: # Codex
         return AgentRun(config_path=path, normalized=normalized, result=result, run_dir=run_dir, review=review) # cdx
 
 
-def build_single_source_request(name: str, ra_deg: float, dec_deg: float, spectral_index: float, output_root: str) -> dict[str, Any]: # cdx
-    payload = base_request("single_source", output_root) # Codex
+def build_single_source_request(name: str, ra_deg: float, dec_deg: float, spectral_index: float, output_root: str, data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str | None = None) -> dict[str, Any]: # cdx
+    payload = base_request("single_source", output_root, data_sample, likelihood_mode) # Codex
     payload["source"] = {"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg} # Codex
-    payload["stacking"] = {"spectral_indices": [spectral_index], "include_uniform_baseline": False} # cdx
+    payload["stacking"] = {"spectral_indices": [spectral_index], "gamma_mode": gamma_mode, "include_uniform_baseline": False} # cdx
     return payload # Codex
 
 
-def build_catalog_request(catalog: str | None, sources: list[dict[str, Any]] | None, name_column: str | None, ra_column: str | None, dec_column: str | None, weight_column: str | None, manual_weights: list[float] | None, spectral_indices: list[float], include_uniform_baseline: bool, output_root: str) -> dict[str, Any]: # Codex
-    payload = base_request("catalog_stacking", output_root) # Codex
+def build_catalog_request(catalog: str | None, sources: list[dict[str, Any]] | None, name_column: str | None, ra_column: str | None, dec_column: str | None, weight_column: str | None, manual_weights: list[float] | None, spectral_indices: list[float], include_uniform_baseline: bool, output_root: str, data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str | None = None) -> dict[str, Any]: # Codex
+    payload = base_request("catalog_stacking", output_root, data_sample, likelihood_mode) # Codex
     if catalog is not None: # Codex
         payload["catalog"] = {"file": catalog, "name_column": name_column, "ra_column": ra_column, "dec_column": dec_column} # Codex
     else: # Codex
@@ -75,9 +75,10 @@ def build_catalog_request(catalog: str | None, sources: list[dict[str, Any]] | N
         payload["weights"] = {"mode": "manual", "values": manual_weights, "normalize": True} # Codex
     else: # Codex
         payload["weights"] = {"mode": "uniform", "normalize": True} # Codex
-    payload["stacking"] = {"spectral_indices": spectral_indices, "include_uniform_baseline": include_uniform_baseline} # Codex
+    payload["stacking"] = {"spectral_indices": spectral_indices, "gamma_mode": gamma_mode, "include_uniform_baseline": include_uniform_baseline} # Codex
     return payload # Codex
 
 
-def base_request(analysis_type: str, output_root: str) -> dict[str, Any]: # Codex
-    return {"schema_version": "0.1", "analysis": {"type": analysis_type, "time_mode": "time_integrated"}, "data": {"sample": "icecube_public_ps_10yr"}, "background": {"method": "ra_scramble", "n_trials": 10000, "random_seed": 12345}, "outputs": {"output_root": output_root}} # Codex
+def base_request(analysis_type: str, output_root: str, data_sample: str = "icecube_public_ps_14yr_dr2", likelihood_mode: str | None = None) -> dict[str, Any]: # Codex
+    selected_mode = likelihood_mode or ("spatial_energy" if data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only") # cdx
+    return {"schema_version": "0.2", "analysis": {"type": analysis_type, "time_mode": "time_integrated", "likelihood_mode": selected_mode}, "data": {"sample": data_sample}, "background": {"method": "ra_scramble", "n_trials": 10000, "random_seed": 12345}, "outputs": {"output_root": output_root}} # Codex
