@@ -48,8 +48,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5487,
-      "sha256": "d9a2481502b60b25285fae3def739a37c8dc6d7c6a4f6ecd7d64cde095dbf755"
+      "bytes": 5706,
+      "sha256": "2a39dc1554fd39defdb82ffc39867f1473e3e29f809e24c2b46df05271e0d1b8"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -273,8 +273,8 @@
     },
     {
       "path": "docs/input_installation_verification.md",
-      "bytes": 6565,
-      "sha256": "ed98514158e67f1558086755a120fb45bd419c6ead3555e1e559f980dabe6542"
+      "bytes": 10008,
+      "sha256": "a40828543f006beb475f81aed7534923041bac465ac8d288bde1ce54df677b2a"
     },
     {
       "path": "docs/pdf_release_manifest.json",
@@ -308,8 +308,8 @@
     },
     {
       "path": "docs/release_notes.md",
-      "bytes": 2141,
-      "sha256": "f4ec2a18e37ea2e829e8a33461eff74db0ae82b2a6a693972159e1e4a6b3f369"
+      "bytes": 2315,
+      "sha256": "651fac4863693a07ffd98311db9cbed2d573f3f38dc708b8a7005ae13c636b71"
     },
     {
       "path": "docs/release_scientific_baseline.md",
@@ -323,8 +323,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 7492,
-      "sha256": "2add92ee867da4b5f65b939f96dbda2b3f8d378724890189f053ff9f1793ce96"
+      "bytes": 8235,
+      "sha256": "e165e815d70bdb8d3460885c8d6322bcbdcc915b30c5038d651c84cb1f0bd296"
     },
     {
       "path": "install.sh",

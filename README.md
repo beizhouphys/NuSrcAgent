@@ -8,6 +8,9 @@ This is the 0.2.0 time-integrated development snapshot, not a tagged public
 release. Project-provided inputs are hosted on GitHub and installed automatically.
 The complete first-release scope is not yet implemented or validated.
 
+Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
+and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
+
 ## Current support
 
 | Data / mode | Implemented analysis | Status |

@@ -75,9 +75,11 @@ On 2026-10-16 the workflow's seven shell steps passed locally on macOS in a
 new source-only directory with its own Python 3.12 environment, empty owner
 `PYTHONPATH` and no IceCube raw data or numerical PDFs. This checked all 20
 locked dependency versions, imported 32 runtime modules and verified 69 shipped
-source/metadata files. The GitHub Ubuntu job itself has not been run: no push
-or workflow dispatch was performed. Local command checks do not establish
-Linux runner compatibility or data-dependent scientific validation.
+source/metadata files. Initially this was local-only evidence. Subsequently the
+GitHub Ubuntu/Python 3.12 job passed for hosted-installer commit
+`8cd000eae9203a82d80e71912e1afc815cc6e291`
+([run 38943454604](https://github.com/beizhouphys/NuSrcAgent/actions/runs/38943454604)).
+This Linux no-data CI does not establish data-dependent scientific validation.
 
 Completed locally: source-only installation with our prepared bundles, full
 DR2 input hash verification, optional DR1 input verification, and a real DR2
@@ -96,7 +98,15 @@ tasks retained COMPLETED_WITH_WARNINGS, with no failed review checks, and the
 clone remained clean. See the [local Git clean-clone record](input_installation_verification.md#local-git-clean-clone-verification).
 This did not create a commit in the project repositories or change runtime code.
 
-Pending before a complete public release:
+The authenticated GitHub clean-clone check subsequently passed: plain
+`bash install.sh` downloaded and hash-verified the six DR2 bundles, then both
+real examples reproduced the references with no failed reviews. The optional
+DR1 bundle also downloaded and passed all 20 input hashes. All seven downloaded
+archives matched the pinned hashes. Owner unit tests passed 222 checks with no
+skips; the golden language cases passed 20/20. See the
+[GitHub-hosted verification record](input_installation_verification.md#github-hosted-one-command-verification).
+
+Remaining before a complete public release (not blockers for private collaborator installation):
 
 The [metadata draft and ordered checklist](release_metadata_draft.md) separates
 collaborator code synchronization from completing the approved first release.
