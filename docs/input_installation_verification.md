@@ -1,5 +1,60 @@
 # Input-bundle installation verification — 2026-10-16
 
+## GitHub-hosted one-command verification
+
+**Completed:** an actual fresh clone from GitHub main at
+`8cd000eae9203a82d80e71912e1afc815cc6e291` ran plain `bash install.sh`.
+It initially had no `.venv`, scientific inputs, download cache or local bundles.
+Owner PYTHONPATH was unset and user-site imports disabled. The command created
+its own Python 3.12.3 environment, installed all 20 hash-locked dependencies,
+downloaded all six DR2 bundles from GitHub and finished with
+`Installation and input verification complete.` All 52 preflight paths and
+archive/member hashes passed. No `--bundle-dir` or `--base-url` was supplied.
+
+The seven assets (including optional DR1) were added to the existing mutable
+`v0.2.0-private-alpha.4` Release. Its existing tag was not moved; no new tag or
+GitHub Release was created. The private download route uses the installer's own
+GitHub login and fixed asset IDs, not maintainer credentials. The separate DR1
+bundle also downloaded successfully and all 20 DR1 input hashes passed; this
+does not claim an additional DR1 analysis run. All seven downloaded archive
+hashes matched the manifest and GitHub asset digests.
+
+Both creation commands were taken directly from `quickstart.md`, reached READY,
+and completed in one attempt with unchanged scientific settings:
+
+| Example | Task | Run |
+| --- | --- | --- |
+| NGC 1068 | `task_20261016T180002901256Z` | `run_20261016T180953290567Z` |
+| Three-source scan+stack | `task_20261016T181004706647Z` | `run_20261016T182531691327Z` |
+
+Both returned COMPLETED_WITH_WARNINGS and zero failed run/agent review checks.
+Read-only independent reviews exactly reproduced the saved reviews. Reports,
+CSV tables, original/normalized configurations, all 31 runtime code hashes,
+52/53 single/catalog input-provenance hashes and request hashes passed checks.
+All runtime inputs resolved inside the clone. Configuration matched the earlier
+references: full14, spatial+energy, fitted ns/Gamma, frozen v3, all 1,643,355
+events, no extra cuts, unchanged bounds/seeds, and 1/3 intrinsic catalog weights.
+Both examples executed zero background trials. For every nonzero compared
+single/stack/scan TS, ns and Gamma, signed relative difference was 0, then
+signed absolute difference 0. Zero TS/ns references had undefined relative
+differences and absolute differences 0. Gamma at ns = 0 remains unidentifiable.
+Numerical reference values are in the historical table below and `quickstart.md`.
+
+All 51 DR2 bundle input/provenance files and 71 shipped source inventory entries
+retained their hashes after analysis. Git status stayed clean. Default input
+reinstallation reused the verified bundles. Owner tests passed 222/222 with no
+skips (including 15 installer tests); 20 golden cases passed. Ubuntu/Python 3.12
+no-data GitHub CI passed for this commit.
+
+The verified platform is macOS 15.3.1 x86_64; Linux CI covers no-data engineering
+only, not these fits. Analytic p-value and absent empirical/catalog-global
+calibration warnings remain, as do v3 residuals and possible parameter bias.
+This closes the private GitHub installation gate, not public-access licensing,
+time-dependent support or scientific calibration. Subsequent verification-note
+updates do not change the tested installer, dependencies or scientific code.
+
+## Earlier local-bundle verification (historical)
+
 A new temporary source-only directory, with no virtual environment or numerical
 inputs, completed the single `install.sh --bundle-dir ...` command. It created
 its own Python 3.12 environment, installed hash-locked dependencies, extracted
@@ -95,7 +150,7 @@ runtime input path resolved inside the clone. Reports, CSVs and review artifacts
 were readable; no DR2 workbook or PDF figures were expected. Git status stayed
 clean after installation and both analyses. No runtime/path/output fix was needed.
 
-### Still pending
+### Remaining at the time of the local-only check
 
 - Public bundle upload, pinned HTTPS URL and installation through that URL.
 - Clean clone from the final published GitHub candidate, rather than this local
@@ -107,3 +162,4 @@ clean after installation and both analyses. No runtime/path/output fix was neede
 This establishes local installation and observed-fit reproducibility only.
 The [scientific limitations](scientific_status.md), including v3 residuals,
 possible parameter bias and unavailable empirical significance, still apply.
+The later GitHub-hosted check above closes the first two historical pending items.

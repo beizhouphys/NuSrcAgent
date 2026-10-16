@@ -21,7 +21,9 @@ these version numbers.
   installation reuses collaborators' GitHub credentials. No new tag/Release.
 - Persistent tasks, configuration/input/code provenance and scientific reviews;
   two documented examples reproduced from an independent local Git clone.
-- No-data CI configured; the GitHub Ubuntu run remains pending.
+- Ubuntu/Python 3.12 no-data CI passed. A fresh GitHub clone completed plain
+  `bash install.sh` using hosted inputs and reproduced both real DR2 examples;
+  configuration/provenance/reviews passed, with the documented warnings retained.
 - Owner tests, private catalogs/transcripts, PDF construction and dedicated
   source/catalog comparison code excluded from the public copy.
 
