@@ -29,7 +29,7 @@ if ! command -v "$python_command" >/dev/null; then
     exit 2
 fi
 "$python_command" -c 'import sys; assert sys.version_info[:2] == (3, 12), "Python 3.12 is required"'
-# Fail early if this unpublished checkout has no asset endpoint configured.
+# Check the fixed download source and private-repository authentication early.
 "$python_command" -c '
 from agent_core.input_install import preflight_source
 import sys

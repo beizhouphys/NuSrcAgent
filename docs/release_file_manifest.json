@@ -48,8 +48,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5557,
-      "sha256": "d3a42eae0648864570f68b70389c53aa5178608459d1bf50f53c5eebf0362c20"
+      "bytes": 5487,
+      "sha256": "d9a2481502b60b25285fae3def739a37c8dc6d7c6a4f6ecd7d64cde095dbf755"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -93,8 +93,8 @@
     },
     {
       "path": "agent_core/input_install.py",
-      "bytes": 7336,
-      "sha256": "8cc1f05c46f0641525a3bdf7df037ebae84bde2915ace755d9b0a272be9955d9"
+      "bytes": 10101,
+      "sha256": "1520c06235c899a455d413e480e7127e3bad5d97c5e901f652e65d6476d37b8a"
     },
     {
       "path": "agent_core/likelihood_backend.py",
@@ -238,8 +238,8 @@
     },
     {
       "path": "docs/data_and_environment.md",
-      "bytes": 3322,
-      "sha256": "ec22835a18e77bdfa2820e8c9c084c10532ea04615075fe25a4c9b14f84233a0"
+      "bytes": 3395,
+      "sha256": "bb317e73801e45503c8a973302d2e68ab6edb6c0a4fe04d79fd3a7331382cd40"
     },
     {
       "path": "docs/data_attribution.md",
@@ -263,13 +263,13 @@
     },
     {
       "path": "docs/input_bundles.json",
-      "bytes": 21850,
-      "sha256": "fb2b36c2ad3f6b4336b0a9115958ce3a9fcb3ab90ba9de91aafe203ac64e8e54"
+      "bytes": 22356,
+      "sha256": "9a9a9590a9e0d65ec922051028f3ad9829920cb9a20b579290cf4765524b6412"
     },
     {
       "path": "docs/input_installation.md",
-      "bytes": 4675,
-      "sha256": "ee21119340b84b922cff8512a4df8a24440e919f3c444e4763d34d631aa907ae"
+      "bytes": 4793,
+      "sha256": "ef127a72114b56c4e0d9d0775bdd5dc1a82387b92bcde00d194f2d5be0ed7866"
     },
     {
       "path": "docs/input_installation_verification.md",
@@ -303,13 +303,13 @@
     },
     {
       "path": "docs/release_metadata_draft.md",
-      "bytes": 5788,
-      "sha256": "cb4437d3d91d2506357192db65aab6f743c85ebed2c5e86ce5072e0151e41db5"
+      "bytes": 5778,
+      "sha256": "9672c4cf1bb1c65b5747a383247b1f4a284c56f7bdeb8f9f132b5484f1acb223"
     },
     {
       "path": "docs/release_notes.md",
-      "bytes": 2042,
-      "sha256": "73872b10e72e4f40ac060e1f70d270dc2570bb74fa0eda1fd76506a46a781adb"
+      "bytes": 2141,
+      "sha256": "f4ec2a18e37ea2e829e8a33461eff74db0ae82b2a6a693972159e1e4a6b3f369"
     },
     {
       "path": "docs/release_scientific_baseline.md",
@@ -323,13 +323,13 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 7582,
-      "sha256": "8275bf8557262ae0c6edfe4e80cf9bd0ffe6902c03490af33c1df93b3c097617"
+      "bytes": 7492,
+      "sha256": "2add92ee867da4b5f65b939f96dbda2b3f8d378724890189f053ff9f1793ce96"
     },
     {
       "path": "install.sh",
-      "bytes": 2309,
-      "sha256": "44a5b76f80c3e9f2408ad891c46d7e7438861c7f5e811ff9de4eb5a74737b393"
+      "bytes": 2312,
+      "sha256": "38fc5a49929ba6c4bc1f49dbb0e710f855d6d25472069b0960ab9534db4171fb"
     },
     {
       "path": "requirements_skyllh_v26.txt",

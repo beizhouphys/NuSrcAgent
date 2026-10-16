@@ -10,14 +10,62 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import shutil
+import subprocess
 import sys
 import tarfile
+from functools import lru_cache
 from urllib.parse import urlparse
-from urllib.request import urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 MANIFEST = "docs/input_bundles.json"
-MANIFEST_SHA256 = "fb2b36c2ad3f6b4336b0a9115958ce3a9fcb3ab90ba9de91aafe203ac64e8e54"
+MANIFEST_SHA256 = "9a9a9590a9e0d65ec922051028f3ad9829920cb9a20b579290cf4765524b6412"
 SAMPLES = ("icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr")
+
+
+@lru_cache(maxsize=1)
+def _github_token():
+    """Reuse local GitHub authentication; never print or persist credentials."""
+    for name in ("GH_TOKEN", "GITHUB_TOKEN"):
+        if os.environ.get(name):
+            return os.environ[name]
+    if shutil.which("gh"):
+        result = subprocess.run(["gh", "auth", "token", "--hostname", "github.com"],
+                                capture_output=True, text=True, timeout=20)
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    result = subprocess.run(["git", "credential", "fill"],
+                            input="protocol=https\nhost=github.com\n\n",
+                            env=dict(os.environ, GIT_TERMINAL_PROMPT="0"),
+                            capture_output=True, text=True, timeout=20)
+    if result.returncode == 0:
+        credentials = dict(line.split("=", 1) for line in result.stdout.splitlines() if "=" in line)
+        if credentials.get("password"):
+            return credentials["password"]
+    raise ValueError("Private input downloads require GitHub repository access. Log in with gh auth login, or use Git HTTPS credentials / GH_TOKEN, then rerun bash install.sh. SSH-only clone authentication cannot authenticate HTTPS asset downloads.")
+
+
+class _AssetRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, request, response, code, message, headers, newurl):
+        if urlparse(newurl).scheme != "https":
+            raise ValueError("Input download redirected to a non-HTTPS URL")
+        redirected = super().redirect_request(request, response, code, message, headers, newurl)
+        if redirected is not None and urlparse(newurl).hostname != urlparse(request.full_url).hostname:
+            redirected.remove_header("Authorization")
+        return redirected
+
+
+def _open_download(manifest, bundle, base):
+    github = manifest.get("github_release")
+    if github and base == manifest.get("download_base_url"):
+        asset_id = int(bundle["github_asset_id"])
+        url = f"https://api.github.com/repos/{github['repository']}/releases/assets/{asset_id}"
+        headers = {"Accept": "application/octet-stream", "User-Agent": "NuSrcAgent-input-installer",
+                   "Cache-Control": "no-cache"}
+        if github.get("private"):
+            headers["Authorization"] = "Bearer " + _github_token()
+        request = Request(url, headers=headers)
+        return build_opener(_AssetRedirectHandler()).open(request, timeout=120)
+    return urlopen(base.rstrip("/") + "/" + bundle["filename"], timeout=120)
 
 
 def sha256(path):
@@ -57,6 +105,8 @@ def preflight_source(root, sample=SAMPLES[0], mode=None, bundle_directory=None, 
         raise ValueError("Input bundles are prepared locally but not published yet. For local verification, use --bundle-dir PATH; a published checkout will contain the fixed download URL.")
     elif urlparse(base).scheme != "https":
         raise ValueError("The input-bundle download base URL must use HTTPS")
+    elif base == manifest.get("download_base_url") and manifest.get("github_release", {}).get("private"):
+        _github_token()
     return manifest, bundles, base
 
 
@@ -134,7 +184,7 @@ def install_inputs(root, sample=SAMPLES[0], mode=None, bundle_directory=None, ba
             if not _matching_file(archive, bundle):
                 partial = archive.with_suffix(archive.suffix + ".part")
                 print(f"Downloading {bundle['filename']} ({bundle['bytes'] / 1e6:.1f} MB)", file=sys.stderr, flush=True)
-                with urlopen(base.rstrip("/") + "/" + bundle["filename"], timeout=120) as response, partial.open("wb") as output:
+                with _open_download(manifest, bundle, base) as response, partial.open("wb") as output:
                     shutil.copyfileobj(response, output, 1024 * 1024)
                 if not _matching_file(partial, bundle):
                     raise ValueError(f"Downloaded archive hash mismatch: {bundle['filename']}")
