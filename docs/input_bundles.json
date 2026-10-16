@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "prepared_locally_not_published",
-  "download_base_url": null,
+  "status": "hosted_private_github_release",
+  "download_base_url": "https://github.com/beizhouphys/NuSrcAgent/releases/download/v0.2.0-private-alpha.4",
   "default_sample": "icecube_public_ps_14yr_dr2",
   "bundles": [
     {
@@ -200,7 +200,8 @@
           "sha256": "1363e6967a97e13f68f0d1f38117dc192bcbf5eba2bc3e6423e260589f364c78",
           "bytes": 41160
         }
-      ]
+      ],
+      "github_asset_id": 648113758
     },
     {
       "id": "dr2-background-v3",
@@ -258,7 +259,8 @@
           "sha256": "01428f39f3f24dfac3a5b755a5e11a6731ce2c62ccd7b0681bb25ce3653c60d9",
           "bytes": 90564691
         }
-      ]
+      ],
+      "github_asset_id": 648113762
     },
     {
       "id": "dr2-signal-IC40",
@@ -281,7 +283,8 @@
           "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
           "bytes": 8407
         }
-      ]
+      ],
+      "github_asset_id": 648113755
     },
     {
       "id": "dr2-signal-IC59",
@@ -304,7 +307,8 @@
           "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
           "bytes": 8407
         }
-      ]
+      ],
+      "github_asset_id": 648113756
     },
     {
       "id": "dr2-signal-IC79",
@@ -327,7 +331,8 @@
           "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
           "bytes": 8407
         }
-      ]
+      ],
+      "github_asset_id": 648113760
     },
     {
       "id": "dr2-signal-IC86_I-XI",
@@ -350,7 +355,8 @@
           "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
           "bytes": 8407
         }
-      ]
+      ],
+      "github_asset_id": 648115589
     },
     {
       "id": "dr1-supported",
@@ -463,9 +469,15 @@
           "sha256": "ec4e1c45bf4e41c36be92f5df989700eaa9253fb97b532c08015edaf26ca61d2",
           "bytes": 7819458
         }
-      ]
+      ],
+      "github_asset_id": 648115653
     }
   ],
   "source_notice": "docs/data_attribution.md",
-  "publication_note": "Pin the final HTTPS asset URL and repin this manifest before publication; never use an unverified latest input snapshot."
+  "publication_note": "The existing private-alpha Release hosts hash-pinned input assets only; this storage tag does not select the installed code version. No new tag or Release is required.",
+  "github_release": {
+    "repository": "beizhouphys/NuSrcAgent",
+    "tag": "v0.2.0-private-alpha.4",
+    "private": true
+  }
 }

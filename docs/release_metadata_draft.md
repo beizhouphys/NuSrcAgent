@@ -71,8 +71,8 @@ license: "<approved SPDX identifier, if applicable>"
    without a separate, explicit decision.
 3. Commit/sync only the reviewed release files after owner authorization.
    Run the configured Ubuntu/Python 3.12 CI on GitHub and address actual failures.
-   Until bundles are published, README must continue to identify the local-bundle
-   route and the pending public endpoint. A code push is not a release/tag.
+   The bundles are now hosted on the existing private-alpha Release and the
+   installer pins their asset IDs and hashes. A code push is not a new release/tag.
 
 ### Before claiming a complete, publicly installable release
 
@@ -81,10 +81,10 @@ license: "<approved SPDX identifier, if applicable>"
 5. Complete the smallest real DR2 spatial-only and DR1 single/catalog checks
    for the additional advertised paths. Keep workbook support explicitly optional
    with its current limitation; do not build a new installer solely for it.
-6. Publish the approved input bundles at fixed HTTPS URLs, update the bundled
-   download location and its pinned manifest hash, and repeat installation plus
-   both examples from the final GitHub candidate using only public instructions.
-   Local snapshots/local bundles do not close this public-download gate.
+6. The approved bundles now have pinned GitHub locations and hashes. Record
+   installation and both examples from a GitHub clean clone using the default
+   command and collaborator authentication. This private installation check
+   does not make the repository or its assets anonymously accessible.
 7. Refresh the file inventory and notes for the final candidate, record remaining
    scientific warnings, then obtain owner approval before fixing the release
    commit/tag and publishing. Additional runtime changes require proportionate

@@ -36,8 +36,8 @@ These are separate release gates, not optional tests silently skipped in CI:
    environment or inputs and no owner `PYTHONPATH`. Run `bash install.sh` using
    the published project-provided raw/v3/SEpdf bundles. Require archive and
    extracted-file SHA-256 verification and the full selected-data preflight.
-   Until a pinned public URL exists, mark this public-download check **pending**;
-   local `--bundle-dir` verification is not its substitute.
+   For this private repository use authenticated GitHub asset downloads;
+   local `--bundle-dir` verification is not their substitute.
 2. For default full14 DR2, run the full verifier explicitly:
 
    ```bash
@@ -104,10 +104,9 @@ collaborator code synchronization from completing the approved first release.
 The owner approved code version 0.2.0 and author Bei Zhou; license and final
 citation/publication metadata remain pending. No tag or GitHub Release is implied.
 
-- Upload the prepared raw-data/PDF assets and pin their HTTPS download location.
-- Clone from the final published GitHub candidate and install using its pinned
-  public HTTPS bundles, followed by both real examples and artifact reviews.
-  The local-snapshot/local-bundle check above does not close this public-path gate.
+- The seven raw-data/PDF assets are now hosted on the existing GitHub Release,
+  with a fixed HTTPS location, pinned asset IDs and verified GitHub SHA-256 values.
+  The authenticated GitHub clean-clone check is recorded separately below.
 - Keep optional workbook limitations explicit; workbook portability is not
   required for the numerical/CSV/PDF analysis paths.
 - Time-dependent integration and validation, including collaborator stacking code,

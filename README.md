@@ -4,9 +4,9 @@ NuSrcAgent coordinates natural-language requests, parameter confirmation,
 deterministic high-energy neutrino likelihood analysis, provenance and scientific
 review using IceCube public point-source data.
 
-This is a local release-preparation copy, not a tagged public release. Numerical
-examples have run in a fresh installation using local input bundles; public
-asset downloads and the complete first-release scope are not yet validated.
+This is the 0.2.0 time-integrated development snapshot, not a tagged public
+release. Project-provided inputs are hosted on GitHub and installed automatically.
+The complete first-release scope is not yet implemented or validated.
 
 ## Current support
 
@@ -23,8 +23,11 @@ not by themselves complete that scope.
 
 ## Installation
 
-Prerequisite: Python 3.12 on macOS/Linux. From the checkout root, the intended
-public installation is one command:
+Prerequisites: Python 3.12 on macOS/Linux and read access to this private GitHub
+repository. The installer reuses your existing `gh auth login`, Git HTTPS
+credentials, or `GH_TOKEN`/`GITHUB_TOKEN`. An SSH-only clone does not supply HTTPS
+download credentials; in that case log in with `gh auth login` once.
+From the checkout root:
 
 ```bash
 bash install.sh
@@ -34,14 +37,6 @@ The installer creates `.venv`, installs hash-locked dependencies and fetches our
 matching raw IceCube and frozen v3/SEpdf bundles. It extracts files to the required
 paths and verifies archive and per-file SHA-256 values. No manual IceCube download
 or PDF precalculation is needed. Re-running keeps already verified inputs.
-
-**Not yet available through the default command:** the bundles are prepared
-locally, but the public download URL is intentionally unset. Until publication,
-use a maintainer-provided local bundle directory:
-
-```bash
-bash install.sh --bundle-dir /absolute/path/to/release_assets
-```
 
 The default DR2 download is about 1.52 GB and extracts about 3.8 GiB, in addition
 to the environment and retained download/staging cache. Python itself is not

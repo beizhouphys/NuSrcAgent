@@ -1,17 +1,12 @@
 # One-command installation
 
 The bootstrap targets macOS/Linux and requires Python 3.12, `venv` and pip.
-It has been verified on macOS using local bundles; a public HTTPS installation
-and other platforms have not yet been validated. Run from the checkout root.
-
-**Current preparation copy:** the public download endpoint is unset. Obtain
-the prepared bundles from the maintainer and use their absolute directory:
-
-```bash
-bash install.sh --bundle-dir /absolute/path/to/release_assets
-```
-
-**After the bundles are published and their URL is pinned:**
+Run from the checkout root. Inputs are hosted on GitHub, not fetched manually
+from IceCube. The repository is private: collaborators need repository read
+access and an existing GitHub HTTPS login (`gh auth login`, Git credential
+helper, or `GH_TOKEN`/`GITHUB_TOKEN`). An SSH key alone cannot authenticate an
+HTTPS asset download; SSH-only users must log in with `gh auth login` once.
+No maintainer credentials are included in the checkout or written by installation.
 
 ```bash
 bash install.sh
@@ -43,21 +38,25 @@ manifest and rejects other snapshots. `raw_input_manifest.json`,
 `pdf_release_manifest.json` and the separate DR1 manifest retain their numerical
 identity checks. Frozen bytes are never rebuilt or silently replaced.
 
-## During release preparation
+## Download location and authentication
 
-After publishing the approved assets, the maintainer sets the fixed HTTPS
-`download_base_url` in the bundled manifest and updates the code's pinned
-manifest hash. Users then need only the default command. An explicit mirror can
-be supplied through `--base-url`; it must serve the same hash-pinned files.
+All seven assets are hosted in the existing `v0.2.0-private-alpha.4` Release.
+That tag is only an input-storage location, not the installed code version
+(currently 0.2.0); no existing tag was moved and no new tag/Release was created.
+The shipped manifest pins the HTTPS location, numeric GitHub asset IDs, and
+archive/member hashes. Private assets are downloaded through the GitHub API
+using your own credentials; authorization is removed before cross-host redirects.
+An explicit mirror can be supplied through `--base-url`; it must serve the same
+hash-pinned files. A maintainer-provided local directory is also supported with
+`--bundle-dir /absolute/path/to/release_assets`.
 No mutable latest-input selection or automatic upstream data substitution occurs.
 
 ## Options and repeated installation
 
 ```bash
-# Current local-bundle route; omit --bundle-dir only after URL publication.
-bash install.sh --bundle-dir /absolute/path/to/release_assets --data-sample icecube_public_ps_10yr
-bash install.sh --bundle-dir /absolute/path/to/release_assets --likelihood-mode spatial_only
-.venv/bin/python run_agent_wrap.py install-inputs --bundle-dir /absolute/path/to/release_assets
+bash install.sh --data-sample icecube_public_ps_10yr
+bash install.sh --likelihood-mode spatial_only
+.venv/bin/python run_agent_wrap.py install-inputs
 .venv/bin/python verify_private_alpha_setup.py --hashes
 ```
 
@@ -83,5 +82,4 @@ checkpoints. Bundle contents and exact sizes are in [input_bundles.json](input_b
 
 After a successful installation, follow the [minimal examples](quickstart.md).
 Installation/hash checks confirm environment and input identity, not scientific
-validity; the [verification record](input_installation_verification.md) separates
-completed local checks from the pending public download-path check.
+validity; see the [verification record](input_installation_verification.md).

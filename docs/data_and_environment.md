@@ -7,8 +7,9 @@ set using `requirements_skyllh_v26_lock.txt` with pip `--require-hashes`.
 All scientific paths are relative to the checkout root. `bash install.sh`
 creates the environment and installs the selected project-provided raw data and
 PDF bundles automatically. Users do not need to visit IceCube or choose files.
-Public asset upload and the fixed download URL are pending; the complete local
-route is `bash install.sh --bundle-dir /path/to/release_assets`.
+All seven bundles are hosted on the existing GitHub Release and their URLs,
+asset IDs and hashes are pinned. Private downloads reuse the collaborator's
+GitHub login; `bash install.sh` needs no local bundle directory.
 See [installation details](input_installation.md) and [attribution](data_attribution.md).
 
 ## DR2 full14

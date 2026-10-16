@@ -16,8 +16,9 @@ these version numbers.
   stacking; spatial+energy fits ns/Gamma, spatial-only uses fixed acceptance Gamma.
 - Existing DR1 spatial-only capabilities retained with separate inputs.
 - Python 3.12 hash-locked environment and one-command bootstrap for the prepared
-  raw-data, frozen v3 background and SEpdf bundles. Local installation verified;
-  the public download endpoint is not published yet.
+  raw-data, frozen v3 background and SEpdf bundles. All seven bundles are hosted
+  on the existing private-alpha Release, with pinned asset IDs and hashes;
+  installation reuses collaborators' GitHub credentials. No new tag/Release.
 - Persistent tasks, configuration/input/code provenance and scientific reviews;
   two documented examples reproduced from an independent local Git clone.
 - No-data CI configured; the GitHub Ubuntu run remains pending.
