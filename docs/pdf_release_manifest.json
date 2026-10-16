@@ -1,0 +1,88 @@
+{
+  "background_version": "v3",
+  "original_frozen_manifest_sha256": "65ef8d7b84ae634f6ee58f046d7ccfac62a54616d2be7d14219de9fa2f88c6e3",
+  "original_background_provenance_sha256": "e9669a1545152a3c24acb7de36a0e366d09f3577f6948fe68f6f1dc9eca76828",
+  "original_signal_provenance_sha256": "48cbe07c56fe2137376a9c0d1848496b871f1a58a1a05e69e2f6c27f924417f3",
+  "numerical_changes": false,
+  "files": [
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/background_model_IC40_DR2_v3_cdx.npz",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC40_DR2_v3.npz",
+      "sha256": "bf81bcfd9b07b26f195275c77ac4de93b20e3ea28f2e8196b62e0736ee626058",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/bkgd_pdf_IC40_exp_DR2_cdx.txt",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC40_exp_DR2.txt",
+      "sha256": "c83723e5add3cccaa7cc3ff9a9085167ba7f58c0f5d34062ecd64e94345c27eb",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/background_model_IC59_DR2_v3_cdx.npz",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC59_DR2_v3.npz",
+      "sha256": "01dfabfc1827ce32b69b58a422312450e8db7b93da2b704c9e528d3f03c12847",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/bkgd_pdf_IC59_exp_DR2_cdx.txt",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC59_exp_DR2.txt",
+      "sha256": "ec6ee6069ca49a2cc767a02b9413227dc8b5fb6235b6589ba0ce9686d6a05f9a",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/background_model_IC79_DR2_v3_cdx.npz",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC79_DR2_v3.npz",
+      "sha256": "af3c5ca62dce1b7b5dd3af12d0cc687843c794fda107076bd1cdda15ef36bc0c",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/bkgd_pdf_IC79_exp_DR2_cdx.txt",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC79_exp_DR2.txt",
+      "sha256": "d81a91ed13e311dd33ca7d94c574573d3e77f7653a2273edf83607290eb4d3d3",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/background_model_IC86_I-XI_DR2_v3_cdx.npz",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC86_I-XI_DR2_v3.npz",
+      "sha256": "1bcb43f73a3384f3804dce7054cc291577856fa1cbee5e83a45fe57be66d6234",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/bkgd_pdfs_cdx/14yr_dr2_v3_cdx/bkgd_pdf_IC86_I-XI_exp_DR2_cdx.txt",
+      "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC86_I-XI_exp_DR2.txt",
+      "sha256": "01428f39f3f24dfac3a5b755a5e11a6731ce2c62ccd7b0681bb25ce3653c60d9",
+      "kind": "background_v3"
+    },
+    {
+      "source": "data_output/signal_energy_pdfs_cdx/14yr_dr2_cdx/signal_energy_pdf_powerlaw_IC40_DR2_cdx.npz",
+      "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC40_DR2.npz",
+      "sha256": "059a7055ece57775878b613d06de081dc6e1b5707f50ba33af648b633e8a5ae8",
+      "kind": "signal_powerlaw"
+    },
+    {
+      "source": "data_output/signal_energy_pdfs_cdx/14yr_dr2_cdx/signal_energy_pdf_powerlaw_IC59_DR2_cdx.npz",
+      "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC59_DR2.npz",
+      "sha256": "3543c316c27707d44ba9bc47c91dcec4c37072c9bd8cad10663aa9284d521551",
+      "kind": "signal_powerlaw"
+    },
+    {
+      "source": "data_output/signal_energy_pdfs_cdx/14yr_dr2_cdx/signal_energy_pdf_powerlaw_IC79_DR2_cdx.npz",
+      "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC79_DR2.npz",
+      "sha256": "bff8d3165222581f934d66515137c41318ae7fe3c8c8f6217fcbe166fa52fd78",
+      "kind": "signal_powerlaw"
+    },
+    {
+      "source": "data_output/signal_energy_pdfs_cdx/14yr_dr2_cdx/signal_energy_pdf_powerlaw_IC86_I-XI_DR2_cdx.npz",
+      "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC86_I-XI_DR2.npz",
+      "sha256": "a12085b5d5b9413ef04316b9ec4526f7e8dc53ef2878f9c7e82c8c93b206af99",
+      "kind": "signal_powerlaw"
+    }
+  ],
+  "limitations": [
+    "IC79 horizon held-out residual persists:180-320GeV predicted62.4643 vs38;101-180GeV predicted16.0402 vs8.",
+    "Gamma upper-boundary fits persist in7/10 catalogs for both v2 and candidate; no calibrated null distribution for this pattern.",
+    "Two partitions reuse experimental data;10 catalogs share events. No publication-level significance or coverage validation.",
+    "BSpdf and pooled IC86 PDFs unchanged; SEpdf and detector response not newly validated."
+  ],
+  "pre_path_migration_background_provenance_sha256": "a992a64e14bdb7ba6123c8c98e3d5d431f0b6140b76e1b109832bffd4ed4f421"
+}

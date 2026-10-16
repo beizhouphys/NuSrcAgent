@@ -1,6 +1,0 @@
-name: nusrcagent-cdx
-channels:
-  - conda-forge
-dependencies:
-  - python=3.8.15
-  - numpy=1.24.4

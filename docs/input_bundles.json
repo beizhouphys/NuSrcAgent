@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "status": "prepared_locally_not_published",
+  "download_base_url": null,
+  "default_sample": "icecube_public_ps_14yr_dr2",
+  "bundles": [
+    {
+      "id": "dr2-raw",
+      "kind": "raw",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-raw-9345006ec859.tar.gz",
+      "snapshot_sha256": "9345006ec8591b031868a6006ea3502704a8877c7f22c5e2068fb633673c12c9",
+      "sha256": "86b67b81c4ebeb504d6e3bac00eb324561faf6add76c890ce1356a0791d4b334",
+      "bytes": 140139930,
+      "files": [
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/DR2_readme.txt",
+          "sha256": "b9fb11dc8136cec79541208efebf1a0684628c70fed76b6d40c8e6d3d691f802",
+          "bytes": 10585
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC40_exp.csv",
+          "sha256": "5239df7ffcdb5f62ab80d994527e974c553b980a7b5296269d9d816ee335bf6e",
+          "bytes": 4834035
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC59_exp.csv",
+          "sha256": "37c0075aca5b8f280184058b9fb5b63764c6e15ca746915f064f3714cec0f05b",
+          "bytes": 14018583
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC79_exp.csv",
+          "sha256": "7c4d8cbd0418575453bad56df9ac0321bf93994b8153405afd80489cc3fbeb5a",
+          "bytes": 13356378
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_III_exp.csv",
+          "sha256": "1a39d47d62f2fcee66345d46a6bd86bf121e0a63d8ee369f00e43ca52616bcdb",
+          "bytes": 16576227
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_II_exp.csv",
+          "sha256": "ec88b8d3c749dd8b3ef5296fcfc8500f0d85c84f15f453d6ed19a53c1251c398",
+          "bytes": 15283781
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_IV_exp.csv",
+          "sha256": "e4ea3efc74ad8fd64a9377affc24776a06ca1a590e1f321e89a018c3fb8350c6",
+          "bytes": 16967262
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_IX_exp.csv",
+          "sha256": "cb29bc7f82e5e056f8b150fa5f53fe8436acc7b68ead49f8ed67b4fc3e46bfd3",
+          "bytes": 14780872
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_I_exp.csv",
+          "sha256": "4b57a19db4dad7c725391f2e6e6c742b5f2b40e13c156881cb6a7649c2eb823e",
+          "bytes": 15559536
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VIII_exp.csv",
+          "sha256": "680cad97a342e77173e108bdda3aa29570c0e61c29bc3fda4bc1c8cd66eb2183",
+          "bytes": 17228738
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VII_exp.csv",
+          "sha256": "8cb60ad7dfdb2529c988e99eef439a379172caf9ecbe29d6c791b9b56bb59665",
+          "bytes": 19317402
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VI_exp.csv",
+          "sha256": "37cf9e40fd68082ad2fdb094fa1011ce8a503f0e52ba5a350eea305cff147db7",
+          "bytes": 16540202
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_V_exp.csv",
+          "sha256": "f7a38ea05c5aba77b02b3fe2d8b5cd404c74afc703aa465e5653bf76bdfc3e61",
+          "bytes": 17081101
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_XI_exp.csv",
+          "sha256": "bbe3c017d5ff45233583319aacce601dd7f3b63bccac33437560e4c18c8c933f",
+          "bytes": 16728187
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_X_exp.csv",
+          "sha256": "6f837dcfaf4d51a7de48802009bbb270cf4be69f0f598905dd31885b22eb933c",
+          "bytes": 17009182
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_effectiveArea.csv",
+          "sha256": "08738151de05613083d410f36e8696238ba01298d0c66a2622ea949cc9fe9bc7",
+          "bytes": 148112
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_smearing.csv",
+          "sha256": "36e2c8a67ace195c7b9ad8881f6e7b1dd5a951e34d628ce9825fcb8694bd2bab",
+          "bytes": 598080195
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_effectiveArea.csv",
+          "sha256": "bc7b4d3141ba7e372afa2e1a187c87a5282fc988c7c30bbd03f7d399340701bf",
+          "bytes": 148101
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_smearing.csv",
+          "sha256": "5fed1a9222a365e721a64162afd3b4f89f92a722fcec8083b4b97d53eb276cbe",
+          "bytes": 598080195
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_effectiveArea.csv",
+          "sha256": "c2eb192ae52303e81b046731cf51ace1b7b22da10f15fc51767cfae587028aff",
+          "bytes": 148103
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_smearing.csv",
+          "sha256": "2a4b4b27b3e3a6b302dabf9076f24c88d6e3cb7eb523debf106d110b6ff6371b",
+          "bytes": 598080195
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_effectiveArea.csv",
+          "sha256": "3c77fcfaad2d3cf4b950981b7794d0b784e568a0426994b92c8d8cffaef0f162",
+          "bytes": 148107
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_smearing.csv",
+          "sha256": "6b7c32617dd27e1b0ee08fcc884220a69f5111c65bbc7e2b4ba57a72f3cce085",
+          "bytes": 598080195
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC40_exp.csv",
+          "sha256": "370654c0f8148b9c04f2359f707f5bb73779dac910979ace51d84beaaa34c23d",
+          "bytes": 49735
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC59_exp.csv",
+          "sha256": "4e42ddc9c85cfa56878fff01358f065c4906ddf6a641ce8ed46d5604bf969dc4",
+          "bytes": 43365
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC79_exp.csv",
+          "sha256": "90e1180aa3440d123f4948cca953eeb6df3437599231baf7e71ee26f49759020",
+          "bytes": 64750
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_III_exp.csv",
+          "sha256": "e879c4643aa4eb0b3292349c199770a62674fac27ec06a9258f6c977a72c27e7",
+          "bytes": 78855
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_II_exp.csv",
+          "sha256": "bd685a6cc297f09ac52171f6cee195739c89823e9b3c1712b2b076ce41e5cd48",
+          "bytes": 138425
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_IV_exp.csv",
+          "sha256": "b22b55e9e22fcb94d8f6bd4f097280b0ed5f99e1f1f283704a22b0926a0ade55",
+          "bytes": 49455
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_IX_exp.csv",
+          "sha256": "934d7f7822af088919847f253ee20837ae9a9732148a820eeee7ebb5b48f1e34",
+          "bytes": 39130
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_I_exp.csv",
+          "sha256": "9cd1efb06ba1a150ba5b6ba1571f934d44982070384bc908bd2995826ffca4fe",
+          "bytes": 69755
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VIII_exp.csv",
+          "sha256": "daa1bc6e55b8cc11626ca10e3ee0797962378fdf182c4f3d9accc96dd859399a",
+          "bytes": 45675
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VII_exp.csv",
+          "sha256": "e261fff2f6d0886a8305a948ba30931f7b9b3fba63dd7384acfe0e8c55f414d0",
+          "bytes": 50645
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VI_exp.csv",
+          "sha256": "01fa2be27ecfed9f811ee2666ac4973aa76e996e6a032c6bf5a0e980ae0b11f1",
+          "bytes": 43750
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_V_exp.csv",
+          "sha256": "329123557f158407b7640b9bc4fef155c93771d49a433b6cac52c1180bdeb4c7",
+          "bytes": 47145
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_XI_exp.csv",
+          "sha256": "f56317ad87b4c40ed277ede2c5b7281ec830a76a740a418b309a328b2f506285",
+          "bytes": 42665
+        },
+        {
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_X_exp.csv",
+          "sha256": "1363e6967a97e13f68f0d1f38117dc192bcbf5eba2bc3e6423e260589f364c78",
+          "bytes": 41160
+        }
+      ]
+    },
+    {
+      "id": "dr2-background-v3",
+      "kind": "background_v3",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-background-v3-acd98de304a5.tar.gz",
+      "snapshot_sha256": "acd98de304a54090250a7f0805be9e1012d80ec1f446f7b59851c74d4776a6c0",
+      "sha256": "ad7e113e56feacff95948d22d49caeef50f6bd026ca7637a7abcce6b2e5a91fb",
+      "bytes": 153263399,
+      "files": [
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC40_DR2_v3.npz",
+          "sha256": "bf81bcfd9b07b26f195275c77ac4de93b20e3ea28f2e8196b62e0736ee626058",
+          "bytes": 17331940
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC59_DR2_v3.npz",
+          "sha256": "01dfabfc1827ce32b69b58a422312450e8db7b93da2b704c9e528d3f03c12847",
+          "bytes": 39617734
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC79_DR2_v3.npz",
+          "sha256": "af3c5ca62dce1b7b5dd3af12d0cc687843c794fda107076bd1cdda15ef36bc0c",
+          "bytes": 25687289
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC86_I-XI_DR2_v3.npz",
+          "sha256": "1bcb43f73a3384f3804dce7054cc291577856fa1cbee5e83a45fe57be66d6234",
+          "bytes": 24314664
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/background_pdf_provenance_DR2_v3.json",
+          "sha256": "3e6b8f3e3c4d95d9a1bdba25ddff00a08cb233307ada18af8c7638a95e31c027",
+          "bytes": 2257
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC40_exp_DR2.txt",
+          "sha256": "c83723e5add3cccaa7cc3ff9a9085167ba7f58c0f5d34062ecd64e94345c27eb",
+          "bytes": 2402238
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC59_exp_DR2.txt",
+          "sha256": "ec6ee6069ca49a2cc767a02b9413227dc8b5fb6235b6589ba0ce9686d6a05f9a",
+          "bytes": 6964761
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC79_exp_DR2.txt",
+          "sha256": "d81a91ed13e311dd33ca7d94c574573d3e77f7653a2273edf83607290eb4d3d3",
+          "bytes": 6603672
+        },
+        {
+          "path": "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC86_I-XI_exp_DR2.txt",
+          "sha256": "01428f39f3f24dfac3a5b755a5e11a6731ce2c62ccd7b0681bb25ce3653c60d9",
+          "bytes": 90564691
+        }
+      ]
+    },
+    {
+      "id": "dr2-signal-IC40",
+      "kind": "signal_energy",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-signal-IC40-c6daea6b8985.tar",
+      "snapshot_sha256": "c6daea6b8985296dcb59df2267bf6c4ba87bce622037b3005bcae3cbaffa5da4",
+      "sha256": "ab2dbc9c90672a4a6b0f4d2be075988553f191fd5926f4b8d8117e7217eb4752",
+      "bytes": 230266880,
+      "files": [
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC40_DR2.npz",
+          "sha256": "059a7055ece57775878b613d06de081dc6e1b5707f50ba33af648b633e8a5ae8",
+          "bytes": 230248259
+        },
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_provenance_DR2.json",
+          "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
+          "bytes": 8407
+        }
+      ]
+    },
+    {
+      "id": "dr2-signal-IC59",
+      "kind": "signal_energy",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-signal-IC59-111ff57137fa.tar",
+      "snapshot_sha256": "111ff57137face5ba1d02ac8e2125dcc1370f3a78f96a201558f6dd0c5b9dd41",
+      "sha256": "7b927ee0f0ad21b85bb318547ae6900b5a4cff64b318d2b796e0527a40942426",
+      "bytes": 285173760,
+      "files": [
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC59_DR2.npz",
+          "sha256": "3543c316c27707d44ba9bc47c91dcec4c37072c9bd8cad10663aa9284d521551",
+          "bytes": 285161100
+        },
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_provenance_DR2.json",
+          "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
+          "bytes": 8407
+        }
+      ]
+    },
+    {
+      "id": "dr2-signal-IC79",
+      "kind": "signal_energy",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-signal-IC79-31c533ab141d.tar",
+      "snapshot_sha256": "31c533ab141d5d862dc9a3a220bec2abe83c1ae9bf15ab51e41bf6f5e71037a9",
+      "sha256": "fb5cdd57e1ed843f3fca3e52c62225b6ed93f0ad7bd71371dfbc42aff7f1ed46",
+      "bytes": 340203520,
+      "files": [
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC79_DR2.npz",
+          "sha256": "bff8d3165222581f934d66515137c41318ae7fe3c8c8f6217fcbe166fa52fd78",
+          "bytes": 340187005
+        },
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_provenance_DR2.json",
+          "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
+          "bytes": 8407
+        }
+      ]
+    },
+    {
+      "id": "dr2-signal-IC86_I-XI",
+      "kind": "signal_energy",
+      "samples": [
+        "icecube_public_ps_14yr_dr2"
+      ],
+      "filename": "nusrc-dr2-signal-IC86_I-XI-eddc2098bf9a.tar",
+      "snapshot_sha256": "eddc2098bf9ad4221337c0aab2ab2b4dd01448293aea5ae833c8af25272b42cd",
+      "sha256": "3669c0eaf0378e94393e39af01a77fb8bf7e367be74f95af18043cf892999735",
+      "bytes": 373708800,
+      "files": [
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC86_I-XI_DR2.npz",
+          "sha256": "a12085b5d5b9413ef04316b9ec4526f7e8dc53ef2878f9c7e82c8c93b206af99",
+          "bytes": 373694794
+        },
+        {
+          "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_provenance_DR2.json",
+          "sha256": "449895bf4f6e99c4f0248b1f19be02349697811f6231e9b4eeebab4bfa88c3cf",
+          "bytes": 8407
+        }
+      ]
+    },
+    {
+      "id": "dr1-supported",
+      "kind": "dr1_supported_inputs",
+      "samples": [
+        "icecube_public_ps_10yr"
+      ],
+      "filename": "nusrc-dr1-supported-61f54fcd6070.tar.gz",
+      "snapshot_sha256": "61f54fcd60708cb47b5fe2fab8c252cf2f6850d315fc4d1daae82f1065274f8b",
+      "sha256": "60c44e81a1c8ceee7a3b793aefff6cbe574f01c027aad0cfa3d62c2443b7cc68",
+      "bytes": 61601326,
+      "files": [
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC40_exp.csv",
+          "sha256": "23d633925cb22cccb9530376b1de51ccd3fa2696fc49c1955bc8a9dafef035a0",
+          "bytes": 3763900
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC59_exp.csv",
+          "sha256": "55fb7cf070b7d9503c9d7a10a4d0e9100b6984c94fc57cf043b73190b22e1fcd",
+          "bytes": 10915222
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC79_exp.csv",
+          "sha256": "b3c6f3a73e084fd2a2fec29d3396567a4ad9905ebc8c1959e8fbf1f1cf28d482",
+          "bytes": 9499666
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv",
+          "sha256": "baa6e88ee238eb04dd9bd8e21b4dab609c93bd48c8aa4dabb55f1ab5be408330",
+          "bytes": 71525201
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_I_exp.csv",
+          "sha256": "13b59456c19e3668ae5dd1be2b987377c834fce1a7c2090a841860ce2a978854",
+          "bytes": 13896988
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv",
+          "sha256": "fccb322a3f3ea453bf3bc06200cc84f5e457e5a5899c78c90e815a1e04bb33cd",
+          "bytes": 148112
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC59_effectiveArea.csv",
+          "sha256": "36bcc1e3bd318092f746e9180e8d04d197e3724144cf48fffbe83e1eada9720e",
+          "bytes": 148101
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC79_effectiveArea.csv",
+          "sha256": "7a02cb089d6c5fbd7ab3673e1fc39f0607c5d7462c8b2dea5d3ea57db95ed5a2",
+          "bytes": 148104
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_II_effectiveArea.csv",
+          "sha256": "254454a2bd7b92b73c780053232a901f268ec0a2b325ab8021c528228515e4ca",
+          "bytes": 172166
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_I_effectiveArea.csv",
+          "sha256": "cc21c6f58e1c117f5d63433dc51733b2665a4c2a07510a5c12b061d76088d7c7",
+          "bytes": 148180
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv",
+          "sha256": "370654c0f8148b9c04f2359f707f5bb73779dac910979ace51d84beaaa34c23d",
+          "bytes": 49735
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv",
+          "sha256": "4e42ddc9c85cfa56878fff01358f065c4906ddf6a641ce8ed46d5604bf969dc4",
+          "bytes": 43365
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv",
+          "sha256": "9c245890ad07bf15d162230565aee9f3f8ed5b0bc6e8b41fb13e237a8711058c",
+          "bytes": 36750
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II2VII_exp_BZ.csv",
+          "sha256": "c674bdc7669b8018e00d7943bd61fbe096c74161be4e49047586456986bda027",
+          "bytes": 284165
+        },
+        {
+          "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv",
+          "sha256": "f6619fcc927e5d79a53d5f43e34c59de0b1773457386e0bcdb86cfed9b3f9f3f",
+          "bytes": 37870
+        },
+        {
+          "path": "data_output/bkgd_pdfs/bkgd_pdf_IC40_exp.txt",
+          "sha256": "4f65ef2c2704cc5e0eb24d520fb6be3ccab099812386d317712a88fe25a77b3f",
+          "bytes": 2122810
+        },
+        {
+          "path": "data_output/bkgd_pdfs/bkgd_pdf_IC59_exp.txt",
+          "sha256": "f482a3ee808cc5d371cfd892aaaf6f1898b8107afc83e58bdacbae5400c3fdfc",
+          "bytes": 6162130
+        },
+        {
+          "path": "data_output/bkgd_pdfs/bkgd_pdf_IC79_exp.txt",
+          "sha256": "4f29be0d345a0e2055a6df73f96ff2a0bbae0a2ad068095bb22039673b4dacda",
+          "bytes": 5351898
+        },
+        {
+          "path": "data_output/bkgd_pdfs/bkgd_pdf_IC86_II2VII_exp_BZ.txt",
+          "sha256": "21bce6a7120ed18c42539ef5e52437e85c2948d265187442e720c4c0daf497ca",
+          "bytes": 43617379
+        },
+        {
+          "path": "data_output/bkgd_pdfs/bkgd_pdf_IC86_I_exp.txt",
+          "sha256": "ec4e1c45bf4e41c36be92f5df989700eaa9253fb97b532c08015edaf26ca61d2",
+          "bytes": 7819458
+        }
+      ]
+    }
+  ],
+  "source_notice": "docs/data_attribution.md",
+  "publication_note": "Pin the final HTTPS asset URL and repin this manifest before publication; never use an unverified latest input snapshot."
+}

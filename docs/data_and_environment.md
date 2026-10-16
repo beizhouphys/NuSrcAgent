@@ -1,74 +1,62 @@
-# Data, Environment, and Collaboration
+# Data and environment
 
-## Environment
+The combined environment uses Python 3.12, SkyLLH 26.0.0, NumPy 2.5.1,
+SciPy 1.18.0, Astropy 8.0.1 and ReportLab 5.0.0. Install the exact dependency
+set using `requirements_skyllh_v26_lock.txt` with pip `--require-hashes`.
 
-Both the default IceTracks-DR2 14-year SkyLLH backend and the selectable
-legacy 10-year backend use one project-local Python 3.12 environment:
+All scientific paths are relative to the checkout root. `bash install.sh`
+creates the environment and installs the selected project-provided raw data and
+PDF bundles automatically. Users do not need to visit IceCube or choose files.
+Public asset upload and the fixed download URL are pending; the complete local
+route is `bash install.sh --bundle-dir /path/to/release_assets`.
+See [installation details](input_installation.md) and [attribution](data_attribution.md).
 
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install --require-hashes -r requirements_skyllh_v26_lock_cdx.txt
-.venv/bin/python run_agent_wrap_cdx.py environment-check
-```
+## DR2 full14
 
-The pinned stack is SkyLLH 26.0.0, NumPy 2.5.1, SciPy 1.18.0, and Astropy
-8.0.1, plus ReportLab 5.0.0 for legacy report artifacts. The hash-locked file
-contains exact transitive dependencies; `requirements_skyllh_v26_cdx.txt` is
-the shorter direct-dependency source used to regenerate it.
+Raw release directory:
+`data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/`.
+It contains `DR2_readme.txt`, 14 event and uptime season files (IC40, IC59, IC79,
+IC86 I–XI), and the IC40/59/79/86 effective-area and smearing CSV files.
+The analysis pools IC86 I–XI and uses 1,643,355 events without default cuts.
+The raw file hashes are recorded in `raw_input_manifest.json` in this directory.
 
-Run the selected sample's preflight before every analysis:
+Frozen v3 background products live in `data_output/bkgd_pdfs/14yr_dr2_v3/`:
+four `background_model_<dataset>_DR2_v3.npz` files and four aligned
+`bkgd_pdf_<dataset>_exp_DR2.txt` tables. The production datasets are IC40,
+IC59, IC79 and IC86_I-XI. These are byte-identical copies of the approved
+frozen numerical artifacts, not recalculated models.
 
-```bash
-.venv/bin/python run_agent_wrap_cdx.py environment-check --data-sample icecube_public_ps_14yr_dr2
-.venv/bin/python run_agent_wrap_cdx.py environment-check --data-sample icecube_public_ps_14yr_dr2 --likelihood-mode spatial_only
-.venv/bin/python run_agent_wrap_cdx.py environment-check --data-sample icecube_public_ps_10yr
-```
+Signal-energy tables live in `data_output/signal_energy_pdfs/14yr_dr2/`:
+four `signal_energy_pdf_powerlaw_<dataset>_DR2.npz` files. The copied provenance
+retains input IRF hashes, table axes and normalization/interpolation checks.
+Original host paths and construction timings are omitted.
 
-The Skill always invokes `.venv/bin/python`; it never depends on a temporary
-environment or whichever `python3` happens to be active. SkyLLH source code and
-the virtual environment are not copied into the repository: exact versions and
-artifact hashes in the lock file make installation reproducible for each user.
-The older Conda specification is retained only as historical private-alpha
-provenance and is not the supported combined runtime.
+`pdf_release_manifest.json` maps original numerical paths to release paths and
+retains their original SHA-256 values and original provenance identities.
+The runtime pins the derived manifest, verifies v3 files before loading, verifies
+signal table hashes before interpolation, and checks background event alignment.
+Spatial-only does not load or require the signal-energy tables.
 
-## Included Data
+## DR1
 
-The private Git checkout includes the audited subset required by the callable backend:
+Use `icecube_public_ps_10yr` explicitly. The directory is
+`data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/`.
+The required subset consists of five event files in `events/uncorrected_probably/`,
+five uptime files, five effective-area files and five background tables under
+`data_output/bkgd_pdfs/`. Exact paths and hashes are listed in
+`../data_manifest_private_alpha.json`. These include the historical pooled
+IC86 II–VII product; it must not be silently replaced with DR2 events.
+DR2 v3 is never substituted for DR1 background inputs.
 
-- five IceCube event samples;
-- five uptime tables;
-- five effective-area tables;
-- five derived background PDF tables.
-
-The local DR2 analysis additionally requires the IceTracks-DR2 release plus
-the pre-calculated tables under `data_output/bkgd_pdfs_cdx/14yr_dr2_cdx/` and
-`data_output/signal_energy_pdfs_cdx/14yr_dr2_cdx/`. Their provenance JSON files
-record input/output SHA-256 values, package versions, axes, normalization
-checks, and interpolation validation. These large products are not rebuilt by
-an analysis run.
-
-The preflight is likelihood-mode aware. DR2 spatial+energy requires both
-background and signal-energy products. DR2 spatial-only requires the event,
-uptime, IRF, and background spatial-PDF products but does not require or load
-the signal-energy tables.
-
-`data_manifest_private_alpha_cdx.json` records every required path and SHA-256 value. Verify the clone with:
+## Verification
 
 ```bash
-.venv/bin/python verify_private_alpha_setup_cdx.py --hashes
+.venv/bin/python run_agent_wrap.py environment-check --data-sample icecube_public_ps_14yr_dr2
+.venv/bin/python verify_private_alpha_setup.py --hashes
+.venv/bin/python verify_private_alpha_setup.py --data-sample icecube_public_ps_10yr --hashes
 ```
 
-Generated analysis products and unrelated local data are excluded from Git.
-
-## Workbook Output
-
-CSV and PDF outputs use the Python backend. Excel workbook generation additionally requires Node.js and `@oai/artifact-tool`; Codex may supply these through its bundled runtime. If unavailable, review reports the missing workbook rather than silently claiming full completion.
-
-## Private Collaboration
-
-Add collaborators by GitHub username. Each collaborator should authenticate with their own account; never share account passwords.
-
-Keep `main` usable, use short-lived branches for development, and record scientific parameter changes explicitly in pull requests. Do not make the repository or included data public until data terms, provenance, software license, authorship, affiliation, and citation metadata are settled.
-
-Problem reports should include the task ID, terminal state, `agent_review_cdx.json`, and the relevant run `review_cdx.json`, but not private or unpublished source catalogs.
+The optional DR1 workbook builder uses Node.js and `@oai/artifact-tool` installed
+under this checkout's `node_modules/`. A public installation route for that
+optional dependency remains pending. CSV and PDF outputs are independent of
+the workbook; missing workbook support is reported as a warning.

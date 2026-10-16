@@ -1,0 +1,30 @@
+{
+  "artifact_label": "v3",
+  "released_date": "2026-09-15",
+  "status": "project_default_with_scientific_warnings",
+  "parent_artifact": "v3-RC1",
+  "parent_sha256": "65ef8d7b84ae634f6ee58f046d7ccfac62a54616d2be7d14219de9fa2f88c6e3",
+  "owner_approved_default": true,
+  "numerical_changes": false,
+  "publication_level_validation": false,
+  "decision": "Owner approved renaming frozen RC1 as project v3 and switching default loaders; historical RC1 manifests and v2 products remain unchanged.",
+  "limitations": [
+    "IC79 horizon held-out residual persists:180-320GeV predicted62.4643 vs38;101-180GeV predicted16.0402 vs8.",
+    "Gamma upper-boundary fits persist in7/10 catalogs for both v2 and candidate; no calibrated null distribution for this pattern.",
+    "Two partitions reuse experimental data;10 catalogs share events. No publication-level significance or coverage validation.",
+    "BSpdf and pooled IC86 PDFs unchanged; SEpdf and detector response not newly validated."
+  ],
+  "parent_manifest": "docs/pdf_release_manifest.json",
+  "files": {
+    "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC40_DR2_v3.npz": "bf81bcfd9b07b26f195275c77ac4de93b20e3ea28f2e8196b62e0736ee626058",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC40_exp_DR2.txt": "c83723e5add3cccaa7cc3ff9a9085167ba7f58c0f5d34062ecd64e94345c27eb",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC59_DR2_v3.npz": "01dfabfc1827ce32b69b58a422312450e8db7b93da2b704c9e528d3f03c12847",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC59_exp_DR2.txt": "ec6ee6069ca49a2cc767a02b9413227dc8b5fb6235b6589ba0ce9686d6a05f9a",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC79_DR2_v3.npz": "af3c5ca62dce1b7b5dd3af12d0cc687843c794fda107076bd1cdda15ef36bc0c",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC79_exp_DR2.txt": "d81a91ed13e311dd33ca7d94c574573d3e77f7653a2273edf83607290eb4d3d3",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/background_model_IC86_I-XI_DR2_v3.npz": "1bcb43f73a3384f3804dce7054cc291577856fa1cbee5e83a45fe57be66d6234",
+    "data_output/bkgd_pdfs/14yr_dr2_v3/bkgd_pdf_IC86_I-XI_exp_DR2.txt": "01428f39f3f24dfac3a5b755a5e11a6731ce2c62ccd7b0681bb25ce3653c60d9"
+  },
+  "owner_approved_formal_version": true,
+  "next_definition_version": "v4"
+}

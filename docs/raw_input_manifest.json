@@ -1,0 +1,153 @@
+{
+  "sample": "icecube_public_ps_14yr_dr2",
+  "files": [
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/DR2_readme.txt",
+      "sha256": "b9fb11dc8136cec79541208efebf1a0684628c70fed76b6d40c8e6d3d691f802"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC40_exp.csv",
+      "sha256": "5239df7ffcdb5f62ab80d994527e974c553b980a7b5296269d9d816ee335bf6e"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC40_exp.csv",
+      "sha256": "370654c0f8148b9c04f2359f707f5bb73779dac910979ace51d84beaaa34c23d"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC59_exp.csv",
+      "sha256": "37c0075aca5b8f280184058b9fb5b63764c6e15ca746915f064f3714cec0f05b"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC59_exp.csv",
+      "sha256": "4e42ddc9c85cfa56878fff01358f065c4906ddf6a641ce8ed46d5604bf969dc4"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC79_exp.csv",
+      "sha256": "7c4d8cbd0418575453bad56df9ac0321bf93994b8153405afd80489cc3fbeb5a"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC79_exp.csv",
+      "sha256": "90e1180aa3440d123f4948cca953eeb6df3437599231baf7e71ee26f49759020"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_I_exp.csv",
+      "sha256": "4b57a19db4dad7c725391f2e6e6c742b5f2b40e13c156881cb6a7649c2eb823e"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_I_exp.csv",
+      "sha256": "9cd1efb06ba1a150ba5b6ba1571f934d44982070384bc908bd2995826ffca4fe"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_II_exp.csv",
+      "sha256": "ec88b8d3c749dd8b3ef5296fcfc8500f0d85c84f15f453d6ed19a53c1251c398"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_II_exp.csv",
+      "sha256": "bd685a6cc297f09ac52171f6cee195739c89823e9b3c1712b2b076ce41e5cd48"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_III_exp.csv",
+      "sha256": "1a39d47d62f2fcee66345d46a6bd86bf121e0a63d8ee369f00e43ca52616bcdb"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_III_exp.csv",
+      "sha256": "e879c4643aa4eb0b3292349c199770a62674fac27ec06a9258f6c977a72c27e7"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_IV_exp.csv",
+      "sha256": "e4ea3efc74ad8fd64a9377affc24776a06ca1a590e1f321e89a018c3fb8350c6"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_IV_exp.csv",
+      "sha256": "b22b55e9e22fcb94d8f6bd4f097280b0ed5f99e1f1f283704a22b0926a0ade55"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_V_exp.csv",
+      "sha256": "f7a38ea05c5aba77b02b3fe2d8b5cd404c74afc703aa465e5653bf76bdfc3e61"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_V_exp.csv",
+      "sha256": "329123557f158407b7640b9bc4fef155c93771d49a433b6cac52c1180bdeb4c7"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VI_exp.csv",
+      "sha256": "37cf9e40fd68082ad2fdb094fa1011ce8a503f0e52ba5a350eea305cff147db7"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VI_exp.csv",
+      "sha256": "01fa2be27ecfed9f811ee2666ac4973aa76e996e6a032c6bf5a0e980ae0b11f1"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VII_exp.csv",
+      "sha256": "8cb60ad7dfdb2529c988e99eef439a379172caf9ecbe29d6c791b9b56bb59665"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VII_exp.csv",
+      "sha256": "e261fff2f6d0886a8305a948ba30931f7b9b3fba63dd7384acfe0e8c55f414d0"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_VIII_exp.csv",
+      "sha256": "680cad97a342e77173e108bdda3aa29570c0e61c29bc3fda4bc1c8cd66eb2183"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_VIII_exp.csv",
+      "sha256": "daa1bc6e55b8cc11626ca10e3ee0797962378fdf182c4f3d9accc96dd859399a"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_IX_exp.csv",
+      "sha256": "cb29bc7f82e5e056f8b150fa5f53fe8436acc7b68ead49f8ed67b4fc3e46bfd3"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_IX_exp.csv",
+      "sha256": "934d7f7822af088919847f253ee20837ae9a9732148a820eeee7ebb5b48f1e34"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_X_exp.csv",
+      "sha256": "6f837dcfaf4d51a7de48802009bbb270cf4be69f0f598905dd31885b22eb933c"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_X_exp.csv",
+      "sha256": "1363e6967a97e13f68f0d1f38117dc192bcbf5eba2bc3e6423e260589f364c78"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/events/IC86_XI_exp.csv",
+      "sha256": "bbe3c017d5ff45233583319aacce601dd7f3b63bccac33437560e4c18c8c933f"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime/IC86_XI_exp.csv",
+      "sha256": "f56317ad87b4c40ed277ede2c5b7281ec830a76a740a418b309a328b2f506285"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_effectiveArea.csv",
+      "sha256": "08738151de05613083d410f36e8696238ba01298d0c66a2622ea949cc9fe9bc7"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_smearing.csv",
+      "sha256": "36e2c8a67ace195c7b9ad8881f6e7b1dd5a951e34d628ce9825fcb8694bd2bab"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_effectiveArea.csv",
+      "sha256": "bc7b4d3141ba7e372afa2e1a187c87a5282fc988c7c30bbd03f7d399340701bf"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_smearing.csv",
+      "sha256": "5fed1a9222a365e721a64162afd3b4f89f92a722fcec8083b4b97d53eb276cbe"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_effectiveArea.csv",
+      "sha256": "c2eb192ae52303e81b046731cf51ace1b7b22da10f15fc51767cfae587028aff"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_smearing.csv",
+      "sha256": "2a4b4b27b3e3a6b302dabf9076f24c88d6e3cb7eb523debf106d110b6ff6371b"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_effectiveArea.csv",
+      "sha256": "3c77fcfaad2d3cf4b950981b7794d0b784e568a0426994b92c8d8cffaef0f162"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_smearing.csv",
+      "sha256": "6b7c32617dd27e1b0ee08fcc884220a69f5111c65bbc7e2b4ba57a72f3cce085"
+    }
+  ]
+}

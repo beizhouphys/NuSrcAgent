@@ -1,121 +1,115 @@
 # NuSrcAgent
 
-NuSrcAgent is a private-alpha agent for time-integrated high-energy neutrino single-source and stacking searches using IceCube public point-source data. The default backend is IceTracks-DR2 14-year spatial+energy SkyLLH v26; the existing 10-year backend remains selectable.
+NuSrcAgent coordinates natural-language requests, parameter confirmation,
+deterministic high-energy neutrino likelihood analysis, provenance and scientific
+review using IceCube public point-source data.
+
+This is a local release-preparation copy, not a tagged public release. Numerical
+examples have run in a fresh installation using local input bundles; public
+asset downloads and the complete first-release scope are not yet validated.
+
+## Current support
+
+| Data / mode | Implemented analysis | Status |
+| --- | --- | --- |
+| DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and Gamma |
+| DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance Gamma; no energy term |
+| DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
+| DR2 time-dependent | Planned single source, catalog scan and stacking | Not implemented in this copy; integration and validation pending |
+
+The approved first-release scope includes time-dependent analysis, with
+collaborator stacking code still pending. The current time-integrated paths do
+not by themselves complete that scope.
+
+## Installation
+
+Prerequisite: Python 3.12 on macOS/Linux. From the checkout root, the intended
+public installation is one command:
+
+```bash
+bash install.sh
+```
+
+The installer creates `.venv`, installs hash-locked dependencies and fetches our
+matching raw IceCube and frozen v3/SEpdf bundles. It extracts files to the required
+paths and verifies archive and per-file SHA-256 values. No manual IceCube download
+or PDF precalculation is needed. Re-running keeps already verified inputs.
+
+**Not yet available through the default command:** the bundles are prepared
+locally, but the public download URL is intentionally unset. Until publication,
+use a maintainer-provided local bundle directory:
+
+```bash
+bash install.sh --bundle-dir /absolute/path/to/release_assets
+```
+
+The default DR2 download is about 1.52 GB and extracts about 3.8 GiB, in addition
+to the environment and retained download/staging cache. Python itself is not
+installed by the script. See [installation options and recovery](docs/input_installation.md)
+and [data attribution](docs/data_attribution.md).
+
+## Natural-language use
+
+After installation, open this checkout in Codex and invoke its repository skill,
+`$he-neutrino-analysis`, for example:
 
 ```text
-Natural-language request -> Codex Skill -> persistent task -> deterministic LLH backend -> scientific review
+$he-neutrino-analysis Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
+with full14 DR2, time-integrated spatial+energy. Fit ns and Gamma.
 ```
 
-Version: `0.2.0-private-alpha.4`
+The skill records parameter interpretations, creates a persistent task, checks
+the READY gate, executes the likelihood and reads the resulting reviews.
+Unresolved choices affecting the analysis are clarified before execution.
 
-This private repository is for the owner and invited collaborators. It is not yet a public or publication-ready scientific release.
+The skill interprets natural language; the CLI does not parse the `--request`
+text into parameters. CLI users must supply the intended flags themselves.
 
-## Capabilities
+## Minimal examples and outputs
 
-- One source selects a single-source analysis.
-- Multiple sources or a catalog select stacking; the legacy 10-year path retains its existing source scan.
-- DR2 spatial+energy fits Gamma by default (seed `-3.0` in the user-facing legacy convention). DR2 spatial-only is selectable and uses fixed acceptance Gamma `-2.5` by default; stacking weights remain an explicit scientific choice.
-- Tasks preserve inputs, confirmations, attempts, request hashes, outputs, and completion status.
-- Completed runs produce tables, figures, provenance, and machine-readable scientific reviews.
-- Chinese, English, and mixed-language requests are supported through the repository Codex Skill.
+Follow the [quickstart](docs/quickstart.md) for two complete CLI examples:
 
-## Install
+1. NGC 1068 single-source fit.
+2. Three-source individual scan plus uniform-weight stack using the bundled CSV.
 
-```bash
-git clone https://github.com/beizhouphys/NuSrcAgent.git
-cd NuSrcAgent
-python3.12 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install --require-hashes -r requirements_skyllh_v26_lock_cdx.txt
-.venv/bin/python run_agent_wrap_cdx.py environment-check
-.venv/bin/python verify_private_alpha_setup_cdx.py --hashes
-```
+Both start from task creation, require `READY` before execution, and show where
+to find reports, CSV tables, configuration, provenance and scientific reviews.
+The guide includes observed numerical references from the local clean-install
+checks. DR2 currently produces numerical reports/tables, not PDF figures or an
+Excel workbook.
 
-Both supported data samples use this project-local pinned environment; see `docs/data_and_environment.md`. Large DR2 data and pre-calculated PDF products must be present locally.
+## Scientific limitations
 
-## Use With Codex
+- Ordinary fits execute no background trials. Their analytic local p-values are
+  approximations, not empirical or catalog-global significance.
+- Frozen background v3 retains IC79 Dec–energy residuals; ns, Gamma and inferred
+  flux may be biased. Hash verification establishes input identity, not scientific validity.
+- Warning-bearing results are preliminary; failed reviews are not valid results.
+  At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,
+  not a measured spectrum.
+- The existing empirical workflow is limited to its documented random-catalog
+  stack; it is not general calibration for these examples. Time-dependent
+  analysis is not available yet.
 
-Open the repository in Codex and ask naturally:
+See [scientific status](docs/scientific_status.md) and the
+[fixed scientific baseline](docs/release_scientific_baseline.md) before interpreting outputs.
 
-```text
-Analyze TXS 0506+056 at RA 77.3582 deg and Dec 5.6931 deg.
-Ask me before choosing any unspecified scientific parameter.
-```
+## Repository layout
 
-Codex discovers `$he-neutrino-analysis-cdx`, creates a persistent task, asks for missing parameters, runs the deterministic backend, and reviews the result.
+- `run_agent_wrap.py`: sole public analysis entry point.
+- `agent_core/`: planning, task state, execution, provenance and review.
+- `analysis_backend/`: supported LLH, PDF evaluation and generic diagnostics.
+- `.agents/skills/`: natural-language workflow and review policies.
+- `tools/`: the optional workbook builder, not PDF construction tools.
+- `docs/`: definitions, input requirements, scientific limitations and release status.
 
-## Command Line
+Owner tests, dedicated catalog comparisons, PDF precalculation, historical
+research scripts and conversation transcripts are excluded.
 
-`run_agent_wrap_cdx.py` is the only public Python entry point.
-
-Create and run a single-source task:
-
-```bash
-.venv/bin/python run_agent_wrap_cdx.py create-single \
-  --request "Analyze TXS 0506+056" \
-  --name "TXS 0506+056" --ra-deg 77.3582 --dec-deg 5.6931
-
-.venv/bin/python run_agent_wrap_cdx.py run --task <task_id>
-```
-
-Create a catalog task:
-
-```bash
-.venv/bin/python run_agent_wrap_cdx.py create-catalog \
-  --request "Scan and stack this catalog" \
-  --catalog configs_cdx/examples_cdx/catalog_sources_rfc100_cdx.csv \
-  --name-column source_name --ra-column ra_deg --dec-column dec_deg \
-  --weight-mode uniform
-```
-
-Add `--gamma-mode fixed --gamma -2.53` for a fixed spectrum. Add
-`--likelihood-mode spatial_only` for the 14-year spatial-only likelihood; it
-uses fixed acceptance Gamma `-2.5` unless `--gamma` is supplied. Add
-`--data-sample icecube_public_ps_10yr --gamma -2.53` to select the legacy
-10-year analysis explicitly.
-
-Inspect a catalog or review an existing run:
-
-```bash
-.venv/bin/python run_agent_wrap_cdx.py inspect-catalog --catalog <catalog.csv>
-.venv/bin/python run_agent_wrap_cdx.py review-run --run-directory <run_directory>
-```
-
-Use `.venv/bin/python run_agent_wrap_cdx.py --help` to see all environment, task, confirmation, execution, recovery, inspection, and review commands.
-
-## Verify
-
-```bash
-.venv/bin/python -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
-.venv/bin/python tools_cdx/evaluate_agent_cases_cdx.py --validate-golden
-```
-
-## 2103.12813 DR2 Benchmark
-
-The repository also contains an owner-approved, resumable internal workflow
-for comparing the 3386 RFC 2019c radio-bright AGN against arXiv:2103.12813
-with the 14-year DR2 spatial-only likelihood. It produces a catalog scan, six
-paper-style stacks, direct DR2 effective-area flux conversions, paper-reference
-tables with digitization provenance, comparison PDFs, a workbook, and a
-scientific review. Invoke this workflow through the HE Neutrino Analysis Skill;
-`run_agent_wrap_cdx.py` remains the sole public CLI.
-
-## Repository Layout
-
-- `run_agent_wrap_cdx.py`: sole public CLI.
-- `agent_core_cdx/`: planning, state, execution, validation, reporting, and review.
-- `analysis_backend_cdx/`: callable single-source and catalog likelihood backends.
-- `.agents/skills/`: natural-language Codex Skill.
-- `tests_cdx/`: deterministic and language-adapter tests.
-- `tools_cdx/`: internal development and artifact-generation tools.
-- `legacy_codex_revised/`: preserved research scripts not used by the agent runtime.
-- `docs/`: design, data, validation, and scientific-status documentation.
-
-## Documentation
-
-- [Agent design and behavior](docs/agent_design.md)
-- [Data, environment, and collaboration](docs/data_and_environment.md)
-- [Testing and release criteria](docs/testing_and_release.md)
-- [Scientific status and limitations](docs/scientific_status.md)
-
-No open-source license has been granted for this private alpha.
+See [catalog workflow](docs/dr2_catalog_workflow.md),
+[release preparation](docs/testing_and_release.md) and
+[release adaptations](docs/release_copy_changes.md).
+License, authorship, citation metadata and final release version remain pending.
+No open-source license is granted by this preparation copy.
+See the [metadata decisions and remaining work](docs/release_metadata_draft.md)
+and [draft release notes](docs/release_notes.md).
