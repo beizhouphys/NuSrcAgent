@@ -100,8 +100,9 @@ Pending before a complete public release:
 
 The [metadata draft and ordered checklist](release_metadata_draft.md) separates
 collaborator code synchronization from completing the approved first release.
-[Draft release notes](release_notes.md) describe implemented behavior only;
-license, authorship and public version remain unapproved.
+[Snapshot notes](release_notes.md) describe implemented behavior only.
+The owner approved code version 0.2.0 and author Bei Zhou; license and final
+citation/publication metadata remain pending. No tag or GitHub Release is implied.
 
 - Upload the prepared raw-data/PDF assets and pin their HTTPS download location.
 - Clone from the final published GitHub candidate and install using its pinned
@@ -112,7 +113,8 @@ license, authorship and public version remain unapproved.
 - Time-dependent integration and validation, including collaborator stacking code,
   are deferred by the owner until their integration is ready. They remain part
   of the full first-release target, but do not block the current source-code sync.
-- License, author/contributor list, CITATION metadata and final version approval.
+- License and final CITATION/publication metadata; current author and code version
+  are already approved.
 - Explicit choice of public Git history; this directory does not copy private history.
 
 No push, tag, license grant or public publication is performed by preparing this copy.
