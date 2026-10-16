@@ -1,7 +1,7 @@
 # Release metadata — awaiting owner approval
 
-The owner confirmed Bei Zhou as the sole current author. License and public
-version remain unselected. Po-Wen Chang will be added when the collaborator's
+The owner confirmed Bei Zhou as the sole current author and code version 0.2.0.
+License remains unselected. Po-Wen Chang will be added when the collaborator's
 time-dependent code is integrated, not to the current author list.
 It is not a license grant, final citation or release announcement.
 
@@ -12,10 +12,10 @@ It is not a license grant, final citation or release announcement.
 | Software license | Exact license name/SPDX identifier; copyright holder(s) and year/range; confirm permission to release the included code |
 | Citation authors | Confirmed: Bei Zhou, sole current author; ORCID and affiliation optional |
 | Other contributors | No additional current authors confirmed; add Po-Wen Chang after time-dependent integration |
-| Release version | Exact version and whether it is a prerelease; any tag spelling preference |
+| Code version | Confirmed: 0.2.0 for current code; 0.1.0 identifies the previous snapshot. No tag/Release authorized |
 
-Existing runtime metadata says `0.2.0-private-alpha.4`; this is the current
-development identifier, not an approved public version. Do not infer authorship
+Current runtime metadata is `0.2.0`; old private-alpha commits/tags are retained.
+This does not imply a tagged release or public repository. Do not infer authorship
 from the GitHub account, commit authors, source ownership shorthand or future
 collaborator code that has not been merged. Publication date means the actual
 publication date, not the date of a local verification run.
@@ -32,7 +32,8 @@ publication date, not the date of a local verification run.
   same owner-approved version. No tag is created as part of local preparation.
 
 The existing [data attribution](data_attribution.md) is retained independently.
-The [release notes](release_notes.md) are already drafted without a version/date.
+The [release notes](release_notes.md) record the approved code-version mapping;
+an actual release publication date is not assigned.
 
 ## CITATION.cff template — not final metadata
 
@@ -51,7 +52,7 @@ authors:
   - family-names: "Zhou"
     given-names: "Bei"
 repository-code: "https://github.com/beizhouphys/NuSrcAgent"
-version: "<approved release version>"
+version: "0.2.0"
 date-released: "<actual publication date, YYYY-MM-DD>"
 license: "<approved SPDX identifier, if applicable>"
 ```

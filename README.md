@@ -109,7 +109,8 @@ research scripts and conversation transcripts are excluded.
 See [catalog workflow](docs/dr2_catalog_workflow.md),
 [release preparation](docs/testing_and_release.md) and
 [release adaptations](docs/release_copy_changes.md).
-License, authorship, citation metadata and final release version remain pending.
+Current code version: `0.2.0`; the previous snapshot is identified as `0.1.0`.
+Author: Bei Zhou. License and final citation/publication metadata remain pending.
 No open-source license is granted by this preparation copy.
 See the [metadata decisions and remaining work](docs/release_metadata_draft.md)
 and [draft release notes](docs/release_notes.md).

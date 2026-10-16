@@ -1,6 +1,16 @@
-# NuSrcAgent — draft release notes
+# NuSrcAgent 0.2.0 — development snapshot notes
 
-Version and publication date: awaiting owner approval. Not a published release.
+Code version: 0.2.0, approved by the owner. No tag or GitHub Release is created.
+
+Version mapping:
+
+- `0.1.0`: the previous snapshot, commit `58dc2f582bf3037513974e91b5772c3018cc190a`.
+- `0.2.0`: the current time-integrated code, based on the reviewed upload
+  `1cd3d0ee9d97ec86ba924361f640f41645c9e8c9`, with this version metadata update.
+
+This records the owner's snapshot names without rewriting old commits or
+renaming existing private-alpha tags. Repository visibility is independent of
+these version numbers.
 
 - DR2 time-integrated point-source single fits, individual catalog scans and
   stacking; spatial+energy fits ns/Gamma, spatial-only uses fixed acceptance Gamma.

@@ -43,13 +43,13 @@
     },
     {
       "path": "AGENT_VERSION.txt",
-      "bytes": 22,
-      "sha256": "8142ac3b68d959aa8cd0acb2aa9a3ed23f688c0a10fbe7cf14f45089f12afc34"
+      "bytes": 6,
+      "sha256": "1f930dd1f133c1f97a94fe3acb8db34372cf4c01ffdb2b3ff4ca72f9494121e9"
     },
     {
       "path": "README.md",
-      "bytes": 5477,
-      "sha256": "6a7988ee35426892c1b1bb9a5815468d097b4dc8a27ec1e38b4e659c69a041e3"
+      "bytes": 5557,
+      "sha256": "d3a42eae0648864570f68b70389c53aa5178608459d1bf50f53c5eebf0362c20"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -133,8 +133,8 @@
     },
     {
       "path": "agent_core/task_state.py",
-      "bytes": 8094,
-      "sha256": "9cf4a7dc226cee7b614b2812e6750a94a5bc55713c4afb427902ad50be2f0300"
+      "bytes": 8078,
+      "sha256": "d31caa4f12c11b42661ed398967727622c0e6ec33a64e78b0b70ca70c18e85b5"
     },
     {
       "path": "agent_core/validate.py",
@@ -303,13 +303,13 @@
     },
     {
       "path": "docs/release_metadata_draft.md",
-      "bytes": 5721,
-      "sha256": "ea4ce961e7fa1c13b3daab5bd63ea42be54895206d1a5dafe6468bc216bef676"
+      "bytes": 5788,
+      "sha256": "cb4437d3d91d2506357192db65aab6f743c85ebed2c5e86ce5072e0151e41db5"
     },
     {
       "path": "docs/release_notes.md",
-      "bytes": 1594,
-      "sha256": "406160a7ffb8957c75030588e4b58db427dcbb4be5c69b015bc48130db50d918"
+      "bytes": 2042,
+      "sha256": "73872b10e72e4f40ac060e1f70d270dc2570bb74fa0eda1fd76506a46a781adb"
     },
     {
       "path": "docs/release_scientific_baseline.md",
@@ -323,8 +323,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 7460,
-      "sha256": "931fbf13e0546d17468f2c4bcf2e6df59aacb062485454ab216017873d62bcba"
+      "bytes": 7582,
+      "sha256": "8275bf8557262ae0c6edfe4e80cf9bd0ffe6902c03490af33c1df93b3c097617"
     },
     {
       "path": "install.sh",
