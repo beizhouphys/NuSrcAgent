@@ -1,0 +1,215 @@
+{
+  "data_release": "IceTracks-DR2",
+  "generated_at_utc": "2026-08-04T01:42:45.269201+00:00",
+  "method": {
+    "declination": "intersection intervals from the union of DR2 Aeff and smearing-matrix declination edges; lookup selects the combined native-response interval without cross-bin interpolation",
+    "effective_area": "SkyLLH PDAeff through PDSignalEnergyPDFSet",
+    "energy": "dense log10(E_reco/GeV) cell-center grid with linear lookup interpolation",
+    "event_analysis_note": "No source spatial PDF or likelihood calculation is performed by this tool",
+    "original_code_concept_used": "S_Epdf.py's pre-calculate-then-interpolate workflow only",
+    "original_numerical_code_used": false,
+    "pdf_calculation": "SkyLLH v26 PDSignalEnergyPDFSet",
+    "power_law_gamma": "table stores legacy negative convention; SkyLLH receives its positive index",
+    "smearing_matrix": "SkyLLH PDSmearingMatrix through PDSignalEnergyPDFSet"
+  },
+  "mode": "power_law",
+  "packages": {
+    "astropy": "8.0.1",
+    "numpy": "2.5.1",
+    "scipy": "1.18.0",
+    "skyllh": "26.0.0"
+  },
+  "python": "3.12.3",
+  "spectrum": null,
+  "status": "pass",
+  "datasets": [
+    {
+      "dataset": "IC40",
+      "gamma_legacy_max": -0.9,
+      "gamma_legacy_min": -6.1,
+      "gamma_step": 0.01,
+      "input_irf_files": [
+        {
+          "bytes": 148112,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_effectiveArea.csv",
+          "sha256": "08738151de05613083d410f36e8696238ba01298d0c66a2622ea949cc9fe9bc7"
+        },
+        {
+          "bytes": 598080195,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC40_smearing.csv",
+          "sha256": "36e2c8a67ace195c7b9ad8881f6e7b1dd5a951e34d628ce9825fcb8694bd2bab"
+        }
+      ],
+      "log10_reco_energy_max": 8.998750000000001,
+      "log10_reco_energy_min": 2.00125,
+      "n_declination_bins": 78,
+      "n_gamma": 521,
+      "n_log10_reco_energy_points": 2800,
+      "output_file": {
+        "bytes": 230248259,
+        "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC40_DR2.npz",
+        "sha256": "059a7055ece57775878b613d06de081dc6e1b5707f50ba33af648b633e8a5ae8"
+      },
+      "table_dtype": "float32",
+      "table_shape": [
+        78,
+        2800,
+        521
+      ],
+      "validation": {
+        "all_values_finite": true,
+        "declination_edges_monotonic": true,
+        "dense_grid_integral_max": 1.000000009989796,
+        "dense_grid_integral_min": 0.9999999894678991,
+        "dense_grid_normalization_max_abs_error": 1.0532100858107185e-08,
+        "energy_interpolation_fractional_l1_error_max": 0.0002866436904689398,
+        "energy_interpolation_max_abs_error": 0.002250553708957881,
+        "gamma_monotonic": true,
+        "gamma_range_exact": true,
+        "log_energy_grid_monotonic": true,
+        "pdf_values_nonnegative": true
+      }
+    },
+    {
+      "dataset": "IC59",
+      "gamma_legacy_max": -0.9,
+      "gamma_legacy_min": -6.1,
+      "gamma_step": 0.01,
+      "input_irf_files": [
+        {
+          "bytes": 148101,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_effectiveArea.csv",
+          "sha256": "bc7b4d3141ba7e372afa2e1a187c87a5282fc988c7c30bbd03f7d399340701bf"
+        },
+        {
+          "bytes": 598080195,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC59_smearing.csv",
+          "sha256": "5fed1a9222a365e721a64162afd3b4f89f92a722fcec8083b4b97d53eb276cbe"
+        }
+      ],
+      "log10_reco_energy_max": 9.498750000000001,
+      "log10_reco_energy_min": 2.00125,
+      "n_declination_bins": 78,
+      "n_gamma": 521,
+      "n_log10_reco_energy_points": 3000,
+      "output_file": {
+        "bytes": 285161100,
+        "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC59_DR2.npz",
+        "sha256": "3543c316c27707d44ba9bc47c91dcec4c37072c9bd8cad10663aa9284d521551"
+      },
+      "table_dtype": "float32",
+      "table_shape": [
+        78,
+        3000,
+        521
+      ],
+      "validation": {
+        "all_values_finite": true,
+        "declination_edges_monotonic": true,
+        "dense_grid_integral_max": 1.0000000078746167,
+        "dense_grid_integral_min": 0.9999999919560386,
+        "dense_grid_normalization_max_abs_error": 8.043961385872933e-09,
+        "energy_interpolation_fractional_l1_error_max": 0.0002822666028757055,
+        "energy_interpolation_max_abs_error": 0.0021638728804163065,
+        "gamma_monotonic": true,
+        "gamma_range_exact": true,
+        "log_energy_grid_monotonic": true,
+        "pdf_values_nonnegative": true
+      }
+    },
+    {
+      "dataset": "IC79",
+      "gamma_legacy_max": -0.9,
+      "gamma_legacy_min": -6.1,
+      "gamma_step": 0.01,
+      "input_irf_files": [
+        {
+          "bytes": 148103,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_effectiveArea.csv",
+          "sha256": "c2eb192ae52303e81b046731cf51ace1b7b22da10f15fc51767cfae587028aff"
+        },
+        {
+          "bytes": 598080195,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC79_smearing.csv",
+          "sha256": "2a4b4b27b3e3a6b302dabf9076f24c88d6e3cb7eb523debf106d110b6ff6371b"
+        }
+      ],
+      "log10_reco_energy_max": 8.998750000000001,
+      "log10_reco_energy_min": 1.00125,
+      "n_declination_bins": 78,
+      "n_gamma": 521,
+      "n_log10_reco_energy_points": 3200,
+      "output_file": {
+        "bytes": 340187005,
+        "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC79_DR2.npz",
+        "sha256": "bff8d3165222581f934d66515137c41318ae7fe3c8c8f6217fcbe166fa52fd78"
+      },
+      "table_dtype": "float32",
+      "table_shape": [
+        78,
+        3200,
+        521
+      ],
+      "validation": {
+        "all_values_finite": true,
+        "declination_edges_monotonic": true,
+        "dense_grid_integral_max": 1.0000000091727739,
+        "dense_grid_integral_min": 0.9999999895798409,
+        "dense_grid_normalization_max_abs_error": 1.0420159068935675e-08,
+        "energy_interpolation_fractional_l1_error_max": 0.0002999158054205973,
+        "energy_interpolation_max_abs_error": 0.002384108987556033,
+        "gamma_monotonic": true,
+        "gamma_range_exact": true,
+        "log_energy_grid_monotonic": true,
+        "pdf_values_nonnegative": true
+      }
+    },
+    {
+      "dataset": "IC86_I-XI",
+      "gamma_legacy_max": -0.9,
+      "gamma_legacy_min": -6.1,
+      "gamma_step": 0.01,
+      "input_irf_files": [
+        {
+          "bytes": 148107,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_effectiveArea.csv",
+          "sha256": "3c77fcfaad2d3cf4b950981b7794d0b784e568a0426994b92c8d8cffaef0f162"
+        },
+        {
+          "bytes": 598080195,
+          "path": "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/irfs/IC86_smearing.csv",
+          "sha256": "6b7c32617dd27e1b0ee08fcc884220a69f5111c65bbc7e2b4ba57a72f3cce085"
+        }
+      ],
+      "log10_reco_energy_max": 9.49875,
+      "log10_reco_energy_min": 1.00125,
+      "n_declination_bins": 78,
+      "n_gamma": 521,
+      "n_log10_reco_energy_points": 3400,
+      "output_file": {
+        "bytes": 373694794,
+        "path": "data_output/signal_energy_pdfs/14yr_dr2/signal_energy_pdf_powerlaw_IC86_I-XI_DR2.npz",
+        "sha256": "a12085b5d5b9413ef04316b9ec4526f7e8dc53ef2878f9c7e82c8c93b206af99"
+      },
+      "table_dtype": "float32",
+      "table_shape": [
+        78,
+        3400,
+        521
+      ],
+      "validation": {
+        "all_values_finite": true,
+        "declination_edges_monotonic": true,
+        "dense_grid_integral_max": 1.000000009803083,
+        "dense_grid_integral_min": 0.9999999898954386,
+        "dense_grid_normalization_max_abs_error": 1.0104561409818302e-08,
+        "energy_interpolation_fractional_l1_error_max": 0.00029987842883953545,
+        "energy_interpolation_max_abs_error": 0.0023667993424245637,
+        "gamma_monotonic": true,
+        "gamma_range_exact": true,
+        "log_energy_grid_monotonic": true,
+        "pdf_values_nonnegative": true
+      }
+    }
+  ]
+}

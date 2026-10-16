@@ -1,25 +1,103 @@
-name: Agent wrapper tests
+name: Public runtime checks
 
 on:
   push:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  no-data-checks:
+    name: Python 3.12 / no-data engineering checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ""
+      PYTHONNOUSERSITE: "1"
+      MPLBACKEND: Agg
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
-      - name: Set up Python 3.8
+      - name: Set up Python 3.12
         uses: actions/setup-python@v6
         with:
-          python-version: "3.8"
+          python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements_private_alpha_cdx.txt
-      - name: Install private-alpha dependencies
-        run: python -m pip install -r requirements_private_alpha_cdx.txt
-      - name: Run deterministic agent tests
-        run: python -m unittest discover -s tests_cdx -p 'test_*_cdx.py' -v
-      - name: Validate language evaluation corpus
-        run: python tools_cdx/evaluate_agent_cases_cdx.py --validate-golden
+          cache-dependency-path: requirements_skyllh_v26_lock.txt
+      - name: Install the hash-locked runtime environment
+        run: python -m pip install --require-hashes -r requirements_skyllh_v26_lock.txt
+      - name: Check dependency consistency and pinned versions
+        run: |
+          python -m pip check
+          python - <<'PY'
+          import re
+          import sys
+          from importlib.metadata import version
+          from pathlib import Path
+          assert sys.version_info[:2] == (3, 12), sys.version
+          pins = re.findall(r"^([\w.-]+)==([^\s\\]+)", Path("requirements_skyllh_v26_lock.txt").read_text(), re.M)
+          assert pins, "No dependency pins found"
+          for package, expected in pins:
+              actual = version(package)
+              assert actual == expected, (package, actual, expected)
+          print(f"Verified Python 3.12 and {len(pins)} locked package versions")
+          PY
+      - name: Check public Python syntax
+        run: python -m compileall -q agent_core analysis_backend run_agent_wrap.py verify_private_alpha_setup.py
+      - name: Import runtime modules without scientific inputs
+        run: |
+          python - <<'PY'
+          import importlib
+          from pathlib import Path
+          assert not list(Path(".").glob("Tests*")), "Owner tests must not be shipped"
+          modules = ["run_agent_wrap", "verify_private_alpha_setup"]
+          for directory in ("agent_core", "analysis_backend"):
+              modules.extend(f"{directory}.{path.stem}" for path in sorted(Path(directory).glob("*.py")))
+          for name in modules:
+              importlib.import_module(name)
+          print(f"Imported {len(modules)} public runtime modules without loading data")
+          PY
+      - name: Check public CLI and bootstrap syntax
+        run: |
+          bash -n install.sh
+          bash install.sh --help
+          python run_agent_wrap.py --help
+          python run_agent_wrap.py create-single --help
+          python run_agent_wrap.py create-catalog --help
+          python run_agent_wrap.py install-inputs --help
+          python verify_private_alpha_setup.py --help
+      - name: Inspect the small example catalog without running fits
+        run: |
+          python - <<'PY'
+          import json
+          import subprocess
+          import sys
+          command = [sys.executable, "run_agent_wrap.py", "inspect-catalog",
+                     "--catalog", "configs/examples/catalog_sources_example.csv",
+                     "--name-column", "name", "--ra-column", "ra_deg",
+                     "--dec-column", "dec_deg", "--weight-column", "radio_weight"]
+          result = json.loads(subprocess.check_output(command, text=True))
+          assert result["status"] == "pass" and result["row_count"] == 3, result
+          print("Example catalog inspection passed; no likelihood or trials executed")
+          PY
+      - name: Verify shipped metadata and source hashes only
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from agent_core.input_install import load_manifest
+          from agent_core.dr2_pdf_release import _manifest
+          root = Path(".")
+          load_manifest(root)
+          _manifest(root)
+          entries = json.loads((root / "docs/release_file_manifest.json").read_text())["files"]
+          assert entries and len({row["path"] for row in entries}) == len(entries)
+          for row in entries:
+              raw = (root / row["path"]).read_bytes()
+              assert len(raw) == row["bytes"], row["path"]
+              assert hashlib.sha256(raw).hexdigest() == row["sha256"], row["path"]
+          print(f"Verified {len(entries)} shipped files and pinned metadata; numerical inputs not checked")
+          PY

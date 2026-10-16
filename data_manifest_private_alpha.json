@@ -1,0 +1,86 @@
+{
+  "distribution": "external_dr1_inputs",
+  "schema_version": "0.1",
+  "files": [
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC40_exp.csv",
+      "sha256": "23d633925cb22cccb9530376b1de51ccd3fa2696fc49c1955bc8a9dafef035a0"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC59_exp.csv",
+      "sha256": "55fb7cf070b7d9503c9d7a10a4d0e9100b6984c94fc57cf043b73190b22e1fcd"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC79_exp.csv",
+      "sha256": "b3c6f3a73e084fd2a2fec29d3396567a4ad9905ebc8c1959e8fbf1f1cf28d482"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_I_exp.csv",
+      "sha256": "13b59456c19e3668ae5dd1be2b987377c834fce1a7c2090a841860ce2a978854"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/events/uncorrected_probably/IC86_II2VII_exp_BZ.csv",
+      "sha256": "baa6e88ee238eb04dd9bd8e21b4dab609c93bd48c8aa4dabb55f1ab5be408330"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC40_exp.csv",
+      "sha256": "370654c0f8148b9c04f2359f707f5bb73779dac910979ace51d84beaaa34c23d"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC59_exp.csv",
+      "sha256": "4e42ddc9c85cfa56878fff01358f065c4906ddf6a641ce8ed46d5604bf969dc4"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC79_exp.csv",
+      "sha256": "9c245890ad07bf15d162230565aee9f3f8ed5b0bc6e8b41fb13e237a8711058c"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_I_exp.csv",
+      "sha256": "f6619fcc927e5d79a53d5f43e34c59de0b1773457386e0bcdb86cfed9b3f9f3f"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/uptime/IC86_II2VII_exp_BZ.csv",
+      "sha256": "c674bdc7669b8018e00d7943bd61fbe096c74161be4e49047586456986bda027"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv",
+      "sha256": "fccb322a3f3ea453bf3bc06200cc84f5e457e5a5899c78c90e815a1e04bb33cd"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC59_effectiveArea.csv",
+      "sha256": "36bcc1e3bd318092f746e9180e8d04d197e3724144cf48fffbe83e1eada9720e"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC79_effectiveArea.csv",
+      "sha256": "7a02cb089d6c5fbd7ab3673e1fc39f0607c5d7462c8b2dea5d3ea57db95ed5a2"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_I_effectiveArea.csv",
+      "sha256": "cc21c6f58e1c117f5d63433dc51733b2665a4c2a07510a5c12b061d76088d7c7"
+    },
+    {
+      "path": "data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC86_II_effectiveArea.csv",
+      "sha256": "254454a2bd7b92b73c780053232a901f268ec0a2b325ab8021c528228515e4ca"
+    },
+    {
+      "path": "data_output/bkgd_pdfs/bkgd_pdf_IC40_exp.txt",
+      "sha256": "4f65ef2c2704cc5e0eb24d520fb6be3ccab099812386d317712a88fe25a77b3f"
+    },
+    {
+      "path": "data_output/bkgd_pdfs/bkgd_pdf_IC59_exp.txt",
+      "sha256": "f482a3ee808cc5d371cfd892aaaf6f1898b8107afc83e58bdacbae5400c3fdfc"
+    },
+    {
+      "path": "data_output/bkgd_pdfs/bkgd_pdf_IC79_exp.txt",
+      "sha256": "4f29be0d345a0e2055a6df73f96ff2a0bbae0a2ad068095bb22039673b4dacda"
+    },
+    {
+      "path": "data_output/bkgd_pdfs/bkgd_pdf_IC86_I_exp.txt",
+      "sha256": "ec4e1c45bf4e41c36be92f5df989700eaa9253fb97b532c08015edaf26ca61d2"
+    },
+    {
+      "path": "data_output/bkgd_pdfs/bkgd_pdf_IC86_II2VII_exp_BZ.txt",
+      "sha256": "21bce6a7120ed18c42539ef5e52437e85c2948d265187442e720c4c0daf497ca"
+    }
+  ]
+}
