@@ -1,5 +1,14 @@
 # Input-bundle installation verification — 2026-10-16
 
+This is a dated reproducibility record, not a sequence of steps for users to
+repeat. For installation use [these instructions](input_installation.md); for
+analysis use the [worked examples](quickstart.md). A clean clone is a newly
+downloaded copy without existing inputs or a Python environment. File hashes
+are content fingerprints; matching them shows that the same files were used.
+The task/run identifiers below let maintainers locate each saved calculation.
+The recorded warnings remain scientific limitations even when reproduction
+checks pass.
+
 ## GitHub-hosted one-command verification
 
 **Completed:** an actual fresh clone from GitHub main at

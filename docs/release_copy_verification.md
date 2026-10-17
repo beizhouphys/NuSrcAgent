@@ -1,5 +1,12 @@
 # Release-copy checks — 2026-10-15
 
+This historical record checked that preparing the distributed code did not
+change the protected likelihood calculations or fixed numerical inputs.
+"AST comparisons" below means comparisons of the Python code's parsed
+structure, allowing the intended renaming; they are a software check, not a
+test of the physical model. The later GitHub installation test is recorded in
+[installation verification](input_installation_verification.md).
+
 This is verification of the prepared copy, not completion of the full public
 clean-clone/data-acquisition workflow or a scientific validation claim.
 

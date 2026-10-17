@@ -1,5 +1,10 @@
 # Release metadata — awaiting owner approval
 
+This page concerns software credit, citation and permission for public reuse.
+It is not an installation guide or an additional analysis requirement. Invited
+collaborators can use the current private installation; a future public release
+still needs the owner's licensing and publication decisions.
+
 The owner confirmed Bei Zhou as the sole current author and code version 0.2.0.
 License remains unselected. Po-Wen Chang will be added when the collaborator's
 time-dependent code is integrated, not to the current author list.
