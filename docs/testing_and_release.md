@@ -1,10 +1,21 @@
 # Release preparation status
 
+For users, the main distinction is between checking that a calculation can be
+installed/reproduced and checking that its physical and statistical assumptions
+are adequate. This page records those checks for maintainers and collaborators;
+it is not extra work you must do before running the
+[examples](quickstart.md). The installation/check record is in
+[installation verification](input_installation_verification.md).
+
 This directory is a separately prepared source copy with neutral names and an
 explicit file allowlist. It contains no owner tests, transcripts, private catalogs,
 PDF construction tools, source-specific comparisons or historical research code.
 
 ## Automatic CI: no scientific data
+
+CI (continuous integration) is the automatic set of checks run by GitHub when
+code or documentation is updated. A green GitHub check means the listed software
+checks passed, not that the likelihood or a detection significance was validated.
 
 The [public workflow](../.github/workflows/agent-tests.yml) uses Ubuntu 24.04,
 Python 3.12 and the same `requirements_skyllh_v26_lock.txt` as installation.
@@ -30,7 +41,10 @@ from the intended release files (excluding the inventory itself).
 
 ## Required manual release checks: real inputs
 
-These are separate release gates, not optional tests silently skipped in CI:
+These are checks required before claiming a tested release, separate from the
+automatic checks above. A clean clone means a newly downloaded copy with no
+pre-existing Python environment or scientific inputs. A commit identifies the
+exact recorded code revision being tested.
 
 1. Start from a clean clone of the exact candidate commit with no existing
    environment or inputs and no owner `PYTHONPATH`. Run `bash install.sh` using
@@ -116,7 +130,8 @@ citation/publication metadata remain pending. No tag or GitHub Release is implie
 
 - The seven raw-data/PDF assets are now hosted on the existing GitHub Release,
   with a fixed HTTPS location, pinned asset IDs and verified GitHub SHA-256 values.
-  The authenticated GitHub clean-clone check is recorded separately below.
+  The authenticated GitHub clean-clone check is recorded above and in the
+  installation verification page.
 - Keep optional workbook limitations explicit; workbook portability is not
   required for the numerical/CSV/PDF analysis paths.
 - Time-dependent integration and validation, including collaborator stacking code,

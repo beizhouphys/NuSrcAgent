@@ -1,8 +1,11 @@
 # IceCube input attribution
 
-The project will provide mirrors of its fixed analysis inputs as GitHub Release
-assets. Users do not need to select files or download them manually from IceCube.
-The original sources below document authorship and provenance, not installation steps.
+The project provides copies of its fixed analysis inputs as GitHub Release
+downloads. `bash install.sh` retrieves them; users do not need to select files
+or download them manually from IceCube. The original sources below identify
+the data authors and scientific references, not additional installation steps.
+Please distinguish credit for the IceCube observations from credit for this
+analysis software and its derived PDF tables.
 
 ## IceTracks-DR2
 

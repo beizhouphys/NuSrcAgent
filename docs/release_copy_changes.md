@@ -1,5 +1,11 @@
 # Development → release-copy adaptations
 
+This page is for collaborators comparing the developer's working directory
+with the code distributed on GitHub. The distributed copy contains the files
+needed to run supported analyses, not the private tests and historical studies.
+Renaming code/paths must not change the likelihood or the numerical PDF tables.
+For normal use, start with the [README](../README.md); no manual migration is needed.
+
 The development checkout remains authoritative for implementation work.
 The release copy changes filenames, imports, identifier suffixes and generated
 artifact references consistently. It removes generation-only comment markers,

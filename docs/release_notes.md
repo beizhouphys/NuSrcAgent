@@ -1,5 +1,11 @@
 # NuSrcAgent 0.2.0 — development snapshot notes
 
+This version provides time-integrated searches at specified source positions,
+independent fits across a source catalog, and a joint stacking fit. See the
+[README](../README.md) for installation and the [worked examples](quickstart.md)
+for commands and result interpretation. "Snapshot" here means a recorded
+development version, not a publication-ready scientific result.
+
 Code version: 0.2.0, approved by the owner. No tag or GitHub Release is created.
 
 Version mapping:
@@ -26,6 +32,12 @@ these version numbers.
   configuration/provenance/reviews passed, with the documented warnings retained.
 - Owner tests, private catalogs/transcripts, PDF construction and dedicated
   source/catalog comparison code excluded from the public copy.
+
+Documentation updated on 2026-10-17 explains installation, analysis choices,
+result files and scientific limitations for astrophysicists and particle
+physicists without assuming AI/software expertise. This is a documentation-only
+change: likelihood definitions, commands, fit settings and numerical inputs
+are unchanged.
 
 This draft covers implemented time-integrated behavior, not the complete approved
 first-release scope. Time-dependent work is deferred by the owner until
