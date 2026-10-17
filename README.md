@@ -127,9 +127,10 @@ account or token. See [authentication and installation options](docs/input_insta
 The default DR2 download is about 1.52 GB and extracts about 3.8 GiB, in addition
 to the Python environment and retained download/staging cache. Most extracted
 space is used by the IceCube event data and detector response files (about
-2.61 GB); pre-calculated PDFs add about 1.44 GB. These tables trade disk space
-for faster likelihood evaluation by reusing distributions rather than
-recalculating them during each fit. The raw-data files compress particularly
+2.61 GB); pre-calculated PDFs add about 1.44 GB. These tables require modest
+additional disk space but make likelihood evaluation much faster by reusing
+pre-calculated distributions rather than recalculating them during each fit.
+The raw-data files compress particularly
 well, so the PDFs account for most of the download size, despite using a
 smaller share of the extracted disk space. Python itself is not installed by
 the script. See [installation options and recovery](docs/input_installation.md)
