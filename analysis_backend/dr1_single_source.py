@@ -40,7 +40,7 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
         "gamma": float(gamma),
         "roi_deg": float(ROI*d2r),
         "note": "single-source time-integrated backend copied from likelihood_v4.py; p-value uses chi2(df=1)/2 approximation",
-        "warnings": ["Phase 1.1 does not run background trials; background.n_trials is not used by this backend.", "Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."],
+        "warnings": ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."],
     }
 
 

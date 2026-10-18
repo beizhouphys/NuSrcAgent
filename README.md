@@ -192,6 +192,10 @@ Excel workbook.
   catalog-wide significance.
 - The background PDFs retain IC79 Dec–energy residuals; ns, Gamma and inferred
   flux may be biased. Hash verification establishes input identity, not scientific validity.
+- Report fitted quantities, TS, p-value and corresponding one-sided Gaussian
+  significance in sigma, with local/post-trial and analytic/empirical labels.
+  Zero background trials alone do not create a warning: an otherwise passing
+  ordinary fit returns **COMPLETED**.
 - **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to
   be read in the report; results are preliminary. Failed reviews are not valid results.
   At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,

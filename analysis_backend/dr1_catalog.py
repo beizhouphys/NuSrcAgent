@@ -34,7 +34,6 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -
             stacking_curves.append(curve)
             if not isfinite(float(result["flux_100tev_95"])):
                 stacking_warnings.append(f"Flux conversion is unavailable for gamma={float(gamma):g}; flux_100tev_95 and fraction_of_diffuse_flux_95 are left blank.")
-    stacking_warnings.append("Stacking post-trial p-value is not reported until background trials include the full weighting/spectral-index scan.")
     stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from legacy_codex_revised/likelihood_v4.py and legacy_codex_revised/ns2flux.py.")
     return {
         "backend": "likelihood_catalog_time_integrated_v1",
