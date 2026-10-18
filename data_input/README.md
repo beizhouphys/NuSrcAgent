@@ -13,6 +13,6 @@ See [installation](../docs/input_installation.md) and
 
 ## Source catalogs
 
-The two versioned radio-bright AGN test CSVs and their column/selection notes
+The versioned radio-bright AGN test CSV and its column/selection notes
 are in [sources/](sources/README.md). They are included in the Git clone;
 other owner-private catalogs are not part of the GitHub copy.

@@ -21,8 +21,8 @@ Column weighting requires a column name and a recorded meaning, supplied by the 
 
 Use `create-catalog --built-in-catalog radio_bright_agn_rfc2019c_3386` for the owner-defined RFC 2019c radio-bright AGN catalog. The task records `inputs.kind=built_in_catalog`; the analysis request records `catalog.builtin`; validation and normalization load the source rows directly from `analysis_backend/sources.py`. Do not materialize an intermediate CSV or add another runner. Coordinate columns are `source_name`, `ra_deg`, and `dec_deg`; the available model-weight column is `xband_flux_jy`, representing X-band flux density in Jy. Use that catalog metadata to resolve radio-flux weighting without asking the user to repeat it.
 
-For a GitHub installation, prefer the bundled full-precision enriched CSV at
-`data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386_enriched.csv`
+For a GitHub installation, prefer the bundled full-precision CSV at
+`data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386.csv`
 through `create-catalog --catalog <path>`, with `source_name`, `ra_deg`,
 `dec_deg` and optional `xband_flux_jy` weighting. The built-in reader above
 instead needs the original raw RFC file, which is not bundled. Do not rebuild
