@@ -56,7 +56,7 @@ Use `--name-column name --ra-column ra_deg --dec-column dec_deg`.
 The [quickstart](quickstart.md) gives a complete uniform-weight scan+stack
 command and its observed numerical outputs; [column metadata](../configs/examples/README.md)
 explains which values are illustrative.
-The selected 3386-source radio-bright AGN CSVs are bundled in
-`data_input/sources/`; use them with `--catalog`. The optional built-in reader
+The selected 3386-source radio-bright AGN CSV is bundled in
+`data_input/sources/`; use it with `--catalog`. The optional built-in reader
 instead requires the original raw RFC file, which is not bundled. See the
 [catalog notes](../data_input/sources/README.md) for columns, selection and attribution.

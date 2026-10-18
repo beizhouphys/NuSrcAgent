@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 6714,
-      "sha256": "3521f03adb0e8034fe43176449b3d527a384af1ac6fd3d0a5bbe19bca351ff07"
+      "bytes": 6702,
+      "sha256": "d912a48d0db481748ab95b4f29802a0960e6cf3adb1e4dde590a554e5246556e"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -13,8 +13,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
-      "bytes": 3251,
-      "sha256": "7d67669ff44cb660de01aaa4ecca6bf7d71b22a2753e29e2086880e0cdbbaa49"
+      "bytes": 3233,
+      "sha256": "77e8797b24e486156c35c79e577c6a152844e04b4e7984d3b2d5aa2713857461"
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 14129,
-      "sha256": "f6be4a5b0e6afbfecec4163fd28229965a41f068913ace959bfc75813c79a02e"
+      "bytes": 14113,
+      "sha256": "75522f13f75ec8d052b6cbaac921548f6269333cd4c1f4b9c216b6dc51750c1b"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -223,21 +223,16 @@
     },
     {
       "path": "data_input/README.md",
-      "bytes": 891,
-      "sha256": "fdff2d230137806e78feed775c9872511e0aaf88be1311c0e004f35595ccb3d8"
+      "bytes": 884,
+      "sha256": "b02ed4c6feca9446d64a907c5096e2b64c3fb135f8951a828f8872e128ff54c6"
     },
     {
       "path": "data_input/sources/README.md",
-      "bytes": 2444,
-      "sha256": "5c382b5c1f557236ce75302853ced670c146ac672ad0bd3d6adfe77d181b0ea2"
+      "bytes": 2109,
+      "sha256": "ace27de2b849804b9251df7f581c8f2b269ba38d589a78c1d7044270bb48c713"
     },
     {
       "path": "data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386.csv",
-      "bytes": 128497,
-      "sha256": "a8475d3ff3f25a5c86646ac86aad8a0853647bde2f331733ecd663f829849ca0"
-    },
-    {
-      "path": "data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386_enriched.csv",
       "bytes": 277240,
       "sha256": "3ca0d2060fd676be14d201a155c5842b055dd6e577298ca334833426b87f8d57"
     },
@@ -264,17 +259,17 @@
     {
       "path": "docs/data_and_environment.md",
       "bytes": 5082,
-      "sha256": "5e36418dd415c3f54fab5eb9eb19c34118ae49d5653370eaab7cc1bfb0c5a787"
+      "sha256": "2eb650d47d702749e9c7115b6ace31a72bb1e76ac67bab2f29e25a621a0241fe"
     },
     {
       "path": "docs/data_attribution.md",
-      "bytes": 3230,
-      "sha256": "05492142bc222c400d1c0c86a3e32da8fd4c2152ae5a6392f6ec8dbdffa26b22"
+      "bytes": 3214,
+      "sha256": "602fbcf577cd587825d8d9cc2590f2d3921e32f3a6eef24fe8a6f1577a1d532d"
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 3741,
-      "sha256": "6e37335dd88cffa9bc6178045fb1edf7af720eff35e3c7c31487435d81b0dfac"
+      "bytes": 3737,
+      "sha256": "6d235d8d60022a5129c379277db85d9d6d27f13815aaade595d9fbc88ce78699"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -308,8 +303,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 9647,
-      "sha256": "60208f6ec19fceb4b08dc1e84a3eedf4dfa337452e4c27a9e8ad99f59d014fed"
+      "bytes": 9628,
+      "sha256": "fa17ac11be4a62abfa8fb8b6fd7d4f65ea58b34df4230f9b0da438377cf192a5"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -318,8 +313,8 @@
     },
     {
       "path": "docs/release_copy_changes.md",
-      "bytes": 2462,
-      "sha256": "e32a74e446c9514e8d09b5e9294eb50091e19868572aab470647c1cb71661505"
+      "bytes": 2461,
+      "sha256": "a0723fa44d36d67cab5023329731c379e9851221150ba0fa79e455147c911528"
     },
     {
       "path": "docs/release_copy_verification.md",
@@ -343,8 +338,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 6463,
-      "sha256": "d2f98f04169ed0a5376d7a2df5da21b7956c2e9071955a3602c562fc18b3c2e5"
+      "bytes": 6452,
+      "sha256": "4d8653a1c8bd06df1d09cac076a70f869aef30aeda6bcba20dde4558e7d83aac"
     },
     {
       "path": "docs/testing_and_release.md",

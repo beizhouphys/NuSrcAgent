@@ -22,9 +22,9 @@ See [installation details](input_installation.md) and [attribution](data_attribu
 
 ## Source catalogs
 
-The versioned radio-bright AGN CSVs are in `data_input/sources/`; see the
+The versioned radio-bright AGN CSV is in `data_input/sources/`; see the
 [catalog notes](../data_input/sources/README.md) for the 3386-source selection,
-columns, radio-flux weights and attribution. They are included in the code
+columns, radio-flux weights and attribution. The CSV is included in the code
 checkout, not in the large IceCube/PDF input bundles. Other private catalogs
 are not distributed. Use `--catalog` to analyze a supplied CSV.
 

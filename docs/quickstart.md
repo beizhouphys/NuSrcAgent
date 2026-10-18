@@ -83,13 +83,13 @@ fit for every row; begin with a small subset to assess the computing time.
 
 ## Radio-bright AGN catalog: inspect before a large run
 
-The [bundled catalog notes](../data_input/sources/README.md) describe two
-3386-source RFC 2019c tables. The enriched CSV retains full stored coordinate
+The [bundled catalog notes](../data_input/sources/README.md) describe the
+3386-source RFC 2019c table. The CSV retains full stored coordinate
 precision and X-band flux density. This command only inspects its rows/columns:
 
 ```bash
 .venv/bin/python run_agent_wrap.py inspect-catalog \
-  --catalog data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386_enriched.csv \
+  --catalog data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386.csv \
   --name-column source_name --ra-column ra_deg --dec-column dec_deg \
   --weight-column xband_flux_jy
 ```

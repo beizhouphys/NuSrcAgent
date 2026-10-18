@@ -45,12 +45,12 @@ part of final release preparation.
 
 ## Radio-bright AGN source catalog
 
-The two selected CSVs in `data_input/sources/` are derived from RFC 2019c,
+The selected CSV in `data_input/sources/` is derived from RFC 2019c,
 created by Leonid Petrov and contributors. The original catalog header identifies
 its source observations and requests credit to the original VLBI survey
 publications; see the [RFC 2019c catalog and references](http://astrogeo.org/vlbi/solutions/rfc_2019c).
-The snapshots contain the same 3386 sources selected in this project's
-[arXiv:2103.12813](https://arxiv.org/abs/2103.12813) comparison. Their radio-flux
-columns are not IceCube data, detector acceptance or neutrino-flux measurements.
+The catalog contains the 3386 sources selected in this project's
+[arXiv:2103.12813](https://arxiv.org/abs/2103.12813) comparison. Its radio-flux
+column is not IceCube data, detector acceptance or neutrino-flux measurements.
 The [catalog notes](../data_input/sources/README.md) define columns and selection;
 the release-file manifest records the exact distributed bytes and hashes.
