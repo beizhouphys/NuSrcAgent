@@ -144,6 +144,12 @@ language supported by your AI assistant, including English, Chinese or a
 mixture of languages. Interpretation quality can vary by language; unresolved
 scientific ambiguities must still be clarified before running an analysis.
 
+Replies follow your explicitly requested language or an explicitly established
+personal language preference. Otherwise, they follow the language of your
+request. If there is no preference or language cue, such as a bare
+`$nusrcagent` invocation, replies default to English. The language used to
+write project instructions is not treated as your language preference.
+
 After installation, open the project folder in Codex. The project provides
 the **NuSrcAgent skill**, a set of instructions that tells the
 assistant how to set up, run and check these analyses. For example, ask:

@@ -8,6 +8,16 @@ description: Coordinate supported IceCube time-integrated single-source searches
 Use the repository wrapper for every analysis. Read `AGENTS.md` and
 `docs/scientific_status.md`; numerical success does not establish scientific validity.
 
+## Response language
+
+- Follow the user's explicit language request. Otherwise, honor an explicitly
+  established personal response-language preference.
+- If neither applies, follow the language of the current request.
+- If there is no preference or usable language cue, including a bare
+  `$nusrcagent` invocation, respond in English.
+- Do not infer a response-language preference from the language used to write
+  `AGENTS.md`, skill instructions or other repository files.
+
 ## Clarification policy
 
 Ask only about unresolved ambiguity that materially changes the spectrum,
