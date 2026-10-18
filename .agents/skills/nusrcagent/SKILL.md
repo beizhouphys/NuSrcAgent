@@ -1,9 +1,9 @@
 ---
-name: he-neutrino-analysis
+name: nusrcagent
 description: Coordinate supported IceCube time-integrated single-source searches, catalog scans and stacking through persistent tasks and scientific review.
 ---
 
-# HE Neutrino Analysis
+# NuSrcAgent
 
 Use the repository wrapper for every analysis. Read `AGENTS.md` and
 `docs/scientific_status.md`; numerical success does not establish scientific validity.

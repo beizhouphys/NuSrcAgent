@@ -1,7 +1,7 @@
 # NuSrcAgent contributor instructions
 
 - Use `run_agent_wrap.py` as the sole public analysis entry point.
-- Read `.agents/skills/he-neutrino-analysis/SKILL.md` before analysis execution.
+- Read `.agents/skills/nusrcagent/SKILL.md` before analysis execution.
 - Preserve scientific definitions, catalog membership, weights, PDFs, fit bounds
   and recorded trial strategies. Ask only about unresolved material ambiguity.
 - Execute an analysis only after its persistent task reaches `READY`.

@@ -2,22 +2,22 @@
   "status": "prepared_not_published",
   "files": [
     {
-      "path": ".agents/skills/he-neutrino-analysis/SKILL.md",
-      "bytes": 4464,
-      "sha256": "e99eeb14c6328a43d6af47785abc4b91f76ca73c24d38efedbb549b4df5786e5"
+      "path": ".agents/skills/nusrcagent/SKILL.md",
+      "bytes": 4444,
+      "sha256": "7ca091077d03a45130bf01c79839801b855e592aaf9f83d53b6d498c8105a470"
     },
     {
-      "path": ".agents/skills/he-neutrino-analysis/agents/openai.yaml",
-      "bytes": 288,
-      "sha256": "750dece0355999a6628051b30281ceb844680b3c61e6fb49090879ca549ab124"
+      "path": ".agents/skills/nusrcagent/agents/openai.yaml",
+      "bytes": 268,
+      "sha256": "155c57ec76ae1f45d553ee0b6b50621dd9a54f3d87851765424b71ceda6b855d"
     },
     {
-      "path": ".agents/skills/he-neutrino-analysis/references/agent-task-interface.md",
+      "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
       "bytes": 2776,
       "sha256": "62c8a5459fbced0187bdbfd5117d4ef654303666f2009bab4a6c0f638386e1dc"
     },
     {
-      "path": ".agents/skills/he-neutrino-analysis/references/scientific-review-policy.md",
+      "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
       "bytes": 3694,
       "sha256": "0c76df9cea00446e777e5dd7b252f722c2768255492300c07915125ce1ce4d2c"
     },
@@ -38,8 +38,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 1642,
-      "sha256": "8eb46dbb1aad0a9fa700e183f13024f4a754d577a9fe47b1243249d8102c15bf"
+      "bytes": 1632,
+      "sha256": "faff9f3d5a9b857797e18b21df691901a8fbeeeaa82481d993363e1601ba957c"
     },
     {
       "path": "AGENT_VERSION.txt",
@@ -48,8 +48,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12675,
-      "sha256": "a94729cdd38248ea97547321b517f5f636292a1eae22ac0496e861f113a7df0a"
+      "bytes": 12655,
+      "sha256": "e1df0085c1250e3f5d8a8b1e7ea22c6a4a143653836f17b22ea1e2ad84bcb420"
     },
     {
       "path": "agent_core/agent_orchestrator.py",

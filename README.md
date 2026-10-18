@@ -145,11 +145,11 @@ mixture of languages. Interpretation quality can vary by language; unresolved
 scientific ambiguities must still be clarified before running an analysis.
 
 After installation, open the project folder in Codex. The project provides
-the **he-neutrino-analysis skill**, a set of instructions that tells the
+the **NuSrcAgent skill**, a set of instructions that tells the
 assistant how to set up, run and check these analyses. For example, ask:
 
 ```text
-$he-neutrino-analysis Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
+$nusrcagent Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
 with full14 DR2, time-integrated spatial+energy. Fit ns and Gamma.
 ```
 

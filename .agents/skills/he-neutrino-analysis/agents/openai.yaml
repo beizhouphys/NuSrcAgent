@@ -1,4 +1,0 @@
-interface:
-  display_name: "HE Neutrino Analysis"
-  short_description: "Run and review single-source and stacking searches"
-  default_prompt: "Use $he-neutrino-analysis to inspect my inputs, confirm scientific assumptions, run the deterministic likelihood tools, and review all outputs."
