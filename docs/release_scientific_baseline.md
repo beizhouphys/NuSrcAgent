@@ -30,6 +30,16 @@ exponent `-3` corresponds to a positive spectrum index `Gamma=3`. With a
 spatial-only likelihood, the fixed acceptance Gamma enters the predicted
 detector yield but is not determined from the event energies.
 
+## Local p-value and significance estimates
+
+Ordinary fits use the owner-approved half-chi-square estimate: dof=2 for free
+Gamma, dof=1 for fixed Gamma. Convert the estimated p-value to one-sided Gaussian
+significance with `Z = Phi^-1(1-p)`; only dof=1 gives `Z = sqrt(TS)`.
+At TS=0, the reporting convention remains p=0.5 and Z=0. Reports and CSVs record
+the method, dof and estimate flag. This changes the reported local estimate,
+not the likelihood fit or any empirical calibration. Historical artifacts stay
+as recorded.
+
 ## Selections, source weights and background trials
 
 - Intrinsic weights and explicit cuts follow the scientific request. Event cuts

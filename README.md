@@ -194,6 +194,8 @@ Excel workbook.
   flux may be biased. Hash verification establishes input identity, not scientific validity.
 - Report fitted quantities, TS, p-value and corresponding one-sided Gaussian
   significance in sigma, with local/post-trial and analytic/empirical labels.
+  Ordinary local p-values and significances are estimates: use half-chi-square
+  dof=2 for free Gamma and dof=1 for fixed Gamma; empirical calibration is separate.
   Zero background trials alone do not create a warning: an otherwise passing
   ordinary fit returns **COMPLETED**.
 - **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to

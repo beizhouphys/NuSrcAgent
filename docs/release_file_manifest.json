@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 5892,
-      "sha256": "052cea5c3ccedc0ae9cb5160de41a7a362a6bdf1082f37a0cfaea8b64d349b7f"
+      "bytes": 6376,
+      "sha256": "b4c70e46f0c83eb79dbc4262e97d59df5dc6e1361890e6c1f754967b682d1503"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -18,8 +18,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
-      "bytes": 4631,
-      "sha256": "e4d9cb99b0c8393fdb4a61183a536a53e16c92b089f1e73007beaae50f7f895f"
+      "bytes": 5115,
+      "sha256": "c575e45092c19028987eea1fd62ddd5980962140dcdbeacb5ce55419675fb47e"
     },
     {
       "path": ".github/pull_request_template.md",
@@ -48,8 +48,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13292,
-      "sha256": "837ea406d8aa20c6ceb8d89d3cc43a986ac3016afa7ae6ba1c0d63376cc8bc41"
+      "bytes": 13456,
+      "sha256": "74b04e843bfa6fc635cbff4cb556d4f5e18eb0a7401fa9c2e86606de39fbdb0a"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -98,13 +98,18 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 3309,
-      "sha256": "126bbde0cabc9922ed5392a8e8b51c04c3a575155686d935606b929a44b2076e"
+      "bytes": 3439,
+      "sha256": "f01dda39f97f2cd4adc5125dd6d246a7bf4914c25dae94b58b45bb4accf6d2b0"
     },
     {
       "path": "agent_core/normalize.py",
       "bytes": 6024,
       "sha256": "316c11bb0c4030ed0e09ce099b4c0e16a7efbff504fe92990cc146fefff1fa2c"
+    },
+    {
+      "path": "agent_core/p_value.py",
+      "bytes": 1304,
+      "sha256": "586e7a3192ea0c36273dfb366ca1ffee2ac92d44517a636b3300f1855343b54e"
     },
     {
       "path": "agent_core/planner.py",
@@ -113,13 +118,13 @@
     },
     {
       "path": "agent_core/report.py",
-      "bytes": 12004,
-      "sha256": "93a4672fe40b4e477cce6a141c9a93c29d001b6e735e2bf8120d92f906ecb81a"
+      "bytes": 12132,
+      "sha256": "9df199d38bdcbc3ff20141ff2a563622d32ea1fb227155442bf1dde6f921f472"
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 30431,
-      "sha256": "335b7a3fdd68d1965aa0baa2b6ca26dc336ee11d9a02d9d7ffbe80ba699fe7aa"
+      "bytes": 31661,
+      "sha256": "aed126fec02b037d7e31c17a0aaeeb6741eee379b2c6247ff412a0fdbe3f30a1"
     },
     {
       "path": "agent_core/schemas.py",
@@ -178,8 +183,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_dominance.py",
-      "bytes": 23165,
-      "sha256": "7be694c7edf1756022f88145fe697706970eb96f99308c64e44bfb15e5fc35d3"
+      "bytes": 23475,
+      "sha256": "bc658241035d7d790325f14275e79640a35b223b289d36c8a7f695560917ebea"
     },
     {
       "path": "analysis_backend/skyllh_dr2_pdfs.py",
@@ -248,8 +253,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 3435,
-      "sha256": "c02dfab9259413a36acb9aaa777eeece88d8a3e498f5d9e41c7370af279c367f"
+      "bytes": 3585,
+      "sha256": "666b18bf94b06c959ad30fe1debaeb27c09116c25f82c70dd0a3bb21ad376d0e"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -283,8 +288,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 8727,
-      "sha256": "d45812e76ecbc021488c7cabae8b896aafe85d78a41e79c835127b21baa2ecb6"
+      "bytes": 8783,
+      "sha256": "732f9a2736ff3e1d992b9dea60d4dfa9d3a9f0f7c36e6c823c4e26c695201668"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -313,13 +318,13 @@
     },
     {
       "path": "docs/release_scientific_baseline.md",
-      "bytes": 2794,
-      "sha256": "82882b9aff2b0b822c8ab36cf818bf1ccd8dca472daaa132e1fad534e3f3bab0"
+      "bytes": 3320,
+      "sha256": "e105312808da80911fbcd17a749a3851a40baebfbbe520ab994bc4de39f8f29d"
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 5828,
-      "sha256": "8deea6c1c806c263b6398bbec1ad96a0e8c7a63be71390282617e31b36980f75"
+      "bytes": 6312,
+      "sha256": "60cc6b963f0aee27c5da0894246c735b03e8c329284d57fa9f94b5211497fd7b"
     },
     {
       "path": "docs/testing_and_release.md",

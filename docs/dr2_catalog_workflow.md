@@ -39,7 +39,9 @@ means the saved record of data/code versions and settings used in that calculati
 
 ## Significance and example inputs
 
-Ordinary local p-values are analytic approximations. No empirical catalog
+Ordinary local p-values and significances are estimates: half-chi-square dof=2
+for fitted Gamma and dof=1 for fixed Gamma. The source CSV records the method,
+dof and estimate flag alongside each result. No empirical catalog
 post-trial significance is produced. The excluded 3386-source reproduction
 workflow's six stacks, signed fits and paper comparison products are not
 implicitly invoked by this general scan.

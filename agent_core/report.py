@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import math
 import importlib.metadata
 import os
 import platform
@@ -11,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from agent_core.p_value import local_p_value_estimate
 from agent_core.schemas import AnalysisConfig, NormalizedAnalysis, to_clean_dict
 from agent_core.analysis_outputs import write_catalog_outputs
 from agent_core.analysis_outputs import write_csv
@@ -19,18 +19,13 @@ from agent_core.validate import resolve_path
 from agent_core.environment import _required_paths
 
 
-def add_significance(result: dict[str, object]) -> None:
-    """Attach local analytic p and its one-sided Gaussian significance to fits."""
+def add_significance(result: dict[str, object], gamma_mode: str) -> None:
+    """Attach the declared local estimate to each ordinary fit."""
     fits = [result, *(item["fit"] for item in result.get("source_results", []))]
     for fit in fits:
         ts = fit.get("TS", fit.get("ts"))
-        if ts is None:
-            continue
-        significance = math.sqrt(max(float(ts), 0.0))
-        fit.setdefault("pre_trial_p", math.erfc(significance / math.sqrt(2.0)) / 2.0)
-        fit["pre_trial_significance"] = significance
-        fit["significance_convention"] = "one_sided_gaussian_sigma"
-        fit.setdefault("p_value_method", "analytic_half_chi_square_approximation")
+        if ts is not None:
+            fit.update(local_p_value_estimate(ts, fit.get("gamma_mode", gamma_mode)))
 
 
 def make_run_id() -> str:
@@ -38,15 +33,15 @@ def make_run_id() -> str:
 
 
 def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normalized: NormalizedAnalysis, result: dict[str, object], repo_root: str | Path | None = None) -> Path:
-    add_significance(result)
+    add_significance(result, normalized.gamma_mode)
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     run_dir = resolve_path(root, config.outputs.output_root) / make_run_id()
     run_dir.mkdir(parents=True, exist_ok=False)
     config_source = Path(config_path)
     shutil.copy2(config_source, run_dir / f"config.original{config_source.suffix}")
     if normalized.sample == "icecube_public_ps_14yr_dr2" and "TS" in result:
-        row = {key: result.get(key) for key in ("TS", "ns", "gamma", "gamma_legacy", "gamma_mode", "n_sources", "pre_trial_p", "pre_trial_significance", "significance_convention")}
-        row["p_value_method"] = result.get("p_value_method", "analytic_half_chi_square_approximation")
+        row = {key: result.get(key) for key in ("TS", "ns", "gamma", "gamma_legacy", "gamma_mode", "n_sources", "pre_trial_p", "pre_trial_significance", "significance_convention", "p_value_dof", "p_value_is_estimate")}
+        row["p_value_method"] = result["p_value_method"]
         table = run_dir / "fit_results.csv"
         write_csv(table, list(row), [row])
         result.setdefault("generated_files", {})["fit_results"] = str(table)
@@ -54,7 +49,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
         rows = []
         for item in result["source_results"]:
             fit = item["fit"]
-            rows.append({"source_number": item["source_number"], "source_name": item["source_name"], "ra_deg": item["ra_deg"], "dec_deg": item["dec_deg"], "TS": fit["TS"], "ns": fit["ns"], "gamma_skyllh": fit["gamma"], "gamma_legacy": fit["gamma_legacy"], "gamma_mode": fit["gamma_mode"], "pre_trial_p_approx": fit["pre_trial_p"], "pre_trial_significance": fit["pre_trial_significance"], "significance_convention": fit["significance_convention"], "p_value_method": fit["p_value_method"]})
+            rows.append({"source_number": item["source_number"], "source_name": item["source_name"], "ra_deg": item["ra_deg"], "dec_deg": item["dec_deg"], "TS": fit["TS"], "ns": fit["ns"], "gamma_skyllh": fit["gamma"], "gamma_legacy": fit["gamma_legacy"], "gamma_mode": fit["gamma_mode"], "pre_trial_p_approx": fit["pre_trial_p"], "pre_trial_significance": fit["pre_trial_significance"], "significance_convention": fit["significance_convention"], "p_value_method": fit["p_value_method"], "p_value_dof": fit["p_value_dof"], "p_value_is_estimate": fit["p_value_is_estimate"]})
         table = run_dir / "source_results.csv"
         write_csv(table, list(rows[0]) if rows else [], rows)
         result.setdefault("generated_files", {})["source_results"] = str(table)
@@ -74,7 +69,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
 
 
 def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> dict[str, Any]:
-    add_significance(result)
+    add_significance(result, normalized.gamma_mode)
     warnings = list(normalized.warnings)
     backend = str(result.get("backend", "mock_phase0"))
     extra_warnings = result.get("warnings", [])
@@ -86,7 +81,9 @@ def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> d
     if backend != "mock_phase0":
         report_result["significance_calibration"] = "analytic_approximation"
         report_result["post_trial_calibration"] = "unavailable"
-        report_result.setdefault("p_value_method", "analytic_half_chi_square_approximation")
+        estimate = local_p_value_estimate(0.0, normalized.gamma_mode)
+        for key in ("p_value_method", "p_value_dof", "p_value_is_estimate", "significance_convention"):
+            report_result.setdefault(key, estimate[key])
         if normalized.sample == "icecube_public_ps_10yr" and normalized.analysis_type == "catalog_stacking":
             report_result["source_scan_post_trial_calibration"] = "analytic_approximation"
     return {"schema_version": normalized.schema_version, "run": {"status": "completed", "backend": backend}, "analysis": {"type": normalized.analysis_type, "time_mode": normalized.time_mode, "likelihood_mode": normalized.likelihood_mode, "sample": normalized.sample, "n_sources": len(normalized.sources), "catalog_operation": normalized.catalog_operation if normalized.analysis_type == "catalog_stacking" else None}, "result": report_result, "diagnostics": {"n_background_trials": 0, "requested_background_trials": normalized.n_trials, "source_weight_sum": sum(source.weight for source in normalized.sources)}, "warnings": list(dict.fromkeys(warnings))}
@@ -127,7 +124,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             lines.append(f"- {key}: `{value}`")
     source_results = report["result"].get("source_results", [])
     if source_results:
-        lines.extend(["", "## Independent source fits", "", "Full table: [source_results.csv](source_results.csv)", "", "| Source number | Source | TS | ns | Gamma (SkyLLH) | Local p (analytic) | Significance (one-sided sigma, analytic) |", "| --- | --- | --- | --- | --- | --- | --- | "])
+        lines.extend(["", "## Independent source fits", "", "Full table: [source_results.csv](source_results.csv)", "", "| Source number | Source | TS | ns | Gamma (SkyLLH) | Local p (estimate) | Significance (one-sided sigma, estimate) |", "| --- | --- | --- | --- | --- | --- | --- | "])
         for item in source_results[:20]:
             fit = item["fit"]
             name = str(item["source_name"]).replace("|", "\\|").replace("\n", " ")
@@ -140,7 +137,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         if not artifact.is_absolute():
             artifact = path.parent / artifact if (path.parent / artifact).is_file() else artifact.resolve()
         lines.append(f"- [{key}]({artifact})" if artifact.is_file() else f"- {key}: `{value}`")
-    lines.extend(["", "Significance is the one-sided Gaussian equivalent of the reported p-value. Ordinary fits use a local analytic half-chi-square approximation; empirical and catalog-global calibration are unavailable without the corresponding background trials. This method description does not by itself create a review warning."])
+    lines.extend(["", "Significance is the one-sided Gaussian equivalent of the reported p-value. Local p-values and significances are estimates: fitted Gamma uses half-chi-square dof=2, fixed Gamma uses dof=1. At TS=0 the reporting convention is p=0.5 and Z=0; empirical and catalog-global calibration are unavailable without the corresponding background trials. This method description does not by itself create a review warning."])
     lines.extend(["", "## Background trials", "", f"- Requested: {report['diagnostics']['requested_background_trials']}", f"- Executed by this workflow: {report['diagnostics']['n_background_trials']}"])
     lines.extend(["", "## Backend warnings", "", "Fit-quality and other material warnings are listed in [review.md](review.md).", ""])
     if report["warnings"]:

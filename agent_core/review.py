@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List
 
+from agent_core.p_value import local_p_value_estimate
 from agent_core.simple_yaml import load_simple_yaml
 
 
@@ -144,12 +145,19 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False
         add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False)
     review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
+    if result.get("p_value_method") in {"analytic_half_chi_square_df1_estimate", "analytic_half_chi_square_df2_estimate"}:
+        expected = local_p_value_estimate(result["TS"], normalized.get("gamma_mode"))
+        valid_estimate = all(result.get(key) == expected[key] for key in ("p_value_method", "p_value_dof", "p_value_is_estimate", "significance_convention"))
+        for key in ("pre_trial_p", "pre_trial_significance"):
+            value = finite_float(result.get(key))
+            valid_estimate = valid_estimate and value is not None and math.isclose(value, expected[key], rel_tol=1e-12, abs_tol=1e-14)
+        add_check(review, "dr2_local_estimate", "pass" if valid_estimate else "fail", "p-value and significance estimates match Gamma mode and declared dof" if valid_estimate else "local estimate, method or dof is inconsistent with Gamma mode", False)
     table_path = result.get("generated_files", {}).get("fit_results")
     if table_path:
         table = read_csv_if_present(Path(table_path))
         table_ok = len(table) == 1
         if table_ok:
-            for key in ("TS", "ns", "gamma"):
+            for key in (("TS", "ns", "gamma", "pre_trial_p", "pre_trial_significance") if result.get("p_value_is_estimate") else ("TS", "ns", "gamma")):
                 value = finite_float(table[0].get(key))
                 reference = finite_float(result.get(key))
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
@@ -189,7 +197,10 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
             for field in ("ra_deg", "dec_deg"):
                 coordinate = finite_float(row.get(field))
                 table_ok = table_ok and coordinate is not None and abs(coordinate - float(source[field])) < 1e-10
-            for column, key in (("TS", "TS"), ("ns", "ns"), ("gamma_skyllh", "gamma")):
+            columns = [("TS", "TS"), ("ns", "ns"), ("gamma_skyllh", "gamma")]
+            if fit.get("p_value_is_estimate"):
+                columns.extend([("pre_trial_p_approx", "pre_trial_p"), ("pre_trial_significance", "pre_trial_significance")])
+            for column, key in columns:
                 value = finite_float(row.get(column))
                 reference = finite_float(fit.get(key)) if isinstance(fit, dict) else None
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
