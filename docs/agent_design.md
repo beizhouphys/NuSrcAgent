@@ -5,6 +5,12 @@ numerical likelihood fit. The assistant helps specify sources, spectra and
 weights; the Python analysis code evaluates the likelihood. The language model
 does not generate the fitted numbers or change settings to obtain a nicer result.
 
+Replies follow your explicitly requested language or an explicitly established
+personal language preference. Otherwise, they follow the language of your
+request. If there is no preference or language cue, such as a bare
+`$nusrcagent` invocation, replies default to English. The language used to
+write project instructions is not treated as your language preference.
+
 ## From a request to results
 
 1. Specify a sky position or catalog, the data sample and the intended analysis.
