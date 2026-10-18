@@ -63,9 +63,15 @@ same fitted parameters and the same search.
 
 Report fitted quantities, TS, p-value and the corresponding significance together.
 Use the one-sided Gaussian convention `Z = Phi^-1(1 - p)` in sigma and label
-local/pre-trial versus post-trial and analytic versus empirical values. For the
-existing analytic half-chi-square local approximation, `Z = sqrt(max(TS, 0))`.
-Do not substitute sqrt(TS) for an empirical or catalog-corrected significance.
+local/pre-trial versus post-trial and analytic versus empirical values. For ordinary local estimates, use half-chi-square dof=2 when Gamma is
+free (`gamma_mode=fitted`) and dof=1 when Gamma is fixed. With `TS > 0`, use
+`p = 0.5 exp(-TS/2)` for dof=2 or `p = 0.5 erfc(sqrt(TS/2))` for dof=1.
+Always convert with `Z = Phi^-1(1-p)`; `Z = sqrt(TS)` applies only to dof=1.
+At `TS=0`, retain the reporting convention `p=0.5`, `Z=0`.
+Label both p-value and significance as estimates, record the dof and method,
+and do not claim empirical calibration or a verified asymptotic distribution
+for free Gamma. Do not apply these formulas to empirical or catalog-corrected
+p-values or to a search across several fixed-Gamma hypotheses.
 Unavailable post-trial quantities must remain unavailable.
 
 Ordinary fits execute zero background trials. Record the requested and executed

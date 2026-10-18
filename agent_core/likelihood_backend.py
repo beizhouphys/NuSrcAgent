@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
+from agent_core.p_value import local_p_value_estimate
 from agent_core.schemas import ConfigError, NormalizedAnalysis
 from analysis_backend.dr1_catalog import run_catalog_time_integrated
 from analysis_backend.dr1_single_source import run_single_source_time_integrated
@@ -25,15 +25,18 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
         backend_name = "skyllh_v26_dr2_spatial_only" if normalized.likelihood_mode == "spatial_only" else "skyllh_v26_dr2_spatial_energy"
         result = {} if operation == "scan" else run_dr2_stacking(specs, **options)
         if operation != "scan":
-            result.update({"ts": result["TS"], "best_fit_ns": result["ns"], "pre_trial_p": math.erfc((max(float(result["TS"]), 0.0) / 2.0) ** 0.5) / 2.0})
-        result.update({"backend": backend_name, "p_value_method": "analytic_half_chi_square_approximation"})
+            result.update({"ts": result["TS"], "best_fit_ns": result["ns"]})
+        result.update({"backend": backend_name})
         if normalized.analysis_type == "catalog_stacking":
             result["catalog_operation"] = operation
         if operation in {"scan", "scan_and_stack"}:
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
             result["source_results"] = run_individual_source_scan(specs, **options)
             result["catalog_post_trial_p"] = None
-            result["catalog_post_trial_note"] = "Local p-values and significances use an analytic approximation; empirical catalog post-trial calibration is unavailable."
+            result["catalog_post_trial_note"] = "Local p-values and significances are half-chi-square estimates selected by Gamma mode; empirical catalog post-trial calibration is unavailable."
+        for fit in [result, *(item["fit"] for item in result.get("source_results", []))]:
+            if "TS" in fit:
+                fit.update(local_p_value_estimate(fit["TS"], normalized.gamma_mode))
         return result
     if normalized.sample != "icecube_public_ps_10yr":
         raise ConfigError(f"unsupported data sample: {normalized.sample}")

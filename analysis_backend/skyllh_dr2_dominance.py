@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
+from agent_core.p_value import local_p_value_estimate
 from agent_core.simple_yaml import load_simple_yaml
 from analysis_backend.skyllh_dr2_pdfs import BACKGROUND_ENERGY_FIELD, BACKGROUND_SPATIAL_FIELD
 from analysis_backend.skyllh_dr2_stacking import create_dr2_stacking_analysis, run_dr2_stacking
@@ -182,6 +183,7 @@ def screen_delete_one(repo_root, normalized, baseline_result):
 
 
 def _fit_summary(result, removed_numbers, label):
+    estimate = local_p_value_estimate(result["TS"], result.get("gamma_mode", "fitted"))
     return {
         "label": label,
         "removed_source_numbers": list(removed_numbers),
@@ -191,7 +193,11 @@ def _fit_summary(result, removed_numbers, label):
         "ns": float(result["ns"]),
         "gamma_skyllh": float(result["gamma"]),
         "gamma_legacy": float(result["gamma_legacy"]),
-        "pre_trial_p_analytic": float(result.get("pre_trial_p", np.nan)),
+        "pre_trial_p_analytic": estimate["pre_trial_p"],
+        "pre_trial_significance_estimate": estimate["pre_trial_significance"],
+        "p_value_method": estimate["p_value_method"],
+        "p_value_dof": estimate["p_value_dof"],
+        "p_value_is_estimate": True,
         "minimizer_warnflag": int(result["minimizer_status"].get("warnflag", -1)),
         "minimizer_iterations": int(result["minimizer_status"].get("nit", -1)),
         "source_hash": None,
@@ -215,7 +221,7 @@ def _run_reduced(specs, removed_numbers, repo_root, normalized, gamma_seed, ns_s
         event_dec_min_deg=normalized.get("event_dec_min_deg"),
         event_dec_max_deg=normalized.get("event_dec_max_deg"),
     )
-    result["pre_trial_p"] = float(math.erfc(math.sqrt(max(float(result["TS"]), 0.0) / 2.0)) / 2.0)
+    result.update(local_p_value_estimate(result["TS"], "fitted"))
     return result, _source_hash(selected)
 
 

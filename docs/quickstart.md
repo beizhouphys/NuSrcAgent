@@ -109,8 +109,8 @@ does not generate the DR1 PDF figures or optional workbook. Read both the run
 review and the central agent review before quoting a result.
 
 Expected completion for these checks is `COMPLETED`, when all other review checks
-pass. Report local analytic p-values and their one-sided Gaussian significances
-together; zero background trials and absent empirical/catalog-global calibration
+pass. Report local p-value and one-sided Gaussian significance estimates
+together: half-chi-square dof=2 for fitted Gamma, dof=1 for fixed Gamma; zero background trials and absent empirical/catalog-global calibration
 are method information, not warnings on their own. Actual fit or artifact warnings
 still produce `COMPLETED_WITH_WARNINGS`. If a review fails,
 do not treat its numerical output as valid or change scientific settings merely
