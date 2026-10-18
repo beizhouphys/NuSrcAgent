@@ -11,8 +11,10 @@ Current implementation: DR2 time-integrated point-source single fits, individual
 catalog scans and stacking; DR1 time-integrated spatial-only analysis retained.
 Both DR2 modes support single sources, scans and stacking. The DR1 path remains
 spatial-only with its existing single-source and catalog scan+stack behavior;
-it is not the DR2 model with a different event list. The optional RFC input is
-not bundled. The [README support table](../README.md#what-analyses-can-i-run) distinguishes
+it is not the DR2 model with a different event list. Two selected radio-bright
+AGN CSV snapshots are bundled in `data_input/sources/` for `--catalog` requests;
+only the original raw RFC input for the optional built-in reader remains external.
+The [README support table](../README.md#what-analyses-can-i-run) distinguishes
 implemented paths from the approved first-release target.
 
 Time-dependent analysis is not implemented in this copy. Planned single-source

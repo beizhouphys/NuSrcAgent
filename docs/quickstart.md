@@ -81,6 +81,24 @@ stacking result: the stack fits a different, joint source hypothesis.
 For a large catalog the scan can take substantial time because it repeats a
 fit for every row; begin with a small subset to assess the computing time.
 
+## Radio-bright AGN catalog: inspect before a large run
+
+The [bundled catalog notes](../data_input/sources/README.md) describe two
+3386-source RFC 2019c tables. The enriched CSV retains full stored coordinate
+precision and X-band flux density. This command only inspects its rows/columns:
+
+```bash
+.venv/bin/python run_agent_wrap.py inspect-catalog \
+  --catalog data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386_enriched.csv \
+  --name-column source_name --ra-column ra_deg --dec-column dec_deg \
+  --weight-column xband_flux_jy
+```
+
+To use it in a later analysis, pass that file to `create-catalog --catalog`;
+choose uniform or radio-flux weights as a scientific choice. Do not use the
+optional raw-RFC built-in reader for this bundled CSV. A complete source scan
+would run 3386 fits; the inspection command above runs no fits or trials.
+
 ## Read the outputs
 
 When the fit finishes, the printed response gives its completion status and

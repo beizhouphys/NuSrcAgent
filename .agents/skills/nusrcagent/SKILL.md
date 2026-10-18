@@ -56,8 +56,12 @@ confirmations. Supplied spectral indices are fixed unless fitting is requested.
 
 Use explicit column options for a catalog. The three-row example uses
 `--name-column name --ra-column ra_deg --dec-column dec_deg`.
-The optional built-in RFC catalog requires a separately obtained external input;
-do not assume it is bundled.
+For the distributed RFC 2019c radio-bright AGN sample, use
+`create-catalog --catalog data_input/sources/radio_bright_agn_rfc2019c_xband_ge_0p15_dec_lt87_3386_enriched.csv`,
+with `source_name`, `ra_deg`, `dec_deg` and, when requested, `xband_flux_jy`.
+The selected CSVs are bundled; the optional `--built-in-catalog` reader still
+requires the separate original raw RFC input. Do not select that reader for
+ordinary requests to use the bundled CSVs.
 
 5. Read the central task's `agent_review.json` and the run's `review.json` /
    `review.md`. Report every material warning. Never present failed-review
