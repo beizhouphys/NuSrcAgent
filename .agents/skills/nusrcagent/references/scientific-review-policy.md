@@ -42,6 +42,21 @@ Automatically retry only deterministic output failures such as a missing workboo
 
 Never automatically change gamma, weights, catalog rows, coordinate columns, trial correction, optimizer bounds, or likelihood definitions. Ask the user and record the decision in the next request artifact.
 
+
+Report fitted quantities, TS, p-value and the corresponding significance together.
+Use the one-sided Gaussian convention `Z = Phi^-1(1 - p)` in sigma and label
+local/pre-trial versus post-trial and analytic versus empirical values. For the
+existing analytic half-chi-square local approximation, `Z = sqrt(max(TS, 0))`.
+Do not substitute sqrt(TS) for an empirical or catalog-corrected significance.
+Unavailable post-trial quantities must remain unavailable.
+
+Ordinary fits execute zero background trials. Record the requested and executed
+counts and the analytic method as information, without creating a warning solely
+for absent trials, analytic local calibration or unavailable empirical/post-trial
+values. When all other checks pass, return `COMPLETED`. Actual fit-quality,
+input or artifact warnings still produce `COMPLETED_WITH_WARNINGS`; `COMPLETED`
+does not by itself establish a calibrated detection or publication readiness.
+
 ## Publication Language
 
 Use `TS`, defined after maximizing the likelihood, without an added maximization suffix.

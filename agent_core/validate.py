@@ -39,8 +39,6 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         result.errors.append("only background.method='ra_scramble' is supported now")
     if config.background.n_trials <= 0:
         result.errors.append("background.n_trials must be positive")
-    if config.background.n_trials < 1000:
-        result.warnings.append("background.n_trials < 1000 gives poor p-value resolution")
     event_cut = config.background.event_abs_dec_max_deg
     if event_cut is not None and (not math.isfinite(event_cut) or not 0.0 < event_cut <= 90.0):
         result.errors.append("background.event_abs_dec_max_deg must be finite and in (0, 90]")

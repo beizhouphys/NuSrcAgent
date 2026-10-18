@@ -108,9 +108,11 @@ part of `review.json`. Separate per-source directories are not promised. DR2
 does not generate the DR1 PDF figures or optional workbook. Read both the run
 review and the central agent review before quoting a result.
 
-Expected completion for these checks is `COMPLETED_WITH_WARNINGS`, with no failed
-review checks. Warnings about the analytic p-value approximation and absent
-empirical/catalog-global calibration must remain visible. If a review fails,
+Expected completion for these checks is `COMPLETED`, when all other review checks
+pass. Report local analytic p-values and their one-sided Gaussian significances
+together; zero background trials and absent empirical/catalog-global calibration
+are method information, not warnings on their own. Actual fit or artifact warnings
+still produce `COMPLETED_WITH_WARNINGS`. If a review fails,
 do not treat its numerical output as valid or change scientific settings merely
 to match the reference numbers.
 

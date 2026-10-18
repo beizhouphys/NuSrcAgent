@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 4920,
-      "sha256": "e01ac558f71d31d9acb6b417ad67b576c161ac4a2d35a146cf678dd2cfb402f7"
+      "bytes": 5892,
+      "sha256": "052cea5c3ccedc0ae9cb5160de41a7a362a6bdf1082f37a0cfaea8b64d349b7f"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -18,8 +18,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
-      "bytes": 3694,
-      "sha256": "0c76df9cea00446e777e5dd7b252f722c2768255492300c07915125ce1ce4d2c"
+      "bytes": 4631,
+      "sha256": "e4d9cb99b0c8393fdb4a61183a536a53e16c92b089f1e73007beaae50f7f895f"
     },
     {
       "path": ".github/pull_request_template.md",
@@ -48,8 +48,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13022,
-      "sha256": "cc26d0e8c771b100509aa387755d3c83f611ab003230599858c94a50134e8c7d"
+      "bytes": 13292,
+      "sha256": "837ea406d8aa20c6ceb8d89d3cc43a986ac3016afa7ae6ba1c0d63376cc8bc41"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -98,8 +98,8 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 3316,
-      "sha256": "3b7414ac98227bfe670ba7e9ae28b9422b6ea4db36106a6e8256e1c4b5f50cfe"
+      "bytes": 3309,
+      "sha256": "126bbde0cabc9922ed5392a8e8b51c04c3a575155686d935606b929a44b2076e"
     },
     {
       "path": "agent_core/normalize.py",
@@ -113,13 +113,13 @@
     },
     {
       "path": "agent_core/report.py",
-      "bytes": 10634,
-      "sha256": "b7c426e957afa610ce618974184c91a392cdad848ce4c3c82f630736665117b4"
+      "bytes": 12004,
+      "sha256": "93a4672fe40b4e477cce6a141c9a93c29d001b6e735e2bf8120d92f906ecb81a"
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 30497,
-      "sha256": "ec09ea93beb0fa8380e8d18af1b168be6dc22099e3b47fa8d0f15a90d292fccc"
+      "bytes": 30431,
+      "sha256": "335b7a3fdd68d1965aa0baa2b6ca26dc336ee11d9a02d9d7ffbe80ba699fe7aa"
     },
     {
       "path": "agent_core/schemas.py",
@@ -138,8 +138,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 9532,
-      "sha256": "c267ddb44a467e4ecff3e5d464b53b3aa9b13fcc141270f09b24c595a183527f"
+      "bytes": 9399,
+      "sha256": "7f06792483b70d1d1fd8381aadb11643ea43d206d20e684abaaf67ebe0cf0205"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -148,13 +148,13 @@
     },
     {
       "path": "analysis_backend/dr1_catalog.py",
-      "bytes": 13524,
-      "sha256": "0d700e04c05fa593d0d33a73efd0664d57b48285cd57e8cff72e3f4a9d6b5717"
+      "bytes": 13376,
+      "sha256": "aaa9b1753e185758cb8bde2b9ee63f9789b4a48a22904f785f571bdc2241b099"
     },
     {
       "path": "analysis_backend/dr1_single_source.py",
-      "bytes": 10752,
-      "sha256": "1980092fa38f2426704dc9a9fc2f424872790c84f4281ddb7adb8cca445e6951"
+      "bytes": 10658,
+      "sha256": "3a0d3e8dafa54543a183b2eac9b43f2411a94e7e04a0327f7648804728790e9b"
     },
     {
       "path": "analysis_backend/event_pdf_data.py",
@@ -283,8 +283,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 8576,
-      "sha256": "6e43d38e5937ad81dd8983c35ad891dc4730ad06fee70ef9e6169737ecb0134b"
+      "bytes": 8727,
+      "sha256": "d45812e76ecbc021488c7cabae8b896aafe85d78a41e79c835127b21baa2ecb6"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -318,8 +318,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 4891,
-      "sha256": "6390304b9d74ccce6670e20e32512cd5ad0f50123e35e59959b04f200d8187ae"
+      "bytes": 5828,
+      "sha256": "8deea6c1c806c263b6398bbec1ad96a0e8c7a63be71390282617e31b36980f75"
     },
     {
       "path": "docs/testing_and_release.md",

@@ -19,18 +19,33 @@ from agent_core.validate import resolve_path
 from agent_core.environment import _required_paths
 
 
+def add_significance(result: dict[str, object]) -> None:
+    """Attach local analytic p and its one-sided Gaussian significance to fits."""
+    fits = [result, *(item["fit"] for item in result.get("source_results", []))]
+    for fit in fits:
+        ts = fit.get("TS", fit.get("ts"))
+        if ts is None:
+            continue
+        significance = math.sqrt(max(float(ts), 0.0))
+        fit.setdefault("pre_trial_p", math.erfc(significance / math.sqrt(2.0)) / 2.0)
+        fit["pre_trial_significance"] = significance
+        fit["significance_convention"] = "one_sided_gaussian_sigma"
+        fit.setdefault("p_value_method", "analytic_half_chi_square_approximation")
+
+
 def make_run_id() -> str:
     return "run_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + ""
 
 
 def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normalized: NormalizedAnalysis, result: dict[str, object], repo_root: str | Path | None = None) -> Path:
+    add_significance(result)
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     run_dir = resolve_path(root, config.outputs.output_root) / make_run_id()
     run_dir.mkdir(parents=True, exist_ok=False)
     config_source = Path(config_path)
     shutil.copy2(config_source, run_dir / f"config.original{config_source.suffix}")
     if normalized.sample == "icecube_public_ps_14yr_dr2" and "TS" in result:
-        row = {key: result.get(key) for key in ("TS", "ns", "gamma", "gamma_legacy", "gamma_mode", "n_sources", "pre_trial_p")}
+        row = {key: result.get(key) for key in ("TS", "ns", "gamma", "gamma_legacy", "gamma_mode", "n_sources", "pre_trial_p", "pre_trial_significance", "significance_convention")}
         row["p_value_method"] = result.get("p_value_method", "analytic_half_chi_square_approximation")
         table = run_dir / "fit_results.csv"
         write_csv(table, list(row), [row])
@@ -39,7 +54,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
         rows = []
         for item in result["source_results"]:
             fit = item["fit"]
-            rows.append({"source_number": item["source_number"], "source_name": item["source_name"], "ra_deg": item["ra_deg"], "dec_deg": item["dec_deg"], "TS": fit["TS"], "ns": fit["ns"], "gamma_skyllh": fit["gamma"], "gamma_legacy": fit["gamma_legacy"], "gamma_mode": fit["gamma_mode"], "pre_trial_p_approx": math.erfc((max(float(fit["TS"]), 0.0) / 2.0) ** 0.5) / 2.0})
+            rows.append({"source_number": item["source_number"], "source_name": item["source_name"], "ra_deg": item["ra_deg"], "dec_deg": item["dec_deg"], "TS": fit["TS"], "ns": fit["ns"], "gamma_skyllh": fit["gamma"], "gamma_legacy": fit["gamma_legacy"], "gamma_mode": fit["gamma_mode"], "pre_trial_p_approx": fit["pre_trial_p"], "pre_trial_significance": fit["pre_trial_significance"], "significance_convention": fit["significance_convention"], "p_value_method": fit["p_value_method"]})
         table = run_dir / "source_results.csv"
         write_csv(table, list(rows[0]) if rows else [], rows)
         result.setdefault("generated_files", {})["source_results"] = str(table)
@@ -59,6 +74,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
 
 
 def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> dict[str, Any]:
+    add_significance(result)
     warnings = list(normalized.warnings)
     backend = str(result.get("backend", "mock_phase0"))
     extra_warnings = result.get("warnings", [])
@@ -111,11 +127,11 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             lines.append(f"- {key}: `{value}`")
     source_results = report["result"].get("source_results", [])
     if source_results:
-        lines.extend(["", "## Independent source fits", "", "Full table: [source_results.csv](source_results.csv)", "", "| Source number | Source | TS | ns | Gamma (SkyLLH) |", "| --- | --- | --- | --- | --- | "])
+        lines.extend(["", "## Independent source fits", "", "Full table: [source_results.csv](source_results.csv)", "", "| Source number | Source | TS | ns | Gamma (SkyLLH) | Local p (analytic) | Significance (one-sided sigma, analytic) |", "| --- | --- | --- | --- | --- | --- | --- | "])
         for item in source_results[:20]:
             fit = item["fit"]
             name = str(item["source_name"]).replace("|", "\\|").replace("\n", " ")
-            lines.append(f"| {item['source_number']} | {name} | {fit['TS']:.8g} | {fit['ns']:.8g} | {fit['gamma']:.8g} |")
+            lines.append(f"| {item['source_number']} | {name} | {fit['TS']:.8g} | {fit['ns']:.8g} | {fit['gamma']:.8g} | {fit['pre_trial_p']:.8g} | {fit['pre_trial_significance']:.8g} |")
         if len(source_results) > 20:
             lines.extend(["", f"Showing the first 20 of {len(source_results)} sources; the CSV contains every source."])
     lines.extend(["", "## Artifacts", "", "- [Complete numeric report](report.yaml)", "- [Configuration](config.normalized.yaml)", "- [Provenance](provenance.yaml)"])
@@ -124,8 +140,9 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         if not artifact.is_absolute():
             artifact = path.parent / artifact if (path.parent / artifact).is_file() else artifact.resolve()
         lines.append(f"- [{key}]({artifact})" if artifact.is_file() else f"- {key}: `{value}`")
+    lines.extend(["", "Significance is the one-sided Gaussian equivalent of the reported p-value. Ordinary fits use a local analytic half-chi-square approximation; empirical and catalog-global calibration are unavailable without the corresponding background trials. This method description does not by itself create a review warning."])
     lines.extend(["", "## Background trials", "", f"- Requested: {report['diagnostics']['requested_background_trials']}", f"- Executed by this workflow: {report['diagnostics']['n_background_trials']}"])
-    lines.extend(["", "## Backend warnings", "", "Fit-quality and significance-calibration warnings are listed in [review.md](review.md).", ""])
+    lines.extend(["", "## Backend warnings", "", "Fit-quality and other material warnings are listed in [review.md](review.md).", ""])
     if report["warnings"]:
         lines.extend([f"- {warning}" for warning in report["warnings"]])
     else:

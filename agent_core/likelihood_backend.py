@@ -33,7 +33,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
             result["source_results"] = run_individual_source_scan(specs, **options)
             result["catalog_post_trial_p"] = None
-            result.setdefault("warnings", []).append("Source-scan local p-values use an analytic approximation; no empirical catalog post-trial calibration has been performed.")
+            result["catalog_post_trial_note"] = "Local p-values and significances use an analytic approximation; empirical catalog post-trial calibration is unavailable."
         return result
     if normalized.sample != "icecube_public_ps_10yr":
         raise ConfigError(f"unsupported data sample: {normalized.sample}")
