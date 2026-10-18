@@ -1,0 +1,4 @@
+interface:
+  display_name: "NuSrcAgent"
+  short_description: "Run and review single-source and stacking searches"
+  default_prompt: "Use $nusrcagent to inspect my inputs, confirm scientific assumptions, run the deterministic likelihood tools, and review all outputs."
