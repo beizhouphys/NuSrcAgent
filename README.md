@@ -184,6 +184,17 @@ The guide includes observed numerical references from the local clean-install
 checks. DR2 currently produces numerical reports/tables, not PDF figures or an
 Excel workbook.
 
+## Radio-bright AGN catalog for testing
+
+Two CSV snapshots of the 3386-source RFC 2019c radio-bright AGN sample are
+included in [data_input/sources/](data_input/sources/README.md), with column definitions,
+selection and attribution. Use the enriched table for full stored coordinate
+precision or X-band radio-flux weighting; the other table contains positions only.
+These small tables come with the Git clone, separately from the IceCube bundles.
+For example, ask `$nusrcagent` to inspect the bundled radio-bright AGN catalog
+without running fits. A full individual scan requires 3386 fits; start small
+when testing. See the [catalog notes](data_input/sources/README.md).
+
 ## Before interpreting a result
 
 - An ordinary fit runs no background trials. Its local p-value uses an analytic

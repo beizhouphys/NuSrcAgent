@@ -10,3 +10,9 @@ precomputed PDFs are placed under `data_output/` at the paths expected by the
 likelihood. Do not edit these fixed input files to fix an installation error.
 See [installation](../docs/input_installation.md) and
 [data descriptions](../docs/data_and_environment.md) for the DR1/DR2 distinction.
+
+## Source catalogs
+
+The two versioned radio-bright AGN test CSVs and their column/selection notes
+are in [sources/](sources/README.md). They are included in the Git clone;
+other owner-private catalogs are not part of the GitHub copy.

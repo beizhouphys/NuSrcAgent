@@ -20,6 +20,14 @@ asset IDs and hashes are pinned. Private downloads reuse the collaborator's
 GitHub login; `bash install.sh` needs no local bundle directory.
 See [installation details](input_installation.md) and [attribution](data_attribution.md).
 
+## Source catalogs
+
+The versioned radio-bright AGN CSVs are in `data_input/sources/`; see the
+[catalog notes](../data_input/sources/README.md) for the 3386-source selection,
+columns, radio-flux weights and attribution. They are included in the code
+checkout, not in the large IceCube/PDF input bundles. Other private catalogs
+are not distributed. Use `--catalog` to analyze a supplied CSV.
+
 ## DR2: the 14-year sample
 
 Raw release directory:

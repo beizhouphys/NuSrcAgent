@@ -11,6 +11,10 @@ node_modules/
 *.swp
 data_input/*
 !data_input/README.md
+!data_input/sources/
+data_input/sources/*
+!data_input/sources/README.md
+!data_input/sources/radio_bright_agn*
 data_output/*
 !data_output/bkgd_pdfs/
 data_output/bkgd_pdfs/*

@@ -42,3 +42,15 @@ with their own provenance and hashes. They are distributed separately from raw
 IceCube inputs. CC0 attribution of the raw data does not itself grant a license
 for NuSrcAgent software. Project license/authorship/citation metadata remains
 part of final release preparation.
+
+## Radio-bright AGN source catalog
+
+The two selected CSVs in `data_input/sources/` are derived from RFC 2019c,
+created by Leonid Petrov and contributors. The original catalog header identifies
+its source observations and requests credit to the original VLBI survey
+publications; see the [RFC 2019c catalog and references](http://astrogeo.org/vlbi/solutions/rfc_2019c).
+The snapshots contain the same 3386 sources selected in this project's
+[arXiv:2103.12813](https://arxiv.org/abs/2103.12813) comparison. Their radio-flux
+columns are not IceCube data, detector acceptance or neutrino-flux measurements.
+The [catalog notes](../data_input/sources/README.md) define columns and selection;
+the release-file manifest records the exact distributed bytes and hashes.
