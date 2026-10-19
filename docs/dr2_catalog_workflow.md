@@ -115,8 +115,8 @@ record `scan_fit_procedure=skyllh_lbfgs_v1` in the task, request and normalized
 configuration. This is the original SkyLLH optimizer, without an additional
 search over every Gamma interpolation interval and stencil switch. The
 separate single-source and joint stacking settings are preserved. The backend
-passes the recorded scan procedure explicitly and review rejects a different
-procedure or an extra maximum search under the original-optimizer label.
+passes the recorded scan procedure explicitly and review rejects an absent or
+different procedure declaration, or an extra maximum search under the original-optimizer label.
 
 The CLI records this through a dedicated catalog-default helper, independently
 of single-source flux-reporting defaults. Loading, showing or recovering a
