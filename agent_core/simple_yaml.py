@@ -158,7 +158,10 @@ def format_scalar(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, (int, float)):
-        return str(value)
+        text = str(value)
+        if isinstance(value, float) and "e" in text and "." not in text.split("e")[0]:
+            text = text.replace("e", ".0e")
+        return text
     text = str(value)
     if text == "" or needs_quotes(text):
         return '"' + text.replace('"', '\\"') + '"'
@@ -166,6 +169,8 @@ def format_scalar(value: Any) -> str:
 
 
 def needs_quotes(text: str) -> bool:
+    if text.startswith((">", "|")):
+        return True
     if any(char in text for char in [":", "#", "{", "}", "[", "]", ","]):
         return True
     if text.lower() in {"true", "false", "null", "none", "~"}:

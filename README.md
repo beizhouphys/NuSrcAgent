@@ -255,5 +255,7 @@ p value and significance columns, an analytic independent-source catalog correct
 and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
 See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.
 
+New DR2 spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and free-Gamma flux–Gamma contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
+
 New catalog scans explicitly record the original SkyLLH optimizer separately
 from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).

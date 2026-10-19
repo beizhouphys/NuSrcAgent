@@ -83,6 +83,21 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     bounds = result.get("fit_bounds", {})
     ns_bounds = bounds.get("ns")
     gamma_bounds = bounds.get("gamma_skyllh")
+    requested_procedure = normalized.get("fit_procedure", "skyllh_lbfgs_v1")
+    procedure_ok = result.get("fit_procedure", "skyllh_lbfgs_v1") == requested_procedure
+    if requested_procedure == "gamma_piecewise_v1":
+        search = result.get("maximum_search") or {}
+        intervals = search.get("intervals", [])
+        procedure_ok = procedure_ok and search.get("procedure") == requested_procedure
+        procedure_ok = procedure_ok and search.get("ns_bounds") == ns_bounds and search.get("gamma_bounds") == gamma_bounds
+        procedure_ok = procedure_ok and len(intervals) == len(search.get("switch_points", []))+1
+        if procedure_ok:
+            procedure_ok = (search["gamma"] == gamma and search["ns"] == ns_hat
+                and math.isclose(2*search["log_likelihood_ratio"], ts, rel_tol=1e-7, abs_tol=1e-6)
+                and search["improvement_in_TS"] >= -1e-7
+                and all(row["log_likelihood_ratio"] <= search["log_likelihood_ratio"]+1e-6 for row in intervals))
+    add_check(review, "dr2_fit_procedure", "pass" if procedure_ok else "fail",
+              "fit procedure and recorded maximum-search evidence match the request" if procedure_ok else "fit procedure or maximum-search evidence is inconsistent", False)
     if isinstance(ns_bounds, list) and len(ns_bounds) == 2:
         valid = valid and ns_hat is not None and float(ns_bounds[0]) <= ns_hat <= float(ns_bounds[1])
     if result.get("gamma_mode") == "fitted" and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
@@ -147,7 +162,9 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     valid_fractions = len(dataset_fractions) == 4 and all(value is not None and value >= 0.0 for value in dataset_fractions) and abs(sum(value for value in dataset_fractions if value is not None) - 1.0) < 1e-9
     add_check(review, "dr2_dataset_fractions", "pass" if valid_fractions else "fail", "f_k is non-negative and normalized across four datasets" if valid_fractions else "f_k is invalid or not normalized", False)
     minimizer_ok = result.get("minimizer_status", {}).get("warnflag") == 0
-    add_check(review, "dr2_minimizer", "pass" if minimizer_ok else "fail", "SkyLLH minimizer converged without warnings" if minimizer_ok else "optimizer did not converge", False)
+    minimizer_message = ("Original SkyLLH fit and piecewise Gamma maximum search completed"
+                         if requested_procedure == "gamma_piecewise_v1" else "SkyLLH minimizer converged without warnings")
+    add_check(review, "dr2_minimizer", "pass" if minimizer_ok else "fail", minimizer_message if minimizer_ok else "optimizer did not converge", False)
     provenance = result.get("pdf_provenance", {})
     provenance_paths = [root / str(value) for value in provenance.values()] if isinstance(provenance, dict) else []
     expected_provenance_count = 1 if likelihood_mode == "spatial_only" else 2
@@ -180,6 +197,9 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
         add_check(review, "dr2_fit_table", "pass" if table_ok else "fail", "fit CSV matches the numeric report" if table_ok else "fit CSV is missing or inconsistent", False)
 
+    if normalized.get("flux_measurement_ts_threshold") is not None and normalized.get("analysis_type") == "single_source" and result.get("n_sources") == 1:
+        from agent_core.flux_measurement_review import review_flux_measurement
+        review_flux_measurement(review, result, normalized, root)
     if normalized.get("flux_upper_limit_gammas") and result.get("n_sources") == 1:
         review_flux_suite(review, report, normalized, root)
     elif normalized.get("flux_upper_limit_cl") is not None and not normalized.get("flux_upper_limit_gammas"):
@@ -213,9 +233,7 @@ def review_flux_upper_limit(review, result, normalized):
     valid = valid and result.get("gamma_mode") == "fixed" and result.get("n_sources") == 1 and result.get("likelihood_mode") == "spatial_energy" and limit.get("method") == "asymptotic_fixed_gamma_profile_likelihood" and limit.get("sidedness") == "one_sided_upper" and limit.get("flavor") == "nu_mu+anti_nu_mu" and limit.get("pivot_energy_gev") == 1e5 and limit.get("phi0_unit") == "GeV^-1 cm^-2 s^-1" and limit.get("coverage_validated") is False and limit.get("systematic_uncertainties_included") is False
     for field in ("event_selection", "event_dec_min_deg", "event_dec_max_deg"):
         valid = valid and limit.get(field) == result.get(field)
-    add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent; coverage remains unvalidated" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
-    if ns_upper is not None and finite_float(result.get("ns")) is not None and result["ns"] <= 1e-5:
-        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit has ns at zero; asymptotic coverage at the physical boundary remains unvalidated", False)
+    add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
     if normalized.get("_flux_suite_member"):
         return
     files = result.get("generated_files", {})
@@ -493,7 +511,8 @@ def review_flux_suite(review, report, normalized, root):
         return
     for fit, gamma in zip(fits, expected):
         child_normalized = dict(normalized, gamma_mode="fixed", spectral_indices=[-gamma],
-                                flux_upper_limit_gammas=[], _flux_suite_member=True)
+                                flux_upper_limit_gammas=[], flux_measurement_ts_threshold=None,
+                                fit_procedure="skyllh_lbfgs_v1", _flux_suite_member=True)
         child = {"checks": [], "metrics": {}}
         review_dr2_run(child, dict(report, result=fit), child_normalized, root)
         for check in child["checks"]:
@@ -521,6 +540,9 @@ def review_flux_suite(review, report, normalized, root):
         valid = valid and all(Path(files["flux_spectrum_"+suffix]).stat().st_size > 100 for suffix in ("png", "pdf", "svg"))
         curves = read_csv_if_present(Path(files["spectrum_curves"]))
         hypotheses = {f"source_gamma_{limit['gamma']:g}": limit for limit in limits}
+        measurement = result.get("flux_measurement", {})
+        if measurement.get("reported"):
+            hypotheses["source_measurement"] = None
         references = {"NGC_1068", "diffuse_tracks", "diffuse_starting_tracks"}
         valid = valid and {row["curve"] for row in curves} == set(hypotheses) | references
         for row in curves:
@@ -528,7 +550,11 @@ def review_flux_suite(review, report, normalized, root):
             value = float(row["e2_flux"])
             valid = valid and row["e2_flux_unit"] == "GeV cm^-2 s^-1" and float(row["display_factor"]) == factor
             valid = valid and math.isclose(value, float(row["original_e2_flux"])*factor, rel_tol=1e-12, abs_tol=0.)
-            if row["curve"] in hypotheses:
+            if row["curve"] == "source_measurement":
+                energy = float(row["energy_gev"])
+                expected_value = energy**2 * measurement["phi0_hat"] * (energy/measurement["pivot_energy_gev"])**(-measurement["gamma"])
+                valid = valid and math.isclose(value, expected_value, rel_tol=1e-12, abs_tol=0.)
+            elif row["curve"] in hypotheses:
                 limit = hypotheses[row["curve"]];energy = float(row["energy_gev"])
                 expected_value = energy**2 * limit["phi0_upper_limit"] * (energy / 1e5)**(-limit["gamma"])
                 valid = valid and math.isclose(value, expected_value, rel_tol=1e-12, abs_tol=0.)

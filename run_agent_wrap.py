@@ -119,6 +119,7 @@ def main(argv=None) -> int:
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
+            set_flux_measurement(task, args)
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
             sources = None if args.source is None else [parse_source(value) for value in args.source]
@@ -133,6 +134,7 @@ def main(argv=None) -> int:
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
+            set_flux_measurement(task, args)
             set_scan_fit_procedure(task, args)
             path = save_task(task, repo_root)
         else:
@@ -183,7 +185,21 @@ def set_flux_upper_limits(task, args):
     task["parameters"]["flux_upper_limit_cl"] = parameter(0.95 if enabled else None, source, True)
     task["parameters"]["flux_upper_limit_gammas"] = parameter([-2.0, -2.5, -3.0] if enabled else [], source, True)
     if enabled:
-        task["parameters"]["flux_upper_limit_gammas"]["basis"] = "Owner-approved separate fixed E^-2, E^-2.5 and E^-3 spectra; one-sided asymptotic 95% limits and reference-spectrum plot; coverage unvalidated."
+        task["parameters"]["flux_upper_limit_gammas"]["basis"] = "Owner-approved separate fixed E^-2, E^-2.5 and E^-3 spectra; one-sided asymptotic 95% limits and reference-spectrum plot."
+
+
+def set_flux_measurement(task, args):
+    """Record the approved single-source procedure only for newly created tasks."""
+    from agent_core.task_state import parameter
+    if (task["workflow"] != "single_source" or args.data_sample != "icecube_public_ps_14yr_dr2"
+            or task["parameters"]["likelihood_mode"]["value"] != "spatial_energy"
+            or task.get("intent") == "gaussian_score_diagnostic"):
+        return
+    fitted = task["parameters"]["gamma_mode"]["value"] == "fitted"
+    task["parameters"]["fit_procedure"] = parameter("gamma_piecewise_v1" if fitted else "skyllh_lbfgs_v1", "system_default", True)
+    task["parameters"]["fit_procedure"]["basis"] = "Owner-approved single-source maximum search; likelihood, PDFs and bounds retained. Any corresponding trials must use the same recorded procedure."
+    task["parameters"]["flux_measurement_ts_threshold"] = parameter(9.0, "system_default", True)
+    task["parameters"]["flux_measurement_ts_threshold"]["basis"] = "Owner-approved strict TS > 9 criterion for reporting primary-spectrum flux measurement, profile intervals and free-Gamma joint contours."
 
 
 def set_source_window(task, args):

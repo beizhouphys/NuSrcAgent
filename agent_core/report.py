@@ -114,7 +114,7 @@ def build_provenance(config_path: Path, normalized: NormalizedAnalysis, repo_roo
     input_paths = [repo_root / path for path in _required_paths(normalized.sample, normalized.likelihood_mode)]
     if config.catalog is not None and config.catalog.file is not None:
         input_paths.append(resolve_path(repo_root, config.catalog.file))
-    if normalized.flux_upper_limit_gammas:
+    if normalized.flux_upper_limit_gammas or normalized.flux_measurement_ts_threshold is not None:
         input_paths.extend(sorted((repo_root / "data_input/references/neutrino_spectra").glob("*")))
     input_hashes = {str(path): sha256_file(path) for path in input_paths if path.is_file()}
     try:
@@ -135,7 +135,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     lines.extend(f"- {key}: `{value}`" for key, value in report["analysis"].items() if value is not None)
     lines.extend(["", "## Result", ""])
     for key, value in report["result"].items():
-        if not isinstance(value, (dict, list)) and key != "catalog_post_trial_note":
+        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "fit_procedure"}:
             lines.append(f"- {key}: `{value}`")
     source_results = report["result"].get("source_results", [])
     if source_results:
@@ -146,6 +146,32 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         if summary.get("sqrt_ts_png"):
             lines.extend(["", "![Observed source sqrt(TS) distribution](" + summary["sqrt_ts_png"] + ")"])
     flux_entries = [(report["result"], "Source")] if not source_results else [(item["fit"], item["source_name"]) for item in source_results]
+    measurements = [(fit["flux_measurement"], name, fit.get("generated_files", {}))
+                    for fit, name in flux_entries if fit.get("flux_measurement", {}).get("reported")]
+    if measurements:
+        lines.extend(["", "## Primary-spectrum flux measurement", "",
+            "The strict TS > 9 criterion controls reporting, not detection significance. "
+            "The primary Gamma hypothesis is retained; these estimates are separate from the fixed-spectrum upper limits.", "",
+            "dPhi_(nu_mu+anti_nu_mu)/dE = phi1TeV (E / 1 TeV)^(-Gamma). "
+            "Normalization is in GeV^-1 cm^-2 s^-1.", "",
+            "| Source | Parameter | Best fit | 68.27% profile interval | 95% profile interval |",
+            "| --- | --- | --- | --- | --- |"])
+        for measurement, name, files in measurements:
+            for parameter, best in (("phi0", measurement["phi0_hat"]), ("gamma", measurement["gamma"])):
+                intervals = [item for item in measurement["intervals"] if item["parameter"] == parameter]
+                if not intervals:
+                    continue
+                cells = [f"[{item['lower']:.7g}, {item['upper']:.7g}]" + (" (bound reached)" if item["lower_at_boundary"] or item["upper_at_boundary"] else "") for item in intervals]
+                lines.append(f"| {str(name).replace('|', '/')} | {'phi1TeV' if parameter == 'phi0' else 'Gamma'} | {best:.7g} | {cells[0]} | {cells[1]} |")
+            for key in ("flux_measurement", "flux_spectrum_png", "flux_contour_png"):
+                if key in files:
+                    lines.extend(["", f"[{name}: {key}]({files[key]})"])
+        lines.extend(["", "One-dimensional intervals use 2 Delta ln L = 1 (68.27%) and 3.841459 (95%). "
+            "For free Gamma, each fixed flux normalization reoptimizes Gamma with the corresponding detector yield; Gamma intervals profile ns. "
+            "Joint normalization-Gamma contours use 2 degrees of freedom: 2.295749 and 5.991465. "
+            "Source spectral shading is a sampled envelope of the 68.27% joint region, not a simultaneous confidence band. "
+            "A fixed-Gamma fit instead uses its one-dimensional normalization interval. "
+            "The source curves represent complete power laws; their display range does not establish a measured sensitive range."])
     if any(fit.get("flux_upper_limit_fits") or fit.get("flux_upper_limit") for fit, _ in flux_entries):
         lines.extend(["", "## Fixed-spectrum flux upper limits", "",
             "Separate constrained fits for each power-law spectrum; the primary fit above keeps its requested Gamma mode.", "",
@@ -163,7 +189,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
                 if key.startswith("flux_") or key == "spectrum_curves":
                     flux_links.append(f"[{name}: {key}]({value})")
         lines.extend(["", *flux_links])
-        lines.extend(["", "Confidence level and threshold are recorded for every limit. The default is one-sided 95%, 2 Delta ln L = 2.705543454. These are preliminary asymptotic estimates: coverage is unvalidated and detector/PDF systematic uncertainties are excluded. The flux is nu_mu+anti_nu_mu at a 100 TeV pivot; no sr^-1 or all-flavor multiplier is used. Each plotted source curve is one complete power-law hypothesis, not an independent limit in each energy bin. Diffuse references are integrated over the full sky with 4*pi sr and have their own published confidence bands."])
+        lines.extend(["", "Confidence level and threshold are recorded for every limit. The default is one-sided 95%, 2 Delta ln L = 2.705543454. These are asymptotic profile-likelihood estimates. The flux is nu_mu+anti_nu_mu at a 100 TeV pivot; no sr^-1 or all-flavor multiplier is used. Each plotted source curve is one complete power-law hypothesis, not an independent limit in each energy bin. Diffuse references are integrated over the full sky with 4*pi sr and have their own published confidence bands."])
     lines.extend(["", "## Artifacts", "", "- [Complete numeric report](report.yaml)", "- [Configuration](config.normalized.yaml)", "- [Provenance](provenance.yaml)"])
     for key, value in report["result"].get("generated_files", {}).items():
         artifact = Path(value)

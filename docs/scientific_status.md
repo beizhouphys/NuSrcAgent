@@ -125,6 +125,10 @@ Signed Gaussian Z is retained; the top-five table displays max(0, Z) as in
 arXiv:2103.12813 Table I. The sqrt(TS) figure is an observed source histogram,
 not a background-trial distribution or a validation of the local approximation.
 
+## Single-source measurement workflow, 2026-10-19
+
+New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
+
 New DR2 individual catalog fits explicitly record and review the owner-restored
 `scan_fit_procedure=skyllh_lbfgs_v1`. Single-source and joint stacking defaults
 are independent. Historical tasks retain their recorded procedure. An extra
