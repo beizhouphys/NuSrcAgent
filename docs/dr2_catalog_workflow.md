@@ -30,7 +30,7 @@ writes input-ordered `source_results.csv`. Per-source fit details are nested in
 configuration provenance in `provenance.yaml`; separate per-source directories
 are not required. `scan_and_stack` additionally writes `fit_results.csv` for the stack.
 Both spatial+energy and spatial-only use the same supported DR2 backend.
-The general scan reloads data per source; assess runtime before large scans.
+The general scan reuses complete loaded inputs and validated PDF tables; each source gets its own selected event sample. See [individual-source settings](single_source_performance.md).
 
 Use `source_results.csv` for the individual-source results, and
 `fit_results.csv` for the joint stack when requested. Open `report.md` and
@@ -60,3 +60,10 @@ The selected 3386-source radio-bright AGN CSV is bundled in
 `data_input/sources/`; use it with `--catalog`. The optional built-in reader
 instead requires the original raw RFC file, which is not bundled. See the
 [catalog notes](../data_input/sources/README.md) for columns, selection and attribution.
+
+New DR2 single-source tasks and individual catalog fits default to a source-centered
+declination window: minimum half-width 20 degrees and at least 20% of each
+dataset. Use `--full-sky-events` at task creation for all events, or
+`--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
+`scan_and_stack` retains its existing event selection. Scans reuse complete
+loaded data and validated PDF tables. [Settings and limitations](single_source_performance.md).

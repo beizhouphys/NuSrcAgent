@@ -115,3 +115,15 @@ before signed absolute difference in comparisons.
 
 See [task interface](references/agent-task-interface.md) and
 [scientific review policy](references/scientific-review-policy.md).
+
+## Individual-source performance settings
+
+New DR2 single-source tasks and individual catalog fits use a source-centered
+declination window with minimum half-width 20 degrees, expanded until every
+dataset retains at least 20% of its full sample. This is recorded at task
+creation. Explicit event cuts keep their own rules; `--full-sky-events` requests
+all events, and `--source-dec-window-deg` selects a larger minimum half-width.
+The stack part of `scan_and_stack` retains its recorded event selection.
+Scans reuse complete data and validated PDF tables; they never reuse another
+source's event mask or fitted state. See `docs/single_source_performance.md`.
+Do not change the event selection of historical tasks or background ensembles.

@@ -27,7 +27,9 @@ source modeling through its point-coordinate examples.
 
 DR2 uses a point-source Rayleigh point-spread function (PSF) and retains every
 selected source–event term, computing them in smaller blocks to limit memory
-without making a sky-region approximation. Spatial+energy includes the source's
+within the recorded event selection. New individual fits use the adaptive
+source-centered declination window; this is a selection approximation to the
+all-event fit, with its settings and retained fractions recorded. Spatial+energy includes the source's
 signal-energy PDF inside the source-weighted sum. IC86 I–XI events are pooled.
 Explicit event cuts condition and renormalize the background spatial PDF.
 
@@ -103,3 +105,10 @@ then signed absolute difference `result-reference`; the relative difference is
 undefined for a zero reference. See the [quickstart references](quickstart.md#observed-numerical-references)
 and [installation verification](input_installation_verification.md) for the limited
 reproducibility evidence actually available.
+
+New DR2 single-source tasks and individual catalog fits default to a source-centered
+declination window: minimum half-width 20 degrees and at least 20% of each
+dataset. Use `--full-sky-events` at task creation for all events, or
+`--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
+`scan_and_stack` retains its existing event selection. Scans reuse complete
+loaded data and validated PDF tables. [Settings and limitations](single_source_performance.md).

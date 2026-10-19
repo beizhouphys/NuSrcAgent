@@ -72,6 +72,7 @@ class BackgroundBlock:
     event_abs_dec_max_deg: float | None = None
     event_dec_min_deg: float | None = None
     event_dec_max_deg: float | None = None
+    source_dec_window_deg: float | None = None
 
 
 @dataclass
@@ -157,6 +158,7 @@ class NormalizedAnalysis:
     event_abs_dec_max_deg: float | None = None
     event_dec_min_deg: float | None = None
     event_dec_max_deg: float | None = None
+    source_dec_window_deg: float | None = None
     catalog_operation: str = "stack"
     warnings: list[str] = field(default_factory=list)
 
@@ -211,7 +213,7 @@ def parse_stacking(payload: Any, default_gamma_mode: str = "fixed", default_spec
 def parse_background(payload: Any) -> BackgroundBlock:
     if payload is None:
         return BackgroundBlock()
-    return BackgroundBlock(method=str(payload.get("method", "ra_scramble")), n_trials=int(payload.get("n_trials", 10000)), random_seed=int(payload.get("random_seed", 12345)), event_abs_dec_max_deg=optional_float(payload, "event_abs_dec_max_deg"), event_dec_min_deg=optional_float(payload, "event_dec_min_deg"), event_dec_max_deg=optional_float(payload, "event_dec_max_deg"))
+    return BackgroundBlock(method=str(payload.get("method", "ra_scramble")), n_trials=int(payload.get("n_trials", 10000)), random_seed=int(payload.get("random_seed", 12345)), event_abs_dec_max_deg=optional_float(payload, "event_abs_dec_max_deg"), event_dec_min_deg=optional_float(payload, "event_dec_min_deg"), event_dec_max_deg=optional_float(payload, "event_dec_max_deg"), source_dec_window_deg=optional_float(payload, "source_dec_window_deg"))
 
 
 def parse_outputs(payload: Any) -> OutputBlock:

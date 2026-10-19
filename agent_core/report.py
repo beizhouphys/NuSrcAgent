@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from agent_core.file_cache import sha256_file
 import importlib.metadata
 import os
 import platform
@@ -147,14 +148,6 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     lines.append("")
     with path.open("w", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def sha256_text(text: str) -> str:

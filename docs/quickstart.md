@@ -8,8 +8,9 @@ continues on the next line: copy the whole command, not just its first line.
 `.venv/bin/python` selects the Python environment created by `install.sh`.
 
 Both examples explicitly select time-integrated spatial+energy, fitted ns and
-Gamma, frozen background v3 and the installed SEpdf tables. They impose no
-extra event or source cuts. Bounds, seeds and the pooled IC86 definition are
+Gamma, frozen background v3 and the installed SEpdf tables. Individual fits
+use the default adaptive source-centered declination window; the joint stack
+uses all events. No source cuts are added. Bounds, seeds and the pooled IC86 definition are
 recorded in the [scientific baseline](release_scientific_baseline.md).
 
 The fitted `ns` is the signal-event count and `Gamma` is the index in
@@ -137,7 +138,10 @@ to match the reference numbers.
 ## Observed numerical references
 
 The local clean-install checks on 2026-10-16 produced the following rounded
-values with the settings above. Gamma here is positive SkyLLH Gamma in
+values with the original all-event selection. To reproduce this historical
+table, add `--full-sky-events` to each creation command above. The new default
+windowed individual fits can differ; the joint stack is unchanged.
+Gamma here is positive SkyLLH Gamma in
 `dN/dE` proportional to `E^-Gamma`; the CLI's `--gamma` uses the negative
 power-law exponent. These are reproducibility references on the tested macOS
 environment, not detection claims or cross-platform guarantees.
@@ -179,3 +183,10 @@ Ordinary `run` commands execute **zero background trials**, even if the request
 YAML contains a default `background.n_trials`. The separate, restricted
 [empirical workflow](dr2_empirical_scrambling.md) must not be presented as general
 calibration for a user's catalog or these single-source/scan examples.
+
+New DR2 single-source tasks and individual catalog fits default to a source-centered
+declination window: minimum half-width 20 degrees and at least 20% of each
+dataset. Use `--full-sky-events` at task creation for all events, or
+`--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
+`scan_and_stack` retains its existing event selection. Scans reuse complete
+loaded data and validated PDF tables. [Settings and limitations](single_source_performance.md).

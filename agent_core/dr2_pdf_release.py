@@ -4,6 +4,7 @@ Numerical file bytes and their original SHA-256 values are unchanged.
 The derived manifest intentionally replaces private construction paths.
 """
 import hashlib
+from agent_core.file_cache import sha256_file
 import json
 from pathlib import Path
 
@@ -23,8 +24,7 @@ def background_spec(version="v3"):
 
 
 def sha256(path):
-    with Path(path).open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+    return sha256_file(path)
 
 
 def _manifest(root):

@@ -53,6 +53,16 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         result.errors.append("use either background.event_abs_dec_max_deg or asymmetric event declination bounds, not both")
     if event_bounds and config.data.sample != "icecube_public_ps_14yr_dr2":
         result.errors.append("background event declination bounds are currently supported only for the 14-year DR2 backend")
+    window = config.background.source_dec_window_deg
+    if window is not None:
+        if not math.isfinite(window) or not 20.0 <= window <= 180.0:
+            result.errors.append("background.source_dec_window_deg must be finite and in [20, 180]")
+        if config.data.sample != "icecube_public_ps_14yr_dr2":
+            result.errors.append("Adaptive source windows require the 14-year DR2 sample")
+        if event_cut is not None or event_bounds:
+            result.errors.append("Adaptive source windows cannot be combined with explicit event cuts")
+        if config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation == "stack":
+            result.errors.append("Adaptive source windows apply to individual fits, not catalog stacking")
     if any(gamma >= 0.0 for gamma in config.stacking.spectral_indices):
         result.errors.append("stacking.spectral_indices must use the negative power-law convention, for example -2.53")
     if config.analysis.type == AnalysisType.SINGLE_SOURCE:

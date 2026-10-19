@@ -23,7 +23,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
         options = dict(repo_root=repo_root or ".", gamma_mode=normalized.gamma_mode, gamma=abs(gamma_legacy), random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode, event_abs_dec_max_deg=normalized.event_abs_dec_max_deg, event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg)
         operation = normalized.catalog_operation if normalized.analysis_type == "catalog_stacking" else "stack"
         backend_name = "skyllh_v26_dr2_spatial_only" if normalized.likelihood_mode == "spatial_only" else "skyllh_v26_dr2_spatial_energy"
-        result = {} if operation == "scan" else run_dr2_stacking(specs, **options)
+        result = {} if operation == "scan" else run_dr2_stacking(specs, source_dec_window_deg=normalized.source_dec_window_deg if normalized.analysis_type == "single_source" else None, **options)
         if operation != "scan":
             result.update({"ts": result["TS"], "best_fit_ns": result["ns"]})
         result.update({"backend": backend_name})
@@ -31,7 +31,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             result["catalog_operation"] = operation
         if operation in {"scan", "scan_and_stack"}:
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
-            result["source_results"] = run_individual_source_scan(specs, **options)
+            result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **options)
             result["catalog_post_trial_p"] = None
             result["catalog_post_trial_note"] = "Local p-values and significances are half-chi-square estimates selected by Gamma mode; empirical catalog post-trial calibration is unavailable."
         for fit in [result, *(item["fit"] for item in result.get("source_results", []))]:

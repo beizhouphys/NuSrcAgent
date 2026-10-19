@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 6702,
-      "sha256": "d912a48d0db481748ab95b4f29802a0960e6cf3adb1e4dde590a554e5246556e"
+      "bytes": 7441,
+      "sha256": "a3d042f1b8dbf9a007ade65de3962cb24c49b1028156ed446a5aab2cf3251fa7"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,13 +53,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 14113,
-      "sha256": "75522f13f75ec8d052b6cbaac921548f6269333cd4c1f4b9c216b6dc51750c1b"
+      "bytes": 14600,
+      "sha256": "95666be5406c6ca837208eca8423aedaafcb40175b5ba722ca70ed6474641e1b"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
-      "bytes": 9637,
-      "sha256": "ce9787d35a7c515c0f0743131209f71c4802ad84c1d3940167ecfd675b34345d"
+      "bytes": 9989,
+      "sha256": "42cd29c26662557df72bfc57408b8ce782a99de32b169ea95ea5b7eafd240c0b"
     },
     {
       "path": "agent_core/analysis_agent.py",
@@ -88,13 +88,18 @@
     },
     {
       "path": "agent_core/dr2_pdf_release.py",
-      "bytes": 2949,
-      "sha256": "e529b00b9882e49cf62b34c90773a7403e7f306019c983901f3f29c4fbe4bfca"
+      "bytes": 2917,
+      "sha256": "c5eef6ba4c3567152d760e0131d316225e94870bcdbcde003d44c5b09fa87c08"
     },
     {
       "path": "agent_core/environment.py",
       "bytes": 6058,
       "sha256": "3cda8ca87bea94111da507854cd22547e5a34ca54aa90e60e31f9300b7951a40"
+    },
+    {
+      "path": "agent_core/file_cache.py",
+      "bytes": 708,
+      "sha256": "e92a74b1e1e2842fab502798750a2ae146948aa2cbcc16d644d34360f7de2db5"
     },
     {
       "path": "agent_core/input_install.py",
@@ -103,13 +108,13 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 3439,
-      "sha256": "f01dda39f97f2cd4adc5125dd6d246a7bf4914c25dae94b58b45bb4accf6d2b0"
+      "bytes": 3608,
+      "sha256": "d79995091671253c67a0eb5cd0b6c693a52b099d652ade4185e27285153ff863"
     },
     {
       "path": "agent_core/normalize.py",
-      "bytes": 6024,
-      "sha256": "316c11bb0c4030ed0e09ce099b4c0e16a7efbff504fe92990cc146fefff1fa2c"
+      "bytes": 6087,
+      "sha256": "4631ee0e3c9994716a3c654509efddd759d7887a344d8c3ebb2de591decdb250"
     },
     {
       "path": "agent_core/p_value.py",
@@ -123,18 +128,18 @@
     },
     {
       "path": "agent_core/report.py",
-      "bytes": 12132,
-      "sha256": "9df199d38bdcbc3ff20141ff2a563622d32ea1fb227155442bf1dde6f921f472"
+      "bytes": 11945,
+      "sha256": "7961e657fa75b6427c9f59548e7f6e26e1ec655bc866d8e251ef36ccd940c114"
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 31661,
-      "sha256": "aed126fec02b037d7e31c17a0aaeeb6741eee379b2c6247ff412a0fdbe3f30a1"
+      "bytes": 33357,
+      "sha256": "18283a495f17456e0b335d6002b7233330901a41fb9e8413a3882da2a39da0c4"
     },
     {
       "path": "agent_core/schemas.py",
-      "bytes": 9277,
-      "sha256": "236a27d23de9310b11bf49fcf1507f7d5de507096633abdbe1b66da496fef9c8"
+      "bytes": 9443,
+      "sha256": "41ab03e336c4a7799fe238060d8382ad2cb5912f9b4fdf9e53cfb3feed568ca0"
     },
     {
       "path": "agent_core/simple_yaml.py",
@@ -148,8 +153,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 9399,
-      "sha256": "7f06792483b70d1d1fd8381aadb11643ea43d206d20e684abaaf67ebe0cf0205"
+      "bytes": 10179,
+      "sha256": "29dbe8ea214a2e95c6ef9160561c5a588223d2045c43c9113f6168eb178e1b44"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -183,8 +188,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_catalog_scan.py",
-      "bytes": 763,
-      "sha256": "2467fdd70352cf95094b05881a465e32ddbaffc84b14bda0c41a988baad1f2a9"
+      "bytes": 1693,
+      "sha256": "04857db2b7d2efce0c5172690e26ad91f18b3658347c66c133681b240295ae9c"
     },
     {
       "path": "analysis_backend/skyllh_dr2_dominance.py",
@@ -193,8 +198,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_pdfs.py",
-      "bytes": 11098,
-      "sha256": "92f1df650a0c0e5f092ead34df1a75ba9ef4a74cb8e5f9a83c6544f9abeebced"
+      "bytes": 12763,
+      "sha256": "116e58be4b5afc3f90fac4dcc47908301bef9232609ca312e58aff890de33bcd"
     },
     {
       "path": "analysis_backend/skyllh_dr2_ra_scramble.py",
@@ -203,8 +208,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 20906,
-      "sha256": "3d168e0f1158138127a4b121ebb687b5182ec665a50799ec0fec00d3c41f9c54"
+      "bytes": 26816,
+      "sha256": "277ecfb41f8a12a7ce56f50d5cf15dbed2d9d358a4ed9cf74e48d7f4e7097d0c"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -268,8 +273,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 3737,
-      "sha256": "6d235d8d60022a5129c379277db85d9d6d27f13815aaade595d9fbc88ce78699"
+      "bytes": 4327,
+      "sha256": "dc3003d1547eb98f083aef7a34dd08bb981216cb46c2a4c81ad9a35a7283dc9f"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -303,8 +308,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 9628,
-      "sha256": "fa17ac11be4a62abfa8fb8b6fd7d4f65ea58b34df4230f9b0da438377cf192a5"
+      "bytes": 10392,
+      "sha256": "ecde5fe22b3b619ceeb60a15df9df2e4ce09e5793ecd4786b7cff49588857b1e"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -333,13 +338,18 @@
     },
     {
       "path": "docs/release_scientific_baseline.md",
-      "bytes": 3320,
-      "sha256": "e105312808da80911fbcd17a749a3851a40baebfbbe520ab994bc4de39f8f29d"
+      "bytes": 3854,
+      "sha256": "2a3869d1eb011c67bc694c1c2b726d42bffd2d09e6dc496d48b79f495c0b690e"
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 6452,
-      "sha256": "4d8653a1c8bd06df1d09cac076a70f869aef30aeda6bcba20dde4558e7d83aac"
+      "bytes": 7108,
+      "sha256": "7cafe25bf056b110a8cb90a3c579e0d2f6936f4e25293ec74d0eed5cf61fcfc3"
+    },
+    {
+      "path": "docs/single_source_performance.md",
+      "bytes": 2999,
+      "sha256": "edc395bc290bef809d501a6a956b322f2a0e56f593876e418269e0064cc8ce82"
     },
     {
       "path": "docs/testing_and_release.md",
@@ -363,8 +373,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 23198,
-      "sha256": "2ee63e9683f33a452ac11ac3c0660f3da56c137bfd3d4da1afaa901890647652"
+      "bytes": 25574,
+      "sha256": "e14ef915de4367e4bbfcdeac6c48c681c6389d63433cb6da0ecc34b9c94cb4b4"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",
