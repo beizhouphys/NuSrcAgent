@@ -148,8 +148,8 @@
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 45690,
-      "sha256": "e73aecc8e2336f6286d44ca328376ceeb13738b9bee235271232d2e6c97328e4"
+      "bytes": 45671,
+      "sha256": "afa8edf183008e60613dadfb4771868414170fc536a03ea16c9bfd5a6b3859aa"
     },
     {
       "path": "agent_core/schemas.py",
@@ -333,8 +333,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 8406,
-      "sha256": "abd25cfb293c6f41a99671d65ad9a9b2f5fa0df22d46440d1600287f8fe814d9"
+      "bytes": 8430,
+      "sha256": "1e39aa2ca43f02db297297d5742c326144d37f39a005bdc40de10875ca1fc4dd"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -424,7 +424,7 @@
     {
       "path": "docs/testing_and_release.md",
       "bytes": 11533,
-      "sha256": "8ef43a2e3c46026e15dcfb39c13b401806b395a632be21d436c8d93e7d440997"
+      "sha256": "b8cec023a9f66410f892edf54752b98eff6fc208dfe27b9dadf2c1877ccfb895"
     },
     {
       "path": "install.sh",

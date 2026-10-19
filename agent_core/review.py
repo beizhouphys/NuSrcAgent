@@ -272,7 +272,7 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
         scan_procedure = normalized.get("scan_fit_procedure")
         if scan_procedure is not None:
             single_normalized["fit_procedure"] = scan_procedure
-            matches = (isinstance(fit, dict) and fit.get("fit_procedure", "skyllh_lbfgs_v1") == scan_procedure
+            matches = (isinstance(fit, dict) and fit.get("fit_procedure") == scan_procedure
                        and (scan_procedure != "skyllh_lbfgs_v1" or not fit.get("maximum_search")))
             add_check(review, "source_%d_scan_fit_procedure" % number, "pass" if matches else "fail",
                       "individual scan procedure matches its separate request" if matches
