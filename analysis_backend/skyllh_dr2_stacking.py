@@ -7,7 +7,7 @@ dataset signal-weight service supplies ``f_k``.
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -132,6 +132,29 @@ def _conditional_background_spatial_normalization(cfg, dataset, full_data_exp, e
     return float(normalization)
 
 
+def source_declination_window(event_decs_by_dataset, source_dec_deg, minimum_half_width_deg=20.0):
+    """Smallest symmetric Dec interval retaining >=20% in every dataset."""
+    minimum = float(minimum_half_width_deg)
+    if not np.isfinite(minimum) or not 20.0 <= minimum <= 180.0:
+        raise ValueError("source_dec_window_deg must be finite and in [20, 180]")
+    center = float(source_dec_deg)
+    if not np.isfinite(center) or not -90.0 <= center <= 90.0:
+        raise ValueError("Source declination must be in [-90, 90] deg")
+    half_width = minimum
+    for values in event_decs_by_dataset.values():
+        values = np.asarray(values, dtype=np.float64)
+        if not len(values) or not np.all(np.isfinite(values)):
+            raise ValueError("Each dataset must contain finite event declinations")
+        index = int(np.ceil(0.2 * len(values))) - 1
+        distances = np.abs(values - center)
+        half_width = max(half_width, float(np.partition(distances, index)[index]))
+    # Outward rounding keeps threshold events on floating-point boundaries.
+    half_width = float(np.nextafter(half_width, np.inf))
+    lower = max(-90.0, float(np.nextafter(center - half_width, -np.inf)))
+    upper = min(90.0, float(np.nextafter(center + half_width, np.inf)))
+    return lower, upper, half_width
+
+
 def create_dr2_stacking_analysis(
     repo_root,
     source_specs,
@@ -154,6 +177,8 @@ def create_dr2_stacking_analysis(
     event_ra_scramble_seed=None,
     pdf_store=None,
     background_pdf_version="v3",
+    runtime_cache=None,
+    source_dec_window_deg=None,
 ):
     """Construct the exact, memory-bounded all-event SkyLLH analysis."""
     if likelihood_mode not in {"spatial_energy", "spatial_only"}:
@@ -209,7 +234,63 @@ def create_dr2_stacking_analysis(
         pmm=pmm,
         test_statistic=WilksTestStatistic(),
     )
-    store = DR2PrecalculatedPDFStore(root, background_version=background_pdf_version) if pdf_store is None else pdf_store
+    if source_dec_window_deg is not None:
+        if len(source_specs) != 1 or data_selection != "full14":
+            raise ValueError("Adaptive source windows require one full14 DR2 source")
+        if any(value is not None for value in (event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)):
+            raise ValueError("Adaptive source windows cannot be combined with explicit event cuts")
+    if runtime_cache is not None:
+        if data_selection != "full14" or event_ra_scramble_seed is not None or source_ra_scramble_seed is not None:
+            raise ValueError("Input reuse requires unscrambled full14 fits")
+        key = (str(root), data_selection, background_pdf_version)
+        if runtime_cache.get("key", key) != key:
+            raise ValueError("Input cache belongs to a different data selection")
+        runtime_cache.setdefault("key", key)
+        runtime_cache.setdefault("data", {})
+        runtime_cache.setdefault("dataset_loads", 0)
+        runtime_cache.setdefault("dataset_cache_hits", 0)
+        if "pdf_store" not in runtime_cache:
+            runtime_cache["pdf_store"] = DR2PrecalculatedPDFStore(root, background_version=background_pdf_version) if pdf_store is None else pdf_store
+        store = runtime_cache["pdf_store"]
+        store.assert_files_unchanged()
+    else:
+        store = DR2PrecalculatedPDFStore(root, background_version=background_pdf_version) if pdf_store is None else pdf_store
+    loaded_data = []
+    for dataset_idx, dataset in enumerate(datasets):
+        cached = runtime_cache["data"].get(dataset_idx) if runtime_cache is not None else None
+        if cached is None:
+            data = dataset.load_and_prepare_data()
+            if runtime_cache is not None:
+                from agent_core.environment import _required_paths
+                from agent_core.file_cache import file_signature
+                paths = [root / relative for relative in _required_paths(DR2_SAMPLE, "spatial_only")
+                         if "IceCube_data_released/" in str(relative)]
+                signatures = {path: file_signature(path) for path in paths}
+                for table in (data.exp, data.mc):
+                    if table is not None:
+                        for field in table.field_name_list:
+                            table[field].setflags(write=False)
+                runtime_cache["data"][dataset_idx] = (data, signatures)
+                runtime_cache["dataset_loads"] += 1
+        else:
+            template, signatures = cached
+            from agent_core.file_cache import file_signature
+            if any(file_signature(path) != expected for path, expected in signatures.items()):
+                raise ValueError("A cached neutrino data or detector-response file changed")
+            data = template
+            runtime_cache["dataset_cache_hits"] += 1
+        if runtime_cache is not None:
+            template = data
+            data = copy(template)
+            data.exp = template.exp.copy()
+            data.mc = None if template.mc is None else template.mc.copy()
+        loaded_data.append(data)
+    half_width = None
+    if source_dec_window_deg is not None:
+        event_dec_min_resolved, event_dec_max_resolved, half_width = source_declination_window(
+            {dataset.name: np.rad2deg(data.exp["dec"]) for dataset, data in zip(datasets, loaded_data)},
+            np.rad2deg(source_specs[0]["dec_rad"]), source_dec_window_deg)
+    event_counts_before_selection = {dataset.name: int(len(data.exp)) for dataset, data in zip(datasets, loaded_data)}
     analysis.background_pdf_version = store.background_version
     analysis.background_pdf_provenance = store.background_provenance
     source_event_pairs = 0
@@ -224,13 +305,13 @@ def create_dr2_stacking_analysis(
     chunked_ratios = []
 
     for dataset_idx, dataset in enumerate(datasets):
-        data = dataset.load_and_prepare_data()
+        data = loaded_data[dataset_idx]
         full_data_exp = data.exp
         pdf_dataset_name = "IC86_I-XI" if dataset.name == "IC86_I-VII" else dataset.name
         if data_selection == "first10":
             _attach_on_the_fly_background(cfg, dataset, full_data_exp)
         event_mask = None
-        if event_abs_dec_max_deg is not None or event_dec_min_deg is not None or event_dec_max_deg is not None:
+        if source_dec_window_deg is not None or event_abs_dec_max_deg is not None or event_dec_min_deg is not None or event_dec_max_deg is not None:
             event_decs_deg = np.rad2deg(np.asarray(full_data_exp["dec"], dtype=np.float64))
             if event_abs_dec_max_deg is not None:
                 event_mask = np.abs(event_decs_deg) < float(event_abs_dec_max_deg)
@@ -296,9 +377,16 @@ def create_dr2_stacking_analysis(
 
     analysis.source_event_pair_count = int(source_event_pairs)
     analysis.event_counts = event_counts
+    analysis.event_counts_before_selection = event_counts_before_selection
+    analysis.source_dec_window = None if source_dec_window_deg is None else {
+        "minimum_half_width_deg": float(source_dec_window_deg), "half_width_deg": half_width,
+        "minimum_event_fraction_per_dataset": 0.2,
+        "retained_fractions": {name: count / event_counts_before_selection[name] for name, count in event_counts.items()}}
+    if analysis.source_dec_window is not None and any(value < 0.2 for value in analysis.source_dec_window["retained_fractions"].values()):
+        raise ValueError("Adaptive declination window retained fewer than 20% of a dataset")
     analysis.event_abs_dec_max_deg = None if event_abs_dec_max_deg is None else float(event_abs_dec_max_deg)
-    analysis.event_dec_min_deg = None if event_dec_min_deg is None else float(event_dec_min_resolved)
-    analysis.event_dec_max_deg = None if event_dec_max_deg is None else float(event_dec_max_resolved)
+    analysis.event_dec_min_deg = None if event_dec_min_deg is None and source_dec_window_deg is None else float(event_dec_min_resolved)
+    analysis.event_dec_max_deg = None if event_dec_max_deg is None and source_dec_window_deg is None else float(event_dec_max_resolved)
     analysis.background_spatial_conditional_normalization = conditional_normalizations
     analysis.data_selection = str(data_selection)
     analysis.signal_energy_declination_mode = str(signal_energy_declination_mode)
@@ -334,6 +422,8 @@ def run_dr2_stacking(
     source_ra_scramble_seed=None,
     event_ra_scramble_seed=None,
     background_pdf_version="v3",
+    runtime_cache=None,
+    source_dec_window_deg=None,
 ):
     """Run an unblinded catalog stack and return serializable results."""
     analysis = create_dr2_stacking_analysis(
@@ -354,6 +444,8 @@ def run_dr2_stacking(
         source_ra_scramble_seed=source_ra_scramble_seed,
         event_ra_scramble_seed=event_ra_scramble_seed,
         background_pdf_version=background_pdf_version,
+        runtime_cache=runtime_cache,
+        source_dec_window_deg=source_dec_window_deg,
     )
     ts, fitparams, minimizer_status = analysis.unblind(RandomStateService(seed=int(random_seed)))
     result_gamma = float(fitparams.get("gamma", gamma))
@@ -376,11 +468,13 @@ def run_dr2_stacking(
         "data_selection": analysis.data_selection,
         "time_mode": "time_integrated",
         "spatial_model": "point_source_rayleigh_psf",
-        "event_selection": ("abs_dec_cut" if analysis.event_abs_dec_max_deg is not None else ("dec_range_cut" if analysis.event_dec_min_deg is not None or analysis.event_dec_max_deg is not None else "all_events")),
+        "event_selection": ("adaptive_source_dec_window" if analysis.source_dec_window is not None else "abs_dec_cut" if analysis.event_abs_dec_max_deg is not None else ("dec_range_cut" if analysis.event_dec_min_deg is not None or analysis.event_dec_max_deg is not None else "all_events")),
         "event_abs_dec_max_deg": analysis.event_abs_dec_max_deg,
         "event_dec_min_deg": analysis.event_dec_min_deg,
         "event_dec_max_deg": analysis.event_dec_max_deg,
         "event_counts": dict(analysis.event_counts),
+        "event_counts_before_selection": dict(analysis.event_counts_before_selection),
+        "source_dec_window": analysis.source_dec_window,
         "n_events_total": int(sum(analysis.event_counts.values())),
         "background_spatial_conditional_normalization": dict(analysis.background_spatial_conditional_normalization),
         "background_method": background_method,

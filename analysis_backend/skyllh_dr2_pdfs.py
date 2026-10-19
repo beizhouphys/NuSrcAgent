@@ -7,6 +7,7 @@ during an analysis run. PDF construction tools are not distributed.
 from __future__ import annotations
 
 from pathlib import Path
+from agent_core.file_cache import file_signature
 
 import numpy as np
 from skyllh.analyses.i3.publicdata_ps.backgroundpdf import PDDataBackgroundI3EnergyPDF
@@ -31,12 +32,19 @@ class DR2PrecalculatedPDFStore:
         self._verified_signal_files = set()
         directory, self.background_model_pattern, self.background_provenance = background_spec(background_version)
         self.background_version = background_version
-        verify_v3_release(root)
+        release = verify_v3_release(root)
+        self._verified_file_stats = {}
+        for relative in [*release["files"], "docs/pdf_release_manifest.json", self.background_provenance]:
+            self._record_verified_file(root / relative)
         self.background_dir = root / directory
         self.signal_dir = root / "data_output/signal_energy_pdfs/14yr_dr2"
         self._background = {}
         self._background_spatial_models = {}
         self._signal = {}
+        self._compact_signal = {}
+        self.cache_stats = {"background_release_verifications": 1, "background_text_loads": 0,
+                            "signal_file_verifications": 0, "compact_signal_loads": 0,
+                            "compact_signal_hits": 0}
         self._attached_names = {}
         for name in DATASET_NAMES:
             path = self.background_dir / f"bkgd_pdf_{name}_exp_DR2.txt"
@@ -46,6 +54,17 @@ class DR2PrecalculatedPDFStore:
             if np.any(values[:, 2:] < 0) or not np.all(np.isfinite(values[:, 2:])):
                 raise ValueError(f"Invalid PDF values in {path}")
             self._background[name] = values
+            values.setflags(write=False)
+            self.cache_stats["background_text_loads"] += 1
+
+    def _record_verified_file(self, path):
+        self._verified_file_stats[Path(path)] = file_signature(Path(path))
+
+    def assert_files_unchanged(self):
+        """Reuse only the in-memory snapshot whose files passed full hashes."""
+        for path, expected in self._verified_file_stats.items():
+            if file_signature(path) != expected:
+                raise ValueError(f"A verified frozen PDF input changed during execution: {path}")
 
     def background_spatial_model(self, dataset_name):
         if self.background_model_pattern is None:
@@ -122,6 +141,9 @@ class DR2PrecalculatedPDFStore:
         if path not in self._verified_signal_files:
             verify_signal_file(self.root, path)
             self._verified_signal_files.add(path)
+            self._record_verified_file(path)
+            self.cache_stats["signal_file_verifications"] += 1
+        self.assert_files_unchanged()
 
     def signal_table(self, dataset_name):
         if dataset_name not in self._signal:
@@ -164,6 +186,11 @@ class DR2PrecalculatedPDFStore:
         exact/interpolated slices substantially lowers steady-state memory.
         """
         gamma_values = np.asarray(gamma_values, dtype=np.float64)
+        key = (dataset_name, gamma_values.tobytes())
+        if key in self._compact_signal:
+            self.assert_files_unchanged()
+            self.cache_stats["compact_signal_hits"] += 1
+            return self._compact_signal[key]
         path = self.signal_dir / f"signal_energy_pdf_powerlaw_{dataset_name}_DR2.npz"
         self._verify_signal(path)
         with np.load(path, allow_pickle=False) as data:
@@ -188,7 +215,12 @@ class DR2PrecalculatedPDFStore:
                     lower = upper - 1
                     fraction = (gamma - axis[lower]) / (axis[upper] - axis[lower])
                     compact[:, :, idx] = (1.0 - fraction) * dense[:, :, lower] + fraction * dense[:, :, upper]
-        return {"dec_edges": dec_edges, "energy": energy, "gamma": gamma_values.copy(), "values": compact}
+        result = {"dec_edges": dec_edges, "energy": energy, "gamma": gamma_values.copy(), "values": compact}
+        for values in result.values():
+            values.setflags(write=False)
+        self._compact_signal[key] = result
+        self.cache_stats["compact_signal_loads"] += 1
+        return result
 
 
 class TableBackgroundSpatialPDF(DataBackgroundI3SpatialPDF):

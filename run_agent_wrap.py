@@ -117,6 +117,7 @@ def main(argv=None) -> int:
             if args.gamma_mode is not None:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
+            set_source_window(task, args)
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
             sources = None if args.source is None else [parse_source(value) for value in args.source]
@@ -129,6 +130,7 @@ def main(argv=None) -> int:
             if args.gamma_mode is not None:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
+            set_source_window(task, args)
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -149,6 +151,24 @@ def main(argv=None) -> int:
     except (ValueError, OSError, KeyError) as exc:
         print("AGENT WRAP ERROR: %s" % exc, file=sys.stderr)
         return 2
+
+
+def set_source_window(task, args):
+    """Record the owner-approved default only on newly created individual fits."""
+    from agent_core.task_state import parameter
+    import math
+    explicit = args.source_dec_window_deg
+    cuts = any(value is not None for value in (args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg))
+    operation = task["parameters"].get("catalog_operation", {}).get("value", "stack")
+    applicable = args.data_sample == "icecube_public_ps_14yr_dr2" and (task["workflow"] == "single_source" or operation in ("scan", "scan_and_stack"))
+    if explicit is not None and (not applicable or cuts or not math.isfinite(explicit) or not 20.0 <= explicit <= 180.0):
+        raise ValueError("--source-dec-window-deg requires an individual DR2 fit, no explicit cuts, and a finite half-width in [20, 180]")
+    if args.full_sky_events and cuts:
+        raise ValueError("--full-sky-events cannot be combined with event declination cuts")
+    value = (20.0 if explicit is None else explicit) if applicable and not cuts and not args.full_sky_events else None
+    task["parameters"]["source_dec_window_deg"] = parameter(value, "user" if explicit is not None or args.full_sky_events else "system_default", True)
+    if value is not None:
+        task["parameters"]["source_dec_window_deg"]["basis"] = "Owner-approved source-centered Dec window: minimum half-width >=20 deg, retaining >=20% of each dataset; background spatial PDF integral normalization."
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -206,6 +226,9 @@ def build_parser() -> argparse.ArgumentParser:
     single.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     single.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
     single.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
+    single_window = single.add_mutually_exclusive_group()
+    single_window.add_argument("--source-dec-window-deg", type=float, help="Minimum source-centered Dec half-width >=20 deg; expands to retain >=20% of every DR2 dataset.")
+    single_window.add_argument("--full-sky-events", action="store_true", help="Use all events for individual DR2 fits instead of the default adaptive source window.")
     single.add_argument("--event-abs-dec-max-deg", type=float, help="Keep events with |Dec| below this value and condition the background spatial PDF to that region.")
     single.add_argument("--event-dec-min-deg", type=float, help="Inclusive lower event-declination bound in degrees; conditions the background spatial PDF to the selected region.")
     single.add_argument("--event-dec-max-deg", type=float, help="Inclusive upper event-declination bound in degrees; conditions the background spatial PDF to the selected region.")
@@ -230,6 +253,9 @@ def build_parser() -> argparse.ArgumentParser:
     catalog.add_argument("--weight-meaning")
     catalog.add_argument("--weights", help="Comma-separated manual weights")
     catalog.add_argument("--no-uniform-baseline", action="store_true")
+    catalog_window = catalog.add_mutually_exclusive_group()
+    catalog_window.add_argument("--source-dec-window-deg", type=float, help="Minimum source-centered Dec half-width >=20 deg; expands to retain >=20% of every DR2 dataset.")
+    catalog_window.add_argument("--full-sky-events", action="store_true", help="Use all events for individual DR2 fits instead of the default adaptive source window.")
     catalog.add_argument("--event-abs-dec-max-deg", type=float, help="Keep events with |Dec| below this value and condition the background spatial PDF to that region.")
     catalog.add_argument("--event-dec-min-deg", type=float, help="Inclusive lower event-declination bound in degrees; conditions the background spatial PDF to the selected region.")
     catalog.add_argument("--event-dec-max-deg", type=float, help="Inclusive upper event-declination bound in degrees; conditions the background spatial PDF to the selected region.")

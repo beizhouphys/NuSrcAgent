@@ -105,7 +105,23 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     event_counts_ok = len(event_count_values) == 4 and all(value is not None and value > 0 for value in event_count_values) and sum(value for value in event_count_values if value is not None) == integer_value(result.get("n_events_total"))
     normalizations = [finite_float(value) for value in result.get("background_spatial_conditional_normalization", {}).values()]
     conditional_normalization_ok = len(normalizations) == 4 and all(value is not None and 0.0 < value <= 1.01 for value in normalizations)
-    if requested_abs_cut is not None:
+    requested_window = finite_float(normalized.get("source_dec_window_deg")) if len(normalized.get("sources", [])) == 1 else None
+    if requested_window is not None:
+        window = result.get("source_dec_window") or {}
+        before = result.get("event_counts_before_selection", {})
+        minimum = finite_float(window.get("minimum_half_width_deg"))
+        radius = finite_float(window.get("half_width_deg"))
+        lower, upper = finite_float(result.get("event_dec_min_deg")), finite_float(result.get("event_dec_max_deg"))
+        center = finite_float(normalized["sources"][0].get("dec_deg"))
+        fractions = window.get("retained_fractions", {})
+        retained_ok = isinstance(before, dict) and set(before) == set(event_counts) and all(
+            integer_value(before[name]) is not None and before[name] >= count >= 0.2 * before[name]
+            and finite_float(fractions.get(name)) is not None
+            and abs(fractions[name] - count / before[name]) < 1e-12 for name, count in event_counts.items())
+        bounds_ok = center is not None and radius is not None and minimum == requested_window and radius >= minimum >= 20.0 and lower is not None and upper is not None and abs(lower - max(-90., center-radius)) < 1e-9 and abs(upper - min(90., center+radius)) < 1e-9
+        selection_ok = result.get("event_selection") == "adaptive_source_dec_window" and bounds_ok and retained_ok and window.get("minimum_event_fraction_per_dataset") == 0.2 and event_counts_ok and conditional_normalization_ok
+        selection_message = "source-centered Dec window satisfies its minimum half-width and retains at least 20% of every dataset; background spatial PDF is conditioned to it"
+    elif requested_abs_cut is not None:
         selection_ok = result.get("event_selection") == "abs_dec_cut" and finite_float(result.get("event_abs_dec_max_deg")) == requested_abs_cut and event_counts_ok and conditional_normalization_ok
         selection_message = "symmetric event declination cut matches the request and the background spatial PDF is conditioned to it"
     elif requested_dec_min is not None or requested_dec_max is not None:

@@ -58,3 +58,12 @@ source population; detector acceptance is applied separately.
 The ordinary examples run no background trials. See
 [scientific limitations](scientific_status.md) before interpreting fitted
 parameters or a reported analytic p-value.
+
+## Individual-source selection update, 2026-10-18
+
+The all-event selections recorded above remain the historical reproducibility
+baseline. New DR2 single-source and catalog-scan tasks instead default to the
+[adaptive source-centered declination window](single_source_performance.md): minimum half-width
+20 degrees and at least 20% of every dataset. Use `--full-sky-events` at task
+creation to reproduce all-event references. Stacking selections, frozen PDFs,
+Gamma conventions, fit bounds and historical task settings are unchanged.
