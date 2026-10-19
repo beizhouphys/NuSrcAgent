@@ -162,3 +162,22 @@ trials were executed. The isolated publication checkout imported all 22 public
 agent modules and passed CLI startup without owner runtime imports.
 These are implementation/output checks, not empirical significance or coverage
 validation. Existing warning-bearing results retain their original cautions.
+
+## Source-scan fit procedure safeguard — 2026-10-19
+
+The owner checkout passed the 266-test unit suite, 20 golden cases and input
+hash verification. Eight focused policy checks passed in each development,
+release, isolated publication and test checkout, including final review
+handling of missing fit records. The private tests are not distributed.
+
+Six real public-wrapper tasks completed with passing review: a fixed-Gamma
+single source (Gamma=2.5, upper-limit fits omitted) and a fitted-Gamma two-source
+scan plus uniform stack in each development, release and test checkout.
+Every individual scan fit records `skyllh_lbfgs_v1`, with no additional Gamma
+maximum search. Source fits, tables, normalized settings, provenance, review
+checks and histogram hashes were verified; the histogram PDF was rendered
+and visually inspected. All TS, ns and Gamma comparisons against the
+development tasks have signed relative differences 0 and signed absolute
+differences 0. Zero background trials were executed. The stopped 501-source
+task remains stopped. These checks establish execution/procedure consistency,
+not statistical calibration or parameter coverage.

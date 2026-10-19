@@ -107,3 +107,21 @@ distribution is fitted. For fitted Gamma, sqrt(TS) is a plotting coordinate,
 not the local Gaussian significance. The review checks the correction,
 ranking, histogram counts and figure hashes. Historical run artifacts are
 not rewritten and retain their original review requirements.
+
+## Independent fit procedure for source scans
+
+New DR2 `scan` and the individual-source part of `scan_and_stack` explicitly
+record `scan_fit_procedure=skyllh_lbfgs_v1` in the task, request and normalized
+configuration. This is the original SkyLLH optimizer, without an additional
+search over every Gamma interpolation interval and stencil switch. The
+separate single-source and joint stacking settings are preserved. The backend
+passes the recorded scan procedure explicitly and review rejects a different
+procedure or an extra maximum search under the original-optimizer label.
+
+The CLI records this through a dedicated catalog-default helper, independently
+of single-source flux-reporting defaults. Loading, showing or recovering a
+historical task never injects this new default. A historical task without the
+field retains its supported recorded procedure, with the original optimizer
+as the fallback when no procedure was recorded. Stopped tasks are not restarted.
+No coordinates, catalog membership, PDFs, spectral hypotheses, optimizer
+bounds or background-trial settings are changed by this recording safeguard.

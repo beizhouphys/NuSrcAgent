@@ -154,3 +154,15 @@ sqrt(TS), width-0.25 bins, log counts and sqrt(N) errors, and has no normal
 fit. sqrt(TS) is not Gaussian significance for fitted Gamma. This source
 correction does not calibrate the joint stack or extra search hypotheses.
 Preserve every material fit warning; failed review blocks numerical reporting.
+
+## Catalog optimizer default safeguard
+
+For new DR2 catalog `scan` and individual fits in `scan_and_stack`, verify
+`scan_fit_procedure=skyllh_lbfgs_v1` in the persistent task and analysis request.
+This field is recorded by the CLI's separate catalog-default helper; it must
+not depend on single-source flux-reporting or joint stacking defaults. The
+backend must pass it explicitly and each source review must agree. Explain
+a change of fit procedure before launching a large catalog; benchmark the
+recorded procedure and worker configuration first. Do not infer runtime from
+a previous scan with a different procedure. Preserve historical procedure
+records, the flux-profile maximum-consistency guard and user-stopped tasks.

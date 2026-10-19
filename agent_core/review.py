@@ -251,6 +251,14 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
             identity_ok = identity_ok and value is not None and abs(value - float(source[field])) < 1e-10
         add_check(review, "source_%d_identity" % number, "pass" if identity_ok else "fail", "source identity and input order match" if identity_ok else "source scan identity or order differs from the input", False)
         single_normalized = dict(normalized, sources=[dict(source, weight=1.0)])
+        scan_procedure = normalized.get("scan_fit_procedure")
+        if scan_procedure is not None:
+            single_normalized["fit_procedure"] = scan_procedure
+            matches = (isinstance(fit, dict) and fit.get("fit_procedure", "skyllh_lbfgs_v1") == scan_procedure
+                       and (scan_procedure != "skyllh_lbfgs_v1" or not fit.get("maximum_search")))
+            add_check(review, "source_%d_scan_fit_procedure" % number, "pass" if matches else "fail",
+                      "individual scan procedure matches its separate request" if matches
+                      else "individual scan procedure or extra maximum search differs from its request", False)
         single_report = dict(report, result=fit)
         child = {"checks": [], "metrics": {}}
         if isinstance(fit, dict):

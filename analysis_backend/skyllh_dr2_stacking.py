@@ -425,8 +425,11 @@ def run_dr2_stacking(
     runtime_cache=None,
     source_dec_window_deg=None,
     flux_upper_limit_cl=None,
+    fit_procedure="skyllh_lbfgs_v1",
 ):
     """Run an unblinded catalog stack and return serializable results."""
+    if fit_procedure != "skyllh_lbfgs_v1":
+        raise ValueError("This runtime supports the original SkyLLH optimizer only")
     analysis = create_dr2_stacking_analysis(
         repo_root=repo_root,
         source_specs=source_specs,
@@ -464,6 +467,7 @@ def run_dr2_stacking(
         background_provenance = analysis.background_pdf_provenance
         energy_pdf = "precalculated_signal_and_background_tables"
     result = {
+        "fit_procedure": fit_procedure,
         "analysis": "catalog_stacking" if len(source_specs) > 1 else "single_source",
         "sample": DR2_SAMPLE,
         "data_selection": analysis.data_selection,

@@ -35,7 +35,9 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             result["catalog_operation"] = operation
         if operation in {"scan", "scan_and_stack"}:
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
-            result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **options)
+            scan_options = dict(options, fit_procedure=normalized.scan_fit_procedure or getattr(normalized, "fit_procedure", "skyllh_lbfgs_v1"))
+            result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **scan_options)
+            result["scan_fit_procedure"] = scan_options["fit_procedure"]
             result["catalog_post_trial_p"] = None
             result["catalog_post_trial_note"] = "Local estimates use the declared Gamma-mode half-chi-square approximation; reporting adds the analytic independent-source catalog correction. Empirical calibration is unavailable."
         for fit in [result, *(item["fit"] for item in result.get("source_results", []))]:

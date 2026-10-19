@@ -99,7 +99,7 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
     payload = build_catalog_request(catalog, sources, parameters["name_column"]["value"], parameters["ra_column"]["value"], parameters["dec_column"]["value"], weight_column, manual_weights, [gamma], bool(parameters["include_uniform_baseline"]["value"]), "data_output/runs", data_sample, gamma_mode, likelihood_mode, built_in_catalog, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg, parameters.get("catalog_operation", {}).get("value"))
     if "source_dec_window_deg" in parameters:
         payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
-    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas"):
+    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure"):
         if key in parameters:
             payload["analysis"][key] = parameters[key]["value"]
     return payload
