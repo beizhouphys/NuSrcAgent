@@ -124,3 +124,10 @@ catalog selections and extra search hypotheses are not calibrated by it.
 Signed Gaussian Z is retained; the top-five table displays max(0, Z) as in
 arXiv:2103.12813 Table I. The sqrt(TS) figure is an observed source histogram,
 not a background-trial distribution or a validation of the local approximation.
+
+New DR2 individual catalog fits explicitly record and review the owner-restored
+`scan_fit_procedure=skyllh_lbfgs_v1`. Single-source and joint stacking defaults
+are independent. Historical tasks retain their recorded procedure. An extra
+Gamma-interval/stencil-switch search must not be silently inherited by new
+source scans. This safeguard changes procedure provenance and checks; it does
+not validate asymptotic significance, parameter bias or interval coverage.

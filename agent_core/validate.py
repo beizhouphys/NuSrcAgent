@@ -10,6 +10,14 @@ from agent_core.schemas import AnalysisConfig, AnalysisType, ValidationResult, W
 def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None) -> ValidationResult:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     result = ValidationResult()
+    scan_procedure = config.analysis.scan_fit_procedure
+    if scan_procedure is not None:
+        if scan_procedure != "skyllh_lbfgs_v1":
+            result.errors.append("analysis.scan_fit_procedure must be skyllh_lbfgs_v1 in this runtime")
+        if (config.data.sample != "icecube_public_ps_14yr_dr2"
+                or config.analysis.type != AnalysisType.CATALOG_STACKING
+                or config.analysis.catalog_operation not in {"scan", "scan_and_stack"}):
+            result.errors.append("analysis.scan_fit_procedure requires a DR2 catalog scan")
     confidence = config.analysis.flux_upper_limit_cl
     limit_gammas = config.analysis.flux_upper_limit_gammas
     if confidence is not None:

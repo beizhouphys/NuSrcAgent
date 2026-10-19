@@ -254,3 +254,6 @@ Catalog scans now automatically report the top five sources with separate local/
 p value and significance columns, an analytic independent-source catalog correction,
 and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
 See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.
+
+New catalog scans explicitly record the original SkyLLH optimizer separately
+from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).

@@ -133,6 +133,7 @@ def main(argv=None) -> int:
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
+            set_scan_fit_procedure(task, args)
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -153,6 +154,18 @@ def main(argv=None) -> int:
     except (ValueError, OSError, KeyError) as exc:
         print("AGENT WRAP ERROR: %s" % exc, file=sys.stderr)
         return 2
+
+
+def set_scan_fit_procedure(task, args):
+    """Pin new individual catalog fits independently of single/stack defaults."""
+    from agent_core.task_state import parameter
+    operation = task["parameters"].get("catalog_operation", {}).get("value")
+    if (args.data_sample == "icecube_public_ps_14yr_dr2"
+            and task["workflow"] != "single_source" and operation in {"scan", "scan_and_stack"}):
+        task["parameters"]["scan_fit_procedure"] = parameter("skyllh_lbfgs_v1", "system_default", True)
+        task["parameters"]["scan_fit_procedure"]["basis"] = (
+            "Owner restored the original SkyLLH optimizer for individual catalog fits on 2026-10-19; "
+            "omit the additional Gamma interval/stencil-switch search. The joint stack retains its own procedure.")
 
 
 def set_flux_upper_limits(task, args):
