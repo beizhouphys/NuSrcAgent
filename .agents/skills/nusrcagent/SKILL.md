@@ -133,3 +133,24 @@ Do not change the event selection of historical tasks or background ensembles.
 New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit retains its requested Gamma mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. This feature does not change joint stacking, DR1 or spatial-only results.
 
 Read `docs/flux_upper_limits.md` for units, profile threshold, confidence qualifications and reference provenance. Plot the source limits, NGC 1068 and both diffuse benchmarks in one panel using common flux units, with diffuse multiplied by exactly 4*pi sr and published uncertainty bands. Do not add NGC 4151. Preserve the starting-track band CL qualification. Describe the limits as asymptotic estimates with unvalidated coverage and excluded detector/PDF systematics. A curve represents one complete fixed power-law hypothesis; do not call it a differential energy-bin limit. Review every fixed fit and its tables/figures. No background trials are performed by this feature.
+
+## Catalog scan chat output
+
+For completed DR2 scans, read `catalog_scan_summary` in the wrapper response
+or read the compact table in `report.md`. Show its top five sources (all if fewer than five), sorted
+by local significance. Copy `chat_table` into a text code block: compact
+monospaced layout, grouped Local/Global headings, separate columns named
+`p value` and `significance`, and `σ` in every significance cell. Do not
+merge p value with significance or show only three sources. Include the
+sqrt(TS) PNG inline and link the PDF and complete input-ordered CSV.
+
+Global values are analytic estimates following arXiv:2103.12813 Sec. IV A:
+`1-(1-p_local)^N_sources`, using the full selected source count. State the
+independent-source approximation and absence of empirical calibration.
+The table displays max(0, signed Gaussian Z), following paper Table I;
+the CSV retains signed Z and the nonnegative excess display separately.
+The Fig. 3-style histogram includes all selected sources and TS=0, uses
+sqrt(TS), width-0.25 bins, log counts and sqrt(N) errors, and has no normal
+fit. sqrt(TS) is not Gaussian significance for fitted Gamma. This source
+correction does not calibrate the joint stack or extra search hypotheses.
+Preserve every material fit warning; failed review blocks numerical reporting.

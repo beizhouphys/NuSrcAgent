@@ -181,8 +181,8 @@ Both explain how to save a request, check `READY` and run the fit. They show
 where to find readable reports, CSV result tables, the settings used, and
 records of the code/data versions (called **provenance**).
 The guide includes observed numerical references from the local clean-install
-checks. DR2 currently produces numerical reports/tables, not PDF figures or an
-Excel workbook.
+checks. DR2 produces numerical reports/tables, catalog sqrt(TS) PDF/PNG figures,
+and the documented single-source flux-limit figures; no Excel workbook is generated.
 
 ## Radio-bright AGN catalog for testing
 
@@ -249,3 +249,8 @@ dataset. Use `--full-sky-events` at task creation for all events, or
 loaded data and validated PDF tables. [Settings and limitations](docs/single_source_performance.md).
 
 New DR2 spatial+energy single-source tasks also report preliminary one-sided 95% flux upper limits for E^-2, E^-2.5 and E^-3, with a spectrum figure including published NGC 1068 and diffuse uncertainty bands. Use `--no-flux-upper-limits` to omit them; catalog scans enable the per-source limits and figures only with `--flux-upper-limits`. See [flux limits and reference spectra](docs/flux_upper_limits.md) for definitions, units, files and coverage limitations.
+
+Catalog scans now automatically report the top five sources with separate local/global
+p value and significance columns, an analytic independent-source catalog correction,
+and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
+See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.

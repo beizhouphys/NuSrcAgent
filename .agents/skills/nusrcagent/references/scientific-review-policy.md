@@ -68,3 +68,13 @@ does not by itself establish a calibrated detection or publication readiness.
 Use `TS`, defined after maximizing the likelihood, without an added maximization suffix.
 
 Call results preliminary when any review warning remains. Call them publication-ready only after empirical background trials, validation against the reference implementation, stability checks, and all review findings are resolved.
+
+## Analytic catalog scan reporting
+
+New DR2 scan reports declare `catalog_scan_summary`. Verify its full source
+count, top-five order, stable tie handling, input-ordered CSV, analytic
+independent-source correction and both signed/display Gaussian significances.
+Verify the complete sqrt(TS) histogram, including TS=0, and its PDF/PNG hashes.
+Missing or inconsistent declared artifacts fail review. Historical scans
+without this output schema retain their original requirements. This analytic
+catalog correction does not imply empirical calibration or parameter coverage.

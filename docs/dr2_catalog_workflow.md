@@ -41,8 +41,8 @@ means the saved record of data/code versions and settings used in that calculati
 
 Ordinary local p-values and significances are estimates: half-chi-square dof=2
 for fitted Gamma and dof=1 for fixed Gamma. The source CSV records the method,
-dof and estimate flag alongside each result. No empirical catalog
-post-trial significance is produced. The excluded 3386-source reproduction
+dof and estimate flag alongside each result. An analytic independent-source catalog correction is reported; no empirical
+catalog post-trial significance is produced. The excluded 3386-source reproduction
 workflow's six stacks, signed fits and paper comparison products are not
 implicitly invoked by this general scan.
 A local p-value refers to one specified source hypothesis. Selecting the most
@@ -71,3 +71,39 @@ loaded data and validated PDF tables. [Settings and limitations](single_source_p
 ## Fixed-spectrum point-source flux limits, 2026-10-19
 
 New DR2 spatial+energy single-source tasks default to three separate fixed-spectrum fits (E^-2, E^-2.5, E^-3), preliminary one-sided 95% profile-likelihood upper limits, and a spectrum figure with published NGC 1068 and diffuse bands. Catalog scans keep these per-source outputs opt-in with `--flux-upper-limits`; stacking retains its existing definition. Coverage and detector/PDF systematics remain unvalidated/excluded. Historical tasks retain their recorded definitions. See [flux-limit definitions and plotting conventions](flux_upper_limits.md).
+
+## Catalog scan reporting
+
+For each completed DR2 scan, the default report and the wrapper's
+`catalog_scan_summary.chat_table` show the five most significant sources (or
+all sources when fewer than five). Use that compact monospaced table in the
+chat response. It separates local/global **p value** and **significance**
+columns and puts `σ` in significance cells. The CSV stays in input order and
+adds a significance rank. Do not report failed-review results as valid.
+
+The analytic catalog estimate follows [Sec. IV A of arXiv:2103.12813](https://arxiv.org/pdf/2103.12813):
+`p_global = 1 - (1 - p_local)^N_sources`, using every selected source,
+including TS=0 fits, rather than just the five displayed sources. It assumes
+independent source tests; nearby source hypotheses can be correlated.
+This correction covers the selected catalog only. It does not include extra
+catalog selections, weighting or spectral hypotheses, and does not correct
+the separate joint stacking fit. It is not empirical calibration.
+
+The CSV's `post_trial_significance` retains signed `Phi^-1(1-p_global)`;
+`post_trial_excess_significance` is `max(0, Z)` for the paper Table I display.
+`post_trial_p_approx`, `post_trial_method` and `post_trial_n_sources` record
+the probability, approximation and source count. The report also records the
+best selected source threshold as `catalog_post_trial_p`, with its signed
+`catalog_post_trial_significance` and explicit `catalog_post_trial_method`;
+this is the source scan result, not the joint stacking significance. Local dof and method labels
+remain recorded. At ns=0, Gamma is not a spectral measurement.
+
+Each scan also writes `sqrt_ts_distribution_bins.csv` and PDF/PNG
+figures under `figures/<run_id>/`, with bin width 0.25, counts on a logarithmic
+axis and sqrt(N) error bars, following Fig. 3. All selected sources, including
+TS=0, enter the histogram. Empty bins remain in the numeric table; zero lower
+error endpoints are clipped only in the logarithmic drawing. No normal
+distribution is fitted. For fitted Gamma, sqrt(TS) is a plotting coordinate,
+not the local Gaussian significance. The review checks the correction,
+ranking, histogram counts and figure hashes. Historical run artifacts are
+not rewritten and retain their original review requirements.

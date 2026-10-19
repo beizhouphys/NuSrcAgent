@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from agent_core.p_value import local_p_value_estimate
+from agent_core.catalog_scan_outputs import review_catalog_scan_outputs
 from agent_core.simple_yaml import load_simple_yaml
 
 
@@ -273,6 +274,9 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
                 reference = finite_float(fit.get(key)) if isinstance(fit, dict) else None
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
     add_check(review, "dr2_scan_table", "pass" if table_ok else "fail", "source CSV matches the reviewed fits" if table_ok else "source CSV is missing, incomplete, reordered, or inconsistent", False)
+    for check_id, valid in review_catalog_scan_outputs(report["result"], table).items():
+        add_check(review, check_id, "pass" if valid else "fail",
+                  "catalog correction, top five or histogram artifact verification: " + check_id, False)
     review["metrics"]["source_fits"] = metrics
 
 

@@ -402,6 +402,17 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
         "completion": task.get("completion", {}),
         "artifacts": task.get("artifacts", {}),
     }
+    if task.get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
+        run_directory = task.get("artifacts", {}).get("run_directory")
+        if run_directory:
+            from agent_core.simple_yaml import load_simple_yaml
+            report_path = Path(run_directory) / "report.yaml"
+            if report_path.is_file():
+                report_result = load_simple_yaml(report_path.read_text()).get("result", {})
+                scan_summary = report_result.get("catalog_scan_summary")
+                if scan_summary:
+                    from agent_core.catalog_scan_outputs import compact_scan_table
+                    summary["catalog_scan_summary"] = dict(scan_summary, chat_table=compact_scan_table(report_result["source_results"]))
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 

@@ -116,3 +116,11 @@ loaded data and validated PDF tables. [Settings and limitations](single_source_p
 ## Fixed-spectrum point-source flux limits, 2026-10-19
 
 New DR2 spatial+energy single-source tasks default to three separate fixed-spectrum fits (E^-2, E^-2.5, E^-3), preliminary one-sided 95% profile-likelihood upper limits, and a spectrum figure with published NGC 1068 and diffuse bands. Catalog scans keep these per-source outputs opt-in with `--flux-upper-limits`; stacking retains its existing definition. Coverage and detector/PDF systematics remain unvalidated/excluded. Historical tasks retain their recorded definitions. See [flux-limit definitions and plotting conventions](flux_upper_limits.md).
+
+New DR2 source scans report an analytic independent-source catalog correction
+`p_global = 1-(1-p_local)^N_sources`, alongside the local approximation.
+This is not empirical calibration; correlated source hypotheses, additional
+catalog selections and extra search hypotheses are not calibrated by it.
+Signed Gaussian Z is retained; the top-five table displays max(0, Z) as in
+arXiv:2103.12813 Table I. The sqrt(TS) figure is an observed source histogram,
+not a background-trial distribution or a validation of the local approximation.
