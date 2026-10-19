@@ -190,3 +190,7 @@ dataset. Use `--full-sky-events` at task creation for all events, or
 `--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
 `scan_and_stack` retains its existing event selection. Scans reuse complete
 loaded data and validated PDF tables. [Settings and limitations](single_source_performance.md).
+
+### Fixed-spectrum flux limits
+
+The single-source example now also writes limits for E^-2, E^-2.5 and E^-3 and a reference-spectrum plot. Add `--no-flux-upper-limits` when creating a task to omit these extra fits. Scans omit them by default; add `--flux-upper-limits` to `create-catalog --catalog-operation scan` or `scan_and_stack` when per-source limits and figures are wanted. See [definitions and limitations](flux_upper_limits.md).

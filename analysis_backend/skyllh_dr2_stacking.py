@@ -424,6 +424,7 @@ def run_dr2_stacking(
     background_pdf_version="v3",
     runtime_cache=None,
     source_dec_window_deg=None,
+    flux_upper_limit_cl=None,
 ):
     """Run an unblinded catalog stack and return serializable results."""
     analysis = create_dr2_stacking_analysis(
@@ -462,7 +463,7 @@ def run_dr2_stacking(
         background_method = f"precalculated full-14 DR2 {analysis.background_pdf_version} background tables"
         background_provenance = analysis.background_pdf_provenance
         energy_pdf = "precalculated_signal_and_background_tables"
-    return {
+    result = {
         "analysis": "catalog_stacking" if len(source_specs) > 1 else "single_source",
         "sample": DR2_SAMPLE,
         "data_selection": analysis.data_selection,
@@ -529,6 +530,35 @@ def run_dr2_stacking(
         "f_k": {name: float(f_k[idx]) for idx, name in enumerate(dataset_names)},
         "minimizer_status": _json_safe(minimizer_status),
     }
+
+    if flux_upper_limit_cl is not None:
+        from analysis_backend.profile_upper_limit import fixed_gamma_flux_upper_limit
+        result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
+    return result
+
+
+def run_dr2_single_source(source_specs, flux_upper_limit_cl=None, flux_upper_limit_gammas=None, runtime_cache=None, **fit_options):
+    """Run the requested fit plus separately recorded fixed-spectrum limits."""
+    if len(source_specs) != 1:
+        raise ValueError("Individual-source fits require exactly one source")
+    gammas = list(flux_upper_limit_gammas or [])
+    owned_cache = runtime_cache is None and bool(gammas)
+    cache = {} if owned_cache else runtime_cache
+    try:
+        result = run_dr2_stacking(source_specs, runtime_cache=cache,
+            flux_upper_limit_cl=None if gammas else flux_upper_limit_cl, **fit_options)
+        if gammas:
+            fixed_options = dict(fit_options, gamma_mode="fixed")
+            result["flux_upper_limit_fits"] = []
+            for exponent in gammas:
+                fixed_options["gamma"] = abs(float(exponent))
+                fit = run_dr2_stacking(source_specs, runtime_cache=cache,
+                    flux_upper_limit_cl=flux_upper_limit_cl, **fixed_options)
+                result["flux_upper_limit_fits"].append(fit)
+        return result
+    finally:
+        if owned_cache:
+            cache.clear()
 
 
 def _json_safe(value):

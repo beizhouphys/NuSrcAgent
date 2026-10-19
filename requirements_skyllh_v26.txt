@@ -3,3 +3,4 @@ numpy==2.5.1
 scipy==1.18.0
 astropy==8.0.1
 reportlab==5.0.0
+matplotlib==3.11.1

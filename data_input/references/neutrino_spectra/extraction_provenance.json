@@ -1,0 +1,157 @@
+{
+  "bands": [
+    {
+      "id": "NGC_1068",
+      "paper": "2406.06684",
+      "page": 8,
+      "figure": "Figure 2, right panel",
+      "curve_index": 11,
+      "x_tick_anchors": [
+        [
+          402.22270352,
+          3.0
+        ],
+        [
+          447.1454252,
+          5.0
+        ]
+      ],
+      "y_tick_anchors": [
+        [
+          488.86313712,
+          -14.0
+        ],
+        [
+          401.78201048,
+          -8.0
+        ]
+      ],
+      "energy_flux_scale_to_gev": 1000.0,
+      "unit_original": "TeV cm^-2 s^-1",
+      "confidence": "68% CL statistical band; stated in Figure 2 caption",
+      "confidence_level": 0.68,
+      "range_gev": [
+        700,
+        15000
+      ],
+      "source_pdf_sha256": "50be3a8382038dffc041fe024483da38633181593c54f84106157899990fff98",
+      "extraction_method": "Native vector filled-path vertices; logarithmic axes calibrated from labeled tick coordinates. This is extraction of the published band, not independent propagation of marginal parameter errors.",
+      "native_vertex_count": 202,
+      "extracted_boundary_points": 100,
+      "source_pdf_fill_color": 0.0,
+      "x_range_signed_relative_errors": [
+        -0.008264479709102823,
+        0.0012386466915415006
+      ],
+      "extracted_file": "NGC_1068_published_band.csv",
+      "extracted_file_sha256": "2190f678ab64a2a5d083c5b9ea6643c5d013e3ea276918480a80e3d4f6d477c1",
+      "output_unit": "GeV cm^-2 s^-1",
+      "source_pdf_url": "https://arxiv.org/pdf/2406.06684"
+    },
+    {
+      "id": "diffuse_tracks",
+      "paper": "2111.10299",
+      "page": 10,
+      "figure": "Figure 4",
+      "curve_index": 5,
+      "x_tick_anchors": [
+        [
+          381.67800257,
+          4.0
+        ],
+        [
+          521.81124425,
+          7.0
+        ]
+      ],
+      "y_tick_anchors": [
+        [
+          69.88400028,
+          -7.0
+        ],
+        [
+          267.05443688,
+          -9.0
+        ]
+      ],
+      "energy_flux_scale_to_gev": 1.0,
+      "unit_original": "GeV cm^-2 s^-1 sr^-1",
+      "confidence": "68% SPL band; stated in Figure 4 legend",
+      "confidence_level": 0.68,
+      "range_gev": [
+        15000,
+        5000000
+      ],
+      "source_pdf_sha256": "bcffef1d9db58034d9ab95f10acf1b50c3f87b8e67929d1b54fe3b9aba8ef3f2",
+      "extraction_method": "Native vector filled-path vertices; logarithmic axes calibrated from labeled tick coordinates. This is extraction of the published band, not independent propagation of marginal parameter errors.",
+      "native_vertex_count": 402,
+      "extracted_boundary_points": 200,
+      "source_pdf_fill_color": [
+        1.0,
+        0.5490196078,
+        0.0
+      ],
+      "x_range_signed_relative_errors": [
+        -2.748948702002707e-08,
+        -4.296300937234321e-08
+      ],
+      "extracted_file": "diffuse_tracks_published_band.csv",
+      "extracted_file_sha256": "fd1e2dfdd465bdda7d6e5d0a17aa3c4f3a88ef1361132e29c3d4caa6d7bb8101",
+      "output_unit": "GeV cm^-2 s^-1 sr^-1",
+      "source_pdf_url": "https://arxiv.org/pdf/2111.10299"
+    },
+    {
+      "id": "diffuse_starting_tracks",
+      "paper": "2402.18026",
+      "page": 17,
+      "figure": "Figure 17",
+      "curve_index": 39,
+      "x_tick_anchors": [
+        [
+          94.49557,
+          3.0
+        ],
+        [
+          292.95943,
+          7.0
+        ]
+      ],
+      "y_tick_anchors": [
+        [
+          69.5349384,
+          -6.0
+        ],
+        [
+          252.91747531,
+          -10.0
+        ]
+      ],
+      "energy_flux_scale_to_gev": 1.0,
+      "unit_original": "GeV cm^-2 s^-1 sr^-1",
+      "confidence": "Published blue SPL uncertainty band in Figure 17; caption refers to SPL likelihood contours in Figure 13 but does not explicitly give the band confidence level",
+      "confidence_level": null,
+      "range_gev": [
+        3000,
+        550000
+      ],
+      "source_pdf_sha256": "8f96310b527b24e8cc6287f1dd2a4916221833cd40338eeb0afa83fb45471bfe",
+      "extraction_method": "Native vector filled-path vertices; logarithmic axes calibrated from labeled tick coordinates. This is extraction of the published band, not independent propagation of marginal parameter errors.",
+      "native_vertex_count": 40000,
+      "extracted_boundary_points": 10000,
+      "source_pdf_fill_color": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "x_range_signed_relative_errors": [
+        0.3000000087500143,
+        -1.3423664513290134e-08
+      ],
+      "extracted_file": "diffuse_starting_tracks_published_band.csv",
+      "extracted_file_sha256": "e580020c4147bcf47ebf84f1ce0818c63cda6a696c86a48ea9913a962d1bf985",
+      "output_unit": "GeV cm^-2 s^-1 sr^-1",
+      "source_pdf_url": "https://arxiv.org/pdf/2402.18026"
+    }
+  ],
+  "uncertainty_note": "Starting-track band reproduced as published without assigning an unstated confidence level."
+}

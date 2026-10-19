@@ -179,6 +179,58 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
         add_check(review, "dr2_fit_table", "pass" if table_ok else "fail", "fit CSV matches the numeric report" if table_ok else "fit CSV is missing or inconsistent", False)
 
+    if normalized.get("flux_upper_limit_gammas") and result.get("n_sources") == 1:
+        review_flux_suite(review, report, normalized, root)
+    elif normalized.get("flux_upper_limit_cl") is not None and not normalized.get("flux_upper_limit_gammas"):
+        review_flux_upper_limit(review, result, normalized)
+
+
+def review_flux_upper_limit(review, result, normalized):
+    """Check the requested one-sided construction, conversion and artifacts."""
+    from statistics import NormalDist
+
+    limit = result.get("flux_upper_limit", {})
+    confidence = finite_float(normalized.get("flux_upper_limit_cl"))
+    valid = confidence is not None and 0.5 < confidence < 1 and isinstance(limit, dict)
+    expected_q = NormalDist().inv_cdf(confidence) ** 2 if valid else None
+    expected = {"confidence_level": confidence, "gamma": result.get("gamma"),
+                "critical_q": expected_q, "q_at_upper_limit": expected_q,
+                "ns_hat": result.get("ns"), "ns_bound_max": result.get("fit_bounds", {}).get("ns", [None, None])[1]}
+    for key, reference in expected.items():
+        value, reference = finite_float(limit.get(key)), finite_float(reference)
+        valid = valid and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-7, abs_tol=1e-6)
+    ns_upper = finite_float(limit.get("ns_upper_limit"))
+    phi = finite_float(limit.get("phi0_upper_limit"))
+    yield100 = finite_float(limit.get("yield_per_phi0_at_100tev"))
+    valid = valid and ns_upper is not None and float(result["ns"]) < ns_upper < float(result["fit_bounds"]["ns"][1]) and phi is not None and phi > 0 and yield100 is not None and yield100 > 0
+    if valid:
+        yield1 = sum(float(values[0]) for values in result["w_acc_by_dataset"].values())
+        valid = math.isclose(yield100, yield1 * 100 ** float(result["gamma"]), rel_tol=1e-12)
+        for value, reference in ((phi * yield100, ns_upper), (limit.get("e2_dphi_de_upper_limit_gev_cm2_s"), phi * 1e10), (limit.get("e2_dphi_de_upper_limit_tev_cm2_s"), phi * 1e7), (2 * limit.get("log_likelihood_ratio_at_best", float("nan")), result["TS"])):
+            value = finite_float(value)
+            valid = valid and value is not None and math.isclose(value, reference, rel_tol=1e-7, abs_tol=1e-12)
+    valid = valid and result.get("gamma_mode") == "fixed" and result.get("n_sources") == 1 and result.get("likelihood_mode") == "spatial_energy" and limit.get("method") == "asymptotic_fixed_gamma_profile_likelihood" and limit.get("sidedness") == "one_sided_upper" and limit.get("flavor") == "nu_mu+anti_nu_mu" and limit.get("pivot_energy_gev") == 1e5 and limit.get("phi0_unit") == "GeV^-1 cm^-2 s^-1" and limit.get("coverage_validated") is False and limit.get("systematic_uncertainties_included") is False
+    for field in ("event_selection", "event_dec_min_deg", "event_dec_max_deg"):
+        valid = valid and limit.get(field) == result.get(field)
+    add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent; coverage remains unvalidated" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
+    if ns_upper is not None and finite_float(result.get("ns")) is not None and result["ns"] <= 1e-5:
+        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit has ns at zero; asymptotic coverage at the physical boundary remains unvalidated", False)
+    if normalized.get("_flux_suite_member"):
+        return
+    files = result.get("generated_files", {})
+    table = read_csv_if_present(Path(files["flux_upper_limit"])) if files.get("flux_upper_limit") else []
+    profile = read_csv_if_present(Path(files["upper_limit_profile"])) if files.get("upper_limit_profile") else []
+    tables_ok = len(table) == 1 and len(profile) == len(limit.get("profile", [])) and len(profile) >= 3
+    if tables_ok:
+        for key in ("confidence_level", "gamma", "ns_upper_limit", "phi0_upper_limit", "critical_q", "q_at_upper_limit"):
+            value, reference = finite_float(table[0].get(key)), finite_float(limit.get(key))
+            tables_ok = tables_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=0)
+        for row, reference in zip(profile, limit["profile"]):
+            for key in ("ns", "log_likelihood_ratio", "q"):
+                value = finite_float(row.get(key))
+                tables_ok = tables_ok and value is not None and math.isclose(value, reference[key], rel_tol=1e-12, abs_tol=1e-12)
+    add_check(review, "dr2_flux_upper_limit_tables", "pass" if tables_ok else "fail", "upper-limit and evaluated-profile CSV files match the numeric report" if tables_ok else "upper-limit tables are missing or inconsistent", False)
+
 
 def review_dr2_source_scan(review, run_dir, report, normalized, root):
     sources = normalized.get("sources", [])
@@ -411,3 +463,66 @@ def integer_value(value: Any):
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def review_flux_suite(review, report, normalized, root):
+    """Review all fixed hypotheses and the numeric data behind the figure."""
+    import json
+    from agent_core.file_cache import sha256_file
+    result = report["result"]
+    fits = result.get("flux_upper_limit_fits", [])
+    expected = [-float(g) for g in normalized["flux_upper_limit_gammas"]]
+    complete = isinstance(fits, list) and len(fits) == len(expected) and all(
+        isinstance(fit, dict) and fit.get("gamma_mode") == "fixed" and fit.get("gamma") == gamma
+        for fit, gamma in zip(fits, expected))
+    add_check(review, "dr2_flux_hypotheses", "pass" if complete else "fail",
+              "fixed-spectrum fits match every requested upper-limit hypothesis" if complete else "missing or inconsistent upper-limit hypotheses", False)
+    if not complete:
+        return
+    for fit, gamma in zip(fits, expected):
+        child_normalized = dict(normalized, gamma_mode="fixed", spectral_indices=[-gamma],
+                                flux_upper_limit_gammas=[], _flux_suite_member=True)
+        child = {"checks": [], "metrics": {}}
+        review_dr2_run(child, dict(report, result=fit), child_normalized, root)
+        for check in child["checks"]:
+            review["checks"].append(dict(check, id=f"flux_gamma_{gamma:g}_{check['id']}"))
+    files = result.get("generated_files", {})
+    try:
+        table = read_csv_if_present(Path(files["flux_upper_limits"]))
+        profile = read_csv_if_present(Path(files["upper_limit_profiles"]))
+        limits = [fit["flux_upper_limit"] for fit in fits]
+        valid = len(table) == len(limits)
+        for row, limit in zip(table, limits):
+            for key, reference in limit.items():
+                if isinstance(reference, (float, int)) and not isinstance(reference, bool):
+                    value = finite_float(row.get(key))
+                    valid = valid and value is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
+        expected_profile = [dict(gamma=limit["gamma"], **point) for limit in limits for point in limit["profile"]]
+        valid = valid and len(profile) == len(expected_profile)
+        for row, reference in zip(profile, expected_profile):
+            for key, value in reference.items():
+                parsed = finite_float(row.get(key))
+                valid = valid and parsed is not None and math.isclose(parsed, value, rel_tol=1e-12, abs_tol=1e-12)
+        provenance = json.loads(Path(files["flux_plot_provenance"]).read_text())
+        valid = valid and all(Path(path).is_file() and sha256_file(path) == digest for path, digest in provenance["outputs_sha256"].items())
+        valid = valid and all(sha256_file(root / path) == digest for path, digest in provenance["reference_sha256"].items())
+        valid = valid and all(Path(files["flux_spectrum_"+suffix]).stat().st_size > 100 for suffix in ("png", "pdf", "svg"))
+        curves = read_csv_if_present(Path(files["spectrum_curves"]))
+        hypotheses = {f"source_gamma_{limit['gamma']:g}": limit for limit in limits}
+        references = {"NGC_1068", "diffuse_tracks", "diffuse_starting_tracks"}
+        valid = valid and {row["curve"] for row in curves} == set(hypotheses) | references
+        for row in curves:
+            factor = 4*math.pi if row["curve"].startswith("diffuse") else 1.
+            value = float(row["e2_flux"])
+            valid = valid and row["e2_flux_unit"] == "GeV cm^-2 s^-1" and float(row["display_factor"]) == factor
+            valid = valid and math.isclose(value, float(row["original_e2_flux"])*factor, rel_tol=1e-12, abs_tol=0.)
+            if row["curve"] in hypotheses:
+                limit = hypotheses[row["curve"]];energy = float(row["energy_gev"])
+                expected_value = energy**2 * limit["phi0_upper_limit"] * (energy / 1e5)**(-limit["gamma"])
+                valid = valid and math.isclose(value, expected_value, rel_tol=1e-12, abs_tol=0.)
+            elif row.get("band_lower"):
+                valid = valid and 0 < float(row["band_lower"]) <= float(row["band_upper"])
+    except (OSError, ValueError, KeyError, TypeError):
+        valid = False
+    add_check(review, "dr2_flux_artifacts", "pass" if valid else "fail",
+              "limit/profile tables, reference hashes, common flux units, diffuse 4pi conversion and plotted power laws are consistent" if valid else "missing or inconsistent flux tables, figures, reference data or plot provenance", False)

@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 7441,
-      "sha256": "a3d042f1b8dbf9a007ade65de3962cb24c49b1028156ed446a5aab2cf3251fa7"
+      "bytes": 8824,
+      "sha256": "b98a251725fbb7b673535641c93563b1fad8a03e51ecfa6ce33f3935345c03b9"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -23,8 +23,8 @@
     },
     {
       "path": ".gitattributes",
-      "bytes": 47,
-      "sha256": "e56fbaff02e13e74302bd4a323e7ec89d4b5402d95faf88f497714b00c1da203"
+      "bytes": 98,
+      "sha256": "953d014dc776f514bee4656d4e164e10964084f0becb3eb4000b94d79a426311"
     },
     {
       "path": ".github/pull_request_template.md",
@@ -53,13 +53,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 14600,
-      "sha256": "95666be5406c6ca837208eca8423aedaafcb40175b5ba722ca70ed6474641e1b"
+      "bytes": 15064,
+      "sha256": "65734b516c865597f077ccd74aede24f14f1d273234f0f686703c5d825b68fe1"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
-      "bytes": 9989,
-      "sha256": "42cd29c26662557df72bfc57408b8ce782a99de32b169ea95ea5b7eafd240c0b"
+      "bytes": 10323,
+      "sha256": "b2d56432ec8842c26d3a78e2c3dc34d3dc1fd6ceb7b7d23e57e5184bb3682c96"
     },
     {
       "path": "agent_core/analysis_agent.py",
@@ -93,13 +93,18 @@
     },
     {
       "path": "agent_core/environment.py",
-      "bytes": 6058,
-      "sha256": "3cda8ca87bea94111da507854cd22547e5a34ca54aa90e60e31f9300b7951a40"
+      "bytes": 6086,
+      "sha256": "08ad7a6e4aa1d33a60db08178d78cc66a06b187f5297f0e116db2899fce0866b"
     },
     {
       "path": "agent_core/file_cache.py",
       "bytes": 708,
       "sha256": "e92a74b1e1e2842fab502798750a2ae146948aa2cbcc16d644d34360f7de2db5"
+    },
+    {
+      "path": "agent_core/flux_outputs.py",
+      "bytes": 11754,
+      "sha256": "f68ce12267d7f4576fd8244f2d9bf3662934c1d717767d058aa34dccbe232955"
     },
     {
       "path": "agent_core/input_install.py",
@@ -108,13 +113,13 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 3608,
-      "sha256": "d79995091671253c67a0eb5cd0b6c693a52b099d652ade4185e27285153ff863"
+      "bytes": 3884,
+      "sha256": "a77fb190bde23e76646a6e1765097fac6c05fddfd7f224f470dd61888f5a547d"
     },
     {
       "path": "agent_core/normalize.py",
-      "bytes": 6087,
-      "sha256": "4631ee0e3c9994716a3c654509efddd759d7887a344d8c3ebb2de591decdb250"
+      "bytes": 6215,
+      "sha256": "a5a7d045afd7bdb95d7b09afa35c061ec5be92ecffe3e70946a003fdc2286e17"
     },
     {
       "path": "agent_core/p_value.py",
@@ -128,18 +133,18 @@
     },
     {
       "path": "agent_core/report.py",
-      "bytes": 11945,
-      "sha256": "7961e657fa75b6427c9f59548e7f6e26e1ec655bc866d8e251ef36ccd940c114"
+      "bytes": 14358,
+      "sha256": "838a43594f6516b4674581473aba9488b1508c3424ce01abcfc3c5dfc89e1910"
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 33357,
-      "sha256": "18283a495f17456e0b335d6002b7233330901a41fb9e8413a3882da2a39da0c4"
+      "bytes": 42648,
+      "sha256": "4cb74801b151e8c23efa1ce89d52934ba96afb74f0a0c1265297894ef0a0b338"
     },
     {
       "path": "agent_core/schemas.py",
-      "bytes": 9443,
-      "sha256": "41ab03e336c4a7799fe238060d8382ad2cb5912f9b4fdf9e53cfb3feed568ca0"
+      "bytes": 9857,
+      "sha256": "b9674e789228a9d9f43ac49cf6e9d68a33779bd74a2bfbe3759a1ab47204bae6"
     },
     {
       "path": "agent_core/simple_yaml.py",
@@ -153,8 +158,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 10179,
-      "sha256": "29dbe8ea214a2e95c6ef9160561c5a588223d2045c43c9113f6168eb178e1b44"
+      "bytes": 11411,
+      "sha256": "e1d1681b310057fc7f9344e716df3c9982c9a14539b078cf03da0f3e84c7e7f9"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -182,14 +187,19 @@
       "sha256": "cd8dfd56d9676db5bd9ed48de53ce428d4721fab8bada7ad5c465ef038430902"
     },
     {
+      "path": "analysis_backend/profile_upper_limit.py",
+      "bytes": 5350,
+      "sha256": "6954a65b98df6432ef83e1172642e987276355649c2eb987ff3a59e47685ec5f"
+    },
+    {
       "path": "analysis_backend/skyllh_chunked.py",
       "bytes": 19650,
       "sha256": "3f3b79610f6d33ef96144fe4341af902c41dcf4fe3dcfc1a06f6a01c04c7d03e"
     },
     {
       "path": "analysis_backend/skyllh_dr2_catalog_scan.py",
-      "bytes": 1693,
-      "sha256": "04857db2b7d2efce0c5172690e26ad91f18b3658347c66c133681b240295ae9c"
+      "bytes": 1721,
+      "sha256": "aae0f55b29014d454b0590aaca34274e67546c0e97d9867ef757eb41e1ecdcb5"
     },
     {
       "path": "analysis_backend/skyllh_dr2_dominance.py",
@@ -208,8 +218,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 26816,
-      "sha256": "277ecfb41f8a12a7ce56f50d5cf15dbed2d9d358a4ed9cf74e48d7f4e7097d0c"
+      "bytes": 28271,
+      "sha256": "f6affe575c9220d32cf569421f93c22c8be8b9606cad99590bb24e6a22c72c3c"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -230,6 +240,36 @@
       "path": "data_input/README.md",
       "bytes": 884,
       "sha256": "b02ed4c6feca9446d64a907c5096e2b64c3fb135f8951a828f8872e128ff54c6"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/NGC_1068_published_band.csv",
+      "bytes": 6451,
+      "sha256": "2190f678ab64a2a5d083c5b9ea6643c5d013e3ea276918480a80e3d4f6d477c1"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/diffuse_starting_tracks_published_band.csv",
+      "bytes": 641669,
+      "sha256": "e580020c4147bcf47ebf84f1ce0818c63cda6a696c86a48ea9913a962d1bf985"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/diffuse_tracks_published_band.csv",
+      "bytes": 12872,
+      "sha256": "fd1e2dfdd465bdda7d6e5d0a17aa3c4f3a88ef1361132e29c3d4caa6d7bb8101"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/extraction_provenance.json",
+      "bytes": 4856,
+      "sha256": "c691968a4f7b591ae409a5ddb9f9b65caaed41de1e7695aca82ff6f26da5f359"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/manifest.json",
+      "bytes": 551,
+      "sha256": "7566ba7dd24a773d2947ef066336f9f3d9f64e97f210fe5044cb1bd7041b955d"
+    },
+    {
+      "path": "data_input/references/neutrino_spectra/reference_spectra.json",
+      "bytes": 4065,
+      "sha256": "b84b717e70c2eb1a3200265c8fb507908087a08153d049abf06382854c879d97"
     },
     {
       "path": "data_input/sources/README.md",
@@ -273,8 +313,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 4327,
-      "sha256": "dc3003d1547eb98f083aef7a34dd08bb981216cb46c2a4c81ad9a35a7283dc9f"
+      "bytes": 4936,
+      "sha256": "6a5638f16f7fce5518265c0bd13c1825b538ca6310f931f7f2f4b8a9a2ad3b69"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -285,6 +325,11 @@
       "path": "docs/dr2_v3_release.md",
       "bytes": 2933,
       "sha256": "3d19405a440186f094c5333ad1c841e45d7d95d7577aca866e80d7d8113d2957"
+    },
+    {
+      "path": "docs/flux_upper_limits.md",
+      "bytes": 5142,
+      "sha256": "ceffba41bdb8de74ee1437ed3279def7551bef0738ededcdc0f846f4970f68f4"
     },
     {
       "path": "docs/input_bundles.json",
@@ -308,8 +353,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 10392,
-      "sha256": "ecde5fe22b3b619ceeb60a15df9df2e4ce09e5793ecd4786b7cff49588857b1e"
+      "bytes": 10830,
+      "sha256": "75bbf29311fcfb0855732586a8f2e59b4a58d835dbc2ebf43369bf4a02713299"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -338,13 +383,13 @@
     },
     {
       "path": "docs/release_scientific_baseline.md",
-      "bytes": 3854,
-      "sha256": "2a3869d1eb011c67bc694c1c2b726d42bffd2d09e6dc496d48b79f495c0b690e"
+      "bytes": 4463,
+      "sha256": "990d8696c86b47d8852a42aede5667655a49e838b7d6738c2e668797bfff7dc6"
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 7108,
-      "sha256": "7cafe25bf056b110a8cb90a3c579e0d2f6936f4e25293ec74d0eed5cf61fcfc3"
+      "bytes": 7717,
+      "sha256": "dbc4103c845be37e302f4b5986b20ada95d2ee725a22cb29ae4a5064aa9b4b80"
     },
     {
       "path": "docs/single_source_performance.md",
@@ -363,8 +408,8 @@
     },
     {
       "path": "requirements_skyllh_v26.txt",
-      "bytes": 74,
-      "sha256": "127c8404a3e2b3b00ba541d65ada831c9a813975688aaccfca24c06318208f7d"
+      "bytes": 93,
+      "sha256": "4fedaacc8cde02e7bb785cbde514c1ff09ee005d1880c6e3d3c34aa3d7b57bc8"
     },
     {
       "path": "requirements_skyllh_v26_lock.txt",
@@ -373,8 +418,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 25576,
-      "sha256": "13068a1f1c7bb887bd4ba35ad3afa07bd2fd7f1293ddf0df07a7f300f793bbf9"
+      "bytes": 27887,
+      "sha256": "2fcd9e7f62a9a7aa7b4d2aa7ea8fc665358b8057aef69f38191ccf0dc5178210"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

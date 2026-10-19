@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 
 TESTED_PYTHON = (3, 12)
 PINNED_PACKAGES = {
+    "matplotlib": "3.11.1",
     "astropy": "8.0.1",
     "numpy": "2.5.1",
     "reportlab": "5.0.0",

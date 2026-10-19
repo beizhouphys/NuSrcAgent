@@ -6,7 +6,7 @@ from pathlib import Path
 from time import perf_counter
 
 import numpy as np
-from analysis_backend.skyllh_dr2_stacking import run_dr2_stacking
+from analysis_backend.skyllh_dr2_stacking import run_dr2_stacking, run_dr2_single_source
 
 
 _WORKER_RUNTIME_CACHE = {}
@@ -20,7 +20,7 @@ def _fit_source(job):
                  and fit_options.get("source_ra_scramble_seed") is None
                  and fit_options.get("event_ra_scramble_seed") is None)
     cache = _WORKER_RUNTIME_CACHE if use_cache else None
-    fit = run_dr2_stacking([single], runtime_cache=cache, **fit_options)
+    fit = run_dr2_single_source([single], runtime_cache=cache, **fit_options)
     cache_stats = {} if cache is None or "pdf_store" not in cache else {"dataset_loads": cache["dataset_loads"],
         "dataset_cache_hits": cache["dataset_cache_hits"], **cache["pdf_store"].cache_stats}
     return {"source_number": number, "source_name": spec["name"],

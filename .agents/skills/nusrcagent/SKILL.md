@@ -127,3 +127,9 @@ The stack part of `scan_and_stack` retains its recorded event selection.
 Scans reuse complete data and validated PDF tables; they never reuse another
 source's event mask or fitted state. See `docs/single_source_performance.md`.
 Do not change the event selection of historical tasks or background ensembles.
+
+## Fixed-spectrum flux upper limits and reference-spectrum figures
+
+New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit retains its requested Gamma mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. This feature does not change joint stacking, DR1 or spatial-only results.
+
+Read `docs/flux_upper_limits.md` for units, profile threshold, confidence qualifications and reference provenance. Plot the source limits, NGC 1068 and both diffuse benchmarks in one panel using common flux units, with diffuse multiplied by exactly 4*pi sr and published uncertainty bands. Do not add NGC 4151. Preserve the starting-track band CL qualification. Describe the limits as asymptotic estimates with unvalidated coverage and excluded detector/PDF systematics. A curve represents one complete fixed power-law hypothesis; do not call it a differential energy-bin limit. Review every fixed fit and its tables/figures. No background trials are performed by this feature.

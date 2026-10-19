@@ -10,6 +10,20 @@ from agent_core.schemas import AnalysisConfig, AnalysisType, ValidationResult, W
 def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None) -> ValidationResult:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     result = ValidationResult()
+    confidence = config.analysis.flux_upper_limit_cl
+    limit_gammas = config.analysis.flux_upper_limit_gammas
+    if confidence is not None:
+        if not math.isfinite(confidence) or not 0.5 < confidence < 1.0:
+            result.errors.append("analysis.flux_upper_limit_cl must be finite and in (0.5, 1)")
+        if config.data.sample != "icecube_public_ps_14yr_dr2" or config.analysis.likelihood_mode != "spatial_energy":
+            result.errors.append("Flux upper limits require DR2 spatial+energy analysis")
+        if config.analysis.type == AnalysisType.CATALOG_STACKING and (not limit_gammas or config.analysis.catalog_operation == "stack"):
+            result.errors.append("Catalog flux upper limits require individual-source scan hypotheses")
+        if not limit_gammas and config.stacking.gamma_mode != "fixed":
+            result.errors.append("A scalar flux upper limit requires fixed Gamma")
+    if limit_gammas:
+        if confidence is None or len(set(limit_gammas)) != len(limit_gammas) or any(not math.isfinite(g) or not -6.1 <= g <= -0.9 for g in limit_gammas):
+            result.errors.append("Flux upper-limit Gamma hypotheses require a confidence level and unique negative exponents in [-6.1, -0.9]")
     if config.analysis.catalog_operation not in {"stack", "scan", "scan_and_stack"}:
         result.errors.append("analysis.catalog_operation must be stack, scan, or scan_and_stack")
     if config.data.sample == "icecube_public_ps_10yr" and config.analysis.catalog_operation != "scan_and_stack":

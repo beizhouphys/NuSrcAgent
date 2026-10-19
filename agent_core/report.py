@@ -22,7 +22,8 @@ from agent_core.environment import _required_paths
 
 def add_significance(result: dict[str, object], gamma_mode: str) -> None:
     """Attach the declared local estimate to each ordinary fit."""
-    fits = [result, *(item["fit"] for item in result.get("source_results", []))]
+    primary = [result, *(item["fit"] for item in result.get("source_results", []))]
+    fits = [*primary, *(child for fit in primary for child in fit.get("flux_upper_limit_fits", []))]
     for fit in fits:
         ts = fit.get("TS", fit.get("ts"))
         if ts is not None:
@@ -61,6 +62,8 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
         workbook_warning = build_excel_workbook(run_dir, root)
         if workbook_warning is not None:
             result.setdefault("warnings", []).append(workbook_warning)
+    from agent_core.flux_outputs import write_flux_outputs
+    write_flux_outputs(run_dir, normalized, result, root)
     report = build_report(normalized, result)
     write_yaml(run_dir / "config.normalized.yaml", to_clean_dict(normalized))
     write_yaml(run_dir / "report.yaml", report)
@@ -92,7 +95,7 @@ def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> d
 
 def build_provenance(config_path: Path, normalized: NormalizedAnalysis, repo_root: Path, config: AnalysisConfig) -> dict[str, object]:
     packages = {}
-    for name in ("skyllh", "numpy", "scipy", "astropy"):
+    for name in ("skyllh", "numpy", "scipy", "astropy", "matplotlib"):
         try:
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
@@ -102,6 +105,8 @@ def build_provenance(config_path: Path, normalized: NormalizedAnalysis, repo_roo
     input_paths = [repo_root / path for path in _required_paths(normalized.sample, normalized.likelihood_mode)]
     if config.catalog is not None and config.catalog.file is not None:
         input_paths.append(resolve_path(repo_root, config.catalog.file))
+    if normalized.flux_upper_limit_gammas:
+        input_paths.extend(sorted((repo_root / "data_input/references/neutrino_spectra").glob("*")))
     input_hashes = {str(path): sha256_file(path) for path in input_paths if path.is_file()}
     try:
         commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True)
@@ -132,6 +137,25 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             lines.append(f"| {item['source_number']} | {name} | {fit['TS']:.8g} | {fit['ns']:.8g} | {fit['gamma']:.8g} | {fit['pre_trial_p']:.8g} | {fit['pre_trial_significance']:.8g} |")
         if len(source_results) > 20:
             lines.extend(["", f"Showing the first 20 of {len(source_results)} sources; the CSV contains every source."])
+    flux_entries = [(report["result"], "Source")] if not source_results else [(item["fit"], item["source_name"]) for item in source_results]
+    if any(fit.get("flux_upper_limit_fits") or fit.get("flux_upper_limit") for fit, _ in flux_entries):
+        lines.extend(["", "## Fixed-spectrum flux upper limits", "",
+            "Separate constrained fits for each power-law spectrum; the primary fit above keeps its requested Gamma mode.", "",
+            "| Source | Fixed Gamma (E^-Gamma) | ns upper limit | phi100 upper limit [GeV^-1 cm^-2 s^-1] | E^2 dPhi/dE at 100 TeV [TeV cm^-2 s^-1] |",
+            "| --- | --- | --- | --- | --- |"])
+        flux_links = []
+        for fit, name in flux_entries[:20]:
+            limits = [child["flux_upper_limit"] for child in fit.get("flux_upper_limit_fits", [])]
+            if fit.get("flux_upper_limit"):
+                limits.append(fit["flux_upper_limit"])
+            safe_name = str(name).replace("|", "\\|").replace("\n", " ")
+            for limit in limits:
+                lines.append(f"| {safe_name} | {limit['gamma']:g} | {limit['ns_upper_limit']:.8g} | {limit['phi0_upper_limit']:.8g} | {limit['e2_dphi_de_upper_limit_tev_cm2_s']:.8g} |")
+            for key, value in fit.get("generated_files", {}).items():
+                if key.startswith("flux_") or key == "spectrum_curves":
+                    flux_links.append(f"[{name}: {key}]({value})")
+        lines.extend(["", *flux_links])
+        lines.extend(["", "Confidence level and threshold are recorded for every limit. The default is one-sided 95%, 2 Delta ln L = 2.705543454. These are preliminary asymptotic estimates: coverage is unvalidated and detector/PDF systematic uncertainties are excluded. The flux is nu_mu+anti_nu_mu at a 100 TeV pivot; no sr^-1 or all-flavor multiplier is used. Each plotted source curve is one complete power-law hypothesis, not an independent limit in each energy bin. Diffuse references are integrated over the full sky with 4*pi sr and have their own published confidence bands."])
     lines.extend(["", "## Artifacts", "", "- [Complete numeric report](report.yaml)", "- [Configuration](config.normalized.yaml)", "- [Provenance](provenance.yaml)"])
     for key, value in report["result"].get("generated_files", {}).items():
         artifact = Path(value)

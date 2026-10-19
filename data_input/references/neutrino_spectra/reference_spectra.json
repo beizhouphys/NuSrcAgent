@@ -1,0 +1,88 @@
+{
+  "references": [
+    {
+      "id": "NGC_1068",
+      "name": "NGC 1068",
+      "type": "point_source",
+      "status": "published time-integrated best fit",
+      "phi0_original": 4.02e-11,
+      "phi0_original_unit": "TeV^-1 cm^-2 s^-1",
+      "pivot_energy_gev": 1000.0,
+      "gamma": 3.1,
+      "range_gev": [
+        700.0,
+        15000.0
+      ],
+      "range_definition": "central 68% contribution to source TS",
+      "source_url": "https://arxiv.org/html/2406.06684",
+      "locator": "Table 2; Figure 2; Appendix VI.4.3",
+      "citation": "[1] IceCube, ApJ 981, 131 (2025); arXiv:2406.06684",
+      "flavor": "nu_mu+anti_nu_mu",
+      "phi0_gev_units": 4.02e-14,
+      "plot_scope": "published sensitive range only; no extrapolation",
+      "uncertainty_display": "68% CL statistical band; stated in Figure 2 caption",
+      "band_data_file": "NGC_1068_published_band.csv",
+      "display_quantity": "point-source flux",
+      "display_factor": 1,
+      "display_unit": "GeV cm^-2 s^-1",
+      "band_sha256": "2190f678ab64a2a5d083c5b9ea6643c5d013e3ea276918480a80e3d4f6d477c1"
+    },
+    {
+      "id": "diffuse_tracks",
+      "name": "Diffuse: 9.5 yr tracks",
+      "type": "diffuse_intensity",
+      "status": "published single-power-law best fit; selected benchmark, not a latest combined spectrum",
+      "phi0_original": 1.44e-18,
+      "phi0_original_unit": "GeV^-1 cm^-2 s^-1 sr^-1",
+      "pivot_energy_gev": 100000.0,
+      "gamma": 2.37,
+      "range_gev": [
+        15000.0,
+        5000000.0
+      ],
+      "range_definition": "published 90% sensitive energy range",
+      "source_url": "https://arxiv.org/html/2111.10299",
+      "locator": "Abstract; Section IV; Table 2",
+      "citation": "[2] IceCube, ApJ 928, 50 (2022); arXiv:2111.10299",
+      "flavor": "nu_mu+anti_nu_mu",
+      "phi0_gev_units": 1.44e-18,
+      "plot_scope": "published sensitive range only; no extrapolation",
+      "uncertainty_display": "68% SPL band; stated in Figure 4 legend",
+      "band_data_file": "diffuse_tracks_published_band.csv",
+      "display_quantity": "full-sky integrated isotropic diffuse flux",
+      "display_factor": 12.566370614359172,
+      "display_unit": "GeV cm^-2 s^-1",
+      "band_sha256": "fd1e2dfdd465bdda7d6e5d0a17aa3c4f3a88ef1361132e29c3d4caa6d7bb8101"
+    },
+    {
+      "id": "diffuse_starting_tracks",
+      "name": "Diffuse: 10.3 yr starting tracks",
+      "type": "diffuse_intensity",
+      "status": "published single-power-law best fit; selected benchmark, not a latest combined spectrum",
+      "phi0_original": 1.68e-18,
+      "phi0_original_unit": "GeV^-1 cm^-2 s^-1 sr^-1",
+      "pivot_energy_gev": 100000.0,
+      "gamma": 2.58,
+      "range_gev": [
+        3000.0,
+        550000.0
+      ],
+      "range_definition": "published 90% sensitive energy range",
+      "source_url": "https://arxiv.org/html/2402.18026",
+      "locator": "Abstract; Section VII",
+      "citation": "[3] IceCube, Phys. Rev. D 110, 022001 (2024); arXiv:2402.18026",
+      "flavor": "per-flavor nu+anti_nu; equal-flavor assumption identifies the muon flavor",
+      "phi0_gev_units": 1.68e-18,
+      "plot_scope": "published sensitive range only; no extrapolation",
+      "uncertainty_display": "Published blue SPL uncertainty band in Figure 17; caption refers to SPL likelihood contours in Figure 13 but does not explicitly give the band confidence level",
+      "band_data_file": "diffuse_starting_tracks_published_band.csv",
+      "display_quantity": "full-sky integrated isotropic diffuse flux",
+      "display_factor": 12.566370614359172,
+      "display_unit": "GeV cm^-2 s^-1",
+      "band_sha256": "e580020c4147bcf47ebf84f1ce0818c63cda6a696c86a48ea9913a962d1bf985"
+    }
+  ],
+  "solid_angle_conversion": "F_diffuse(E) = 4*pi sr * I_diffuse(E), using the published isotropic best-fit intensity over the full sky. Point-source fluxes unchanged.",
+  "flavor_conversion": "no factor of 3; point-source references are nu_mu+anti_nu_mu, diffuse references are muon/per-flavor",
+  "band_extraction_provenance": "extraction_provenance.json"
+}
