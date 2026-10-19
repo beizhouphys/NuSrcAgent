@@ -67,3 +67,7 @@ baseline. New DR2 single-source and catalog-scan tasks instead default to the
 20 degrees and at least 20% of every dataset. Use `--full-sky-events` at task
 creation to reproduce all-event references. Stacking selections, frozen PDFs,
 Gamma conventions, fit bounds and historical task settings are unchanged.
+
+## Fixed-spectrum point-source flux limits, 2026-10-19
+
+New DR2 spatial+energy single-source tasks default to three separate fixed-spectrum fits (E^-2, E^-2.5, E^-3), preliminary one-sided 95% profile-likelihood upper limits, and a spectrum figure with published NGC 1068 and diffuse bands. Catalog scans keep these per-source outputs opt-in with `--flux-upper-limits`; stacking retains its existing definition. Coverage and detector/PDF systematics remain unvalidated/excluded. Historical tasks retain their recorded definitions. See [flux-limit definitions and plotting conventions](flux_upper_limits.md).

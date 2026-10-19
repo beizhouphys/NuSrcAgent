@@ -118,6 +118,7 @@ def main(argv=None) -> int:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             set_source_window(task, args)
+            set_flux_upper_limits(task, args)
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
             sources = None if args.source is None else [parse_source(value) for value in args.source]
@@ -131,6 +132,7 @@ def main(argv=None) -> int:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
             set_source_window(task, args)
+            set_flux_upper_limits(task, args)
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -151,6 +153,24 @@ def main(argv=None) -> int:
     except (ValueError, OSError, KeyError) as exc:
         print("AGENT WRAP ERROR: %s" % exc, file=sys.stderr)
         return 2
+
+
+def set_flux_upper_limits(task, args):
+    from agent_core.task_state import parameter
+    enabled = args.flux_upper_limits
+    applicable = (args.data_sample == "icecube_public_ps_14yr_dr2"
+                  and task["parameters"]["likelihood_mode"]["value"] == "spatial_energy"
+                  and (task["workflow"] == "single_source"
+                       or task["parameters"].get("catalog_operation", {}).get("value") in {"scan", "scan_and_stack"}))
+    if enabled is True and not applicable:
+        raise ValueError("Flux upper limits require DR2 spatial+energy single-source or catalog-scan analysis")
+    if enabled is None:
+        enabled = applicable and task["workflow"] == "single_source"
+    source = "user" if args.flux_upper_limits is not None else "system_default"
+    task["parameters"]["flux_upper_limit_cl"] = parameter(0.95 if enabled else None, source, True)
+    task["parameters"]["flux_upper_limit_gammas"] = parameter([-2.0, -2.5, -3.0] if enabled else [], source, True)
+    if enabled:
+        task["parameters"]["flux_upper_limit_gammas"]["basis"] = "Owner-approved separate fixed E^-2, E^-2.5 and E^-3 spectra; one-sided asymptotic 95% limits and reference-spectrum plot; coverage unvalidated."
 
 
 def set_source_window(task, args):
@@ -226,6 +246,9 @@ def build_parser() -> argparse.ArgumentParser:
     single.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     single.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
     single.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
+    single_limits = single.add_mutually_exclusive_group()
+    single_limits.add_argument("--flux-upper-limits", dest="flux_upper_limits", action="store_true", default=None, help="Compute 95%% limits for E^-2, E^-2.5, E^-3 and plot reference spectra; default for DR2 spatial+energy single sources, opt-in for scans.")
+    single_limits.add_argument("--no-flux-upper-limits", dest="flux_upper_limits", action="store_false", help="Skip the additional fixed-spectrum upper-limit fits and plots.")
     single_window = single.add_mutually_exclusive_group()
     single_window.add_argument("--source-dec-window-deg", type=float, help="Minimum source-centered Dec half-width >=20 deg; expands to retain >=20%% of every DR2 dataset.")
     single_window.add_argument("--full-sky-events", action="store_true", help="Use all events for individual DR2 fits instead of the default adaptive source window.")
@@ -248,6 +271,9 @@ def build_parser() -> argparse.ArgumentParser:
     catalog.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     catalog.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
     catalog.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
+    catalog_limits = catalog.add_mutually_exclusive_group()
+    catalog_limits.add_argument("--flux-upper-limits", dest="flux_upper_limits", action="store_true", default=None, help="Compute 95%% limits for E^-2, E^-2.5, E^-3 and plot reference spectra; default for DR2 spatial+energy single sources, opt-in for scans.")
+    catalog_limits.add_argument("--no-flux-upper-limits", dest="flux_upper_limits", action="store_false", help="Skip the additional fixed-spectrum upper-limit fits and plots.")
     catalog.add_argument("--weight-mode", choices=["uniform", "column", "manual"])
     catalog.add_argument("--weight-column")
     catalog.add_argument("--weight-meaning")

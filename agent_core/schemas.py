@@ -26,6 +26,8 @@ class AnalysisBlock:
     time_mode: str = "time_integrated"
     likelihood_mode: str = "spatial_energy"
     catalog_operation: str = "stack"
+    flux_upper_limit_cl: float | None = None
+    flux_upper_limit_gammas: list[float] = field(default_factory=list)
 
 
 @dataclass
@@ -107,7 +109,7 @@ class AnalysisConfig:
         default_spectral_index = -2.5 if likelihood_mode == "spatial_only" and sample == "icecube_public_ps_14yr_dr2" else (-3.0 if sample == "icecube_public_ps_14yr_dr2" else -2.53)
         return cls(
             schema_version=str(payload.get("schema_version", "0.1")),
-            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack"))),
+            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")), flux_upper_limit_cl=optional_float(analysis_payload, "flux_upper_limit_cl"), flux_upper_limit_gammas=[float(value) for value in analysis_payload.get("flux_upper_limit_gammas", [])]),
             data=DataBlock(sample=sample),
             source=parse_source(payload.get("source")),
             sources=parse_sources(payload.get("sources")),
@@ -160,6 +162,8 @@ class NormalizedAnalysis:
     event_dec_max_deg: float | None = None
     source_dec_window_deg: float | None = None
     catalog_operation: str = "stack"
+    flux_upper_limit_cl: float | None = None
+    flux_upper_limit_gammas: list[float] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
 

@@ -67,3 +67,7 @@ dataset. Use `--full-sky-events` at task creation for all events, or
 `--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
 `scan_and_stack` retains its existing event selection. Scans reuse complete
 loaded data and validated PDF tables. [Settings and limitations](single_source_performance.md).
+
+## Fixed-spectrum point-source flux limits, 2026-10-19
+
+New DR2 spatial+energy single-source tasks default to three separate fixed-spectrum fits (E^-2, E^-2.5, E^-3), preliminary one-sided 95% profile-likelihood upper limits, and a spectrum figure with published NGC 1068 and diffuse bands. Catalog scans keep these per-source outputs opt-in with `--flux-upper-limits`; stacking retains its existing definition. Coverage and detector/PDF systematics remain unvalidated/excluded. Historical tasks retain their recorded definitions. See [flux-limit definitions and plotting conventions](flux_upper_limits.md).

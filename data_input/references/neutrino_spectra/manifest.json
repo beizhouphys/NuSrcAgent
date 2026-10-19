@@ -1,0 +1,9 @@
+{
+  "sha256": {
+    "NGC_1068_published_band.csv": "2190f678ab64a2a5d083c5b9ea6643c5d013e3ea276918480a80e3d4f6d477c1",
+    "diffuse_starting_tracks_published_band.csv": "e580020c4147bcf47ebf84f1ce0818c63cda6a696c86a48ea9913a962d1bf985",
+    "diffuse_tracks_published_band.csv": "fd1e2dfdd465bdda7d6e5d0a17aa3c4f3a88ef1361132e29c3d4caa6d7bb8101",
+    "extraction_provenance.json": "c691968a4f7b591ae409a5ddb9f9b65caaed41de1e7695aca82ff6f26da5f359",
+    "reference_spectra.json": "b84b717e70c2eb1a3200265c8fb507908087a08153d049abf06382854c879d97"
+  }
+}
