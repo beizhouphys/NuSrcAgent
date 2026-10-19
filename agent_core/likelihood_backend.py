@@ -37,7 +37,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
             result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **options)
             result["catalog_post_trial_p"] = None
-            result["catalog_post_trial_note"] = "Local p-values and significances are half-chi-square estimates selected by Gamma mode; empirical catalog post-trial calibration is unavailable."
+            result["catalog_post_trial_note"] = "Local estimates use the declared Gamma-mode half-chi-square approximation; reporting adds the analytic independent-source catalog correction. Empirical calibration is unavailable."
         for fit in [result, *(item["fit"] for item in result.get("source_results", []))]:
             if "TS" in fit:
                 fit.update(local_p_value_estimate(fit["TS"], normalized.gamma_mode))

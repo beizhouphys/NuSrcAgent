@@ -142,3 +142,23 @@ citation/publication metadata remain pending. No tag or GitHub Release is implie
 - Explicit choice of public Git history; this directory does not copy private history.
 
 No push, tag, license grant or public publication is performed by preparing this copy.
+
+## Catalog reporting verification — 2026-10-19
+
+The owner development checkout passed 244 unit tests, 21 focused catalog
+reporting/review checks, 20 golden language cases and input hash verification.
+New tests cover the paper's analytic correction, extreme probability tails,
+TS=0, complete source counts, stable top-five order, compact separate columns,
+histogram bin counts, missing/altered artifacts and failed-review suppression.
+Tests remain excluded from the distributed repository.
+
+Real public-wrapper single-source and two-source scan-plus-stacking tasks
+completed with passing review in both the development and release copies.
+For TS, ns and Gamma, release-versus-development signed relative differences
+are 0 and signed absolute differences are 0, including both individual source
+fits. Tables, figures, configurations, provenance and reviews were checked.
+The new histogram PDF was rendered and visually inspected. No background
+trials were executed. The isolated publication checkout imported all 22 public
+agent modules and passed CLI startup without owner runtime imports.
+These are implementation/output checks, not empirical significance or coverage
+validation. Existing warning-bearing results retain their original cautions.
