@@ -78,3 +78,6 @@ Verify the complete sqrt(TS) histogram, including TS=0, and its PDF/PNG hashes.
 Missing or inconsistent declared artifacts fail review. Historical scans
 without this output schema retain their original requirements. This analytic
 catalog correction does not imply empirical calibration or parameter coverage.
+
+
+Owner reporting policy, 2026-10-19: the interpolation-switch detail and the two method-qualification flags remain in numerical metadata, not in default answers, readable reports or captions. They do not generate warnings or block COMPLETED. Explain them when requested. Other fit, bounds, input and artifact checks remain active. The TS > 9 measurement workflow is for single-source analysis only; catalog scans keep their current procedure.

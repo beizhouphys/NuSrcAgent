@@ -71,3 +71,7 @@ Gamma conventions, fit bounds and historical task settings are unchanged.
 ## Fixed-spectrum point-source flux limits, 2026-10-19
 
 New DR2 spatial+energy single-source tasks default to three separate fixed-spectrum fits (E^-2, E^-2.5, E^-3), preliminary one-sided 95% profile-likelihood upper limits, and a spectrum figure with published NGC 1068 and diffuse bands. Catalog scans keep these per-source outputs opt-in with `--flux-upper-limits`; stacking retains its existing definition. Coverage and detector/PDF systematics remain unvalidated/excluded. Historical tasks retain their recorded definitions. See [flux-limit definitions and plotting conventions](flux_upper_limits.md).
+
+## Single-source measurement workflow, 2026-10-19
+
+New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).

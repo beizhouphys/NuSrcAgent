@@ -25,7 +25,8 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
         backend_name = "skyllh_v26_dr2_spatial_only" if normalized.likelihood_mode == "spatial_only" else "skyllh_v26_dr2_spatial_energy"
         limit_options = dict(flux_upper_limit_cl=normalized.flux_upper_limit_cl, flux_upper_limit_gammas=normalized.flux_upper_limit_gammas)
         if normalized.analysis_type == "single_source":
-            result = run_dr2_single_source(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **options)
+            result = run_dr2_single_source(specs, source_dec_window_deg=normalized.source_dec_window_deg,
+                flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold, fit_procedure=normalized.fit_procedure, **limit_options, **options)
         else:
             result = {} if operation == "scan" else run_dr2_stacking(specs, **options)
         if operation != "scan":
