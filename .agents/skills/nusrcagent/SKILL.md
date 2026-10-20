@@ -240,10 +240,14 @@ scan limits retain their separate opt-in setting. Preserve historical tasks.
 2. After that chat bubble, automatically run the same task with `run --task
    <id> --stage flux`; no additional user confirmation is needed. This stage
    validates the sealed primary result and unchanged request/code/inputs. It
-   does not repeat primary maximization. Report the three catalog-total flux upper
-   limits with their full-sky intensity equivalents and, only for primary TS > 9, measured intensity and 68.27%/95%
-   profile intervals. Show the PNG spectrum inline, link PDF and complete
-   tables, and show fitted-Gamma intensity-Gamma contours when available.
+   does not repeat primary maximization. Report the three catalog-total flux
+   upper limits with their full-sky intensity equivalents. Regardless of primary
+   TS, show the reviewed upper-limit PNG spectrum inline and link PDF and
+   complete tables: the figure includes the three limits and two diffuse
+   references even when TS <= 9. Only for primary TS > 9, also report measured
+   intensity and 68.27%/95% profile intervals, add the measured spectrum and
+   shading, and show fitted-Gamma intensity-Gamma contours when available.
+   TS=9 does not enable measurements; it still requires upper-limit figures.
 
 Use `I_catalog = sum_j Phi_j/(4*pi sr)` consistently for catalog curves and
 bands. Keep the diffuse benchmarks in their original intensity units, with

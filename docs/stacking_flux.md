@@ -45,6 +45,12 @@ satisfy `2[ln L(ns_hat,Gamma)-ln L(ns_upper,Gamma)] = 2.705543454095404` inside
 the recorded bounds. `--no-flux-upper-limits` at task creation omits these
 companions; the strict measurement gate remains recorded independently.
 
+The default upper-limit spectrum figures (PNG, PDF and SVG) are generated and
+reported regardless of primary TS, after successful review. For TS <= 9 they
+contain the three fixed-spectrum upper limits and the two diffuse references,
+without a measured spectrum or measurement shading. The TS > 9 condition applies
+to measurement products, not to upper-limit figures.
+
 Only primary TS > 9 produces a measured primary-spectrum intensity, 68.27%/95%
 profile intervals, spectral shading and, for fitted Gamma, joint contours.
 TS=9 does not trigger measurement reporting. At each fixed total-flux
