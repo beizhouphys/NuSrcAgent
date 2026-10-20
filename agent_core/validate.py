@@ -10,6 +10,8 @@ from agent_core.schemas import AnalysisConfig, AnalysisType, ValidationResult, W
 def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None) -> ValidationResult:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     result = ValidationResult()
+    if config.analysis.fit_procedure != "skyllh_lbfgs_v1":
+        result.errors.append("analysis.fit_procedure must be skyllh_lbfgs_v1 in this runtime")
     scan_procedure = config.analysis.scan_fit_procedure
     if scan_procedure is not None:
         if scan_procedure != "skyllh_lbfgs_v1":
@@ -18,13 +20,6 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
                 or config.analysis.type != AnalysisType.CATALOG_STACKING
                 or config.analysis.catalog_operation not in {"scan", "scan_and_stack"}):
             result.errors.append("analysis.scan_fit_procedure requires a DR2 catalog scan")
-    procedure = config.analysis.fit_procedure
-    if procedure not in {"skyllh_lbfgs_v1", "gamma_piecewise_v1"}:
-        result.errors.append("Unknown analysis.fit_procedure")
-    if procedure == "gamma_piecewise_v1" and (
-            config.data.sample != "icecube_public_ps_14yr_dr2" or config.analysis.type != AnalysisType.SINGLE_SOURCE
-            or config.analysis.likelihood_mode != "spatial_energy" or config.stacking.gamma_mode != "fitted"):
-        result.errors.append("Piecewise Gamma maximization requires a fitted-Gamma DR2 spatial+energy single source")
     measurement_threshold = config.analysis.flux_measurement_ts_threshold
     if measurement_threshold is not None:
         if not math.isfinite(measurement_threshold) or measurement_threshold != 9.0:

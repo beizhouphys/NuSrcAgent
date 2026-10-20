@@ -143,6 +143,7 @@ def prepare(root, out, request, n_trials=100, n_sources=1000, seed=2026091501, w
                   numerical_threads_per_worker=1, sample='icecube_public_ps_14yr_dr2',
                   data_selection='full14', likelihood_mode='spatial_energy', gamma_mode='fitted',
                   gamma=3., gamma_min=1., gamma_max=6., ns_seed=10., ns_max=10000.,
+                  fit_procedure='skyllh_lbfgs_v1',
                   weight_mode='uniform', sky='full_sky', background_pdf_version='v3',
                   randomization='independent uniform event RA; other event quantities preserved',
                   negative_ts_policy='discard_without_record',
@@ -189,6 +190,9 @@ def prepare(root, out, request, n_trials=100, n_sources=1000, seed=2026091501, w
 def fit_review(result, config):
     import math
     failures, warnings = [], []
+    if (config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'
+            or result.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'):
+        failures.append('unsupported or inconsistent fit procedure')
     for name in ('TS', 'ns', 'gamma'):
         if not math.isfinite(result[name]):
             failures.append(f'nonfinite {name}')
@@ -259,6 +263,8 @@ def _skip_negative_ts_checkpoint(out, row, config, request_hash):
 
 
 def fit_one(root, out, config, request_hash, index):
+    if config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1':
+        raise ValueError('Unsupported empirical fit procedure; existing checkpoints are unchanged')
     # Spawned workers inherit thread limits before importing numerical libraries.
     from analysis_backend.skyllh_dr2_stacking import run_dr2_stacking
     out = Path(out)
@@ -463,6 +469,8 @@ def _run_locked(root, out, resume, max_hours, max_fits):
     if task['status'] != 'READY' and not (resume and task['status'] in ('RUNNING', 'PAUSED')):
         raise ValueError('Need READY task, or explicit resume of interrupted/paused task')
     config = task['parameters']['experiment']['value']
+    if config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1':
+        raise ValueError('Unsupported empirical fit procedure; existing checkpoints are unchanged')
     if digest({'config': config, 'inputs': task['inputs']['files']}) != task['request_sha256']:
         raise ValueError('Configuration hash mismatch')
     for item in task['inputs']['files']:
@@ -1205,6 +1213,8 @@ def merge_host_shards(root, out, analysis_alias, shard_id, incoming_shard_id, re
 
 def _validate_task_inputs(root, out, task):
     config = task['parameters']['experiment']['value']
+    if config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1':
+        raise ValueError('Unsupported empirical fit procedure; existing checkpoints are unchanged')
     expected = digest({'config': config, 'inputs': task['inputs']['files'],
                        'parent_request_sha256': task['parent_task']['request_sha256']})
     if expected != task['request_sha256']:

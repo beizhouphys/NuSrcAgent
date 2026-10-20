@@ -84,20 +84,11 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     ns_bounds = bounds.get("ns")
     gamma_bounds = bounds.get("gamma_skyllh")
     requested_procedure = normalized.get("fit_procedure", "skyllh_lbfgs_v1")
-    procedure_ok = result.get("fit_procedure", "skyllh_lbfgs_v1") == requested_procedure
-    if requested_procedure == "gamma_piecewise_v1":
-        search = result.get("maximum_search") or {}
-        intervals = search.get("intervals", [])
-        procedure_ok = procedure_ok and search.get("procedure") == requested_procedure
-        procedure_ok = procedure_ok and search.get("ns_bounds") == ns_bounds and search.get("gamma_bounds") == gamma_bounds
-        procedure_ok = procedure_ok and len(intervals) == len(search.get("switch_points", []))+1
-        if procedure_ok:
-            procedure_ok = (search["gamma"] == gamma and search["ns"] == ns_hat
-                and math.isclose(2*search["log_likelihood_ratio"], ts, rel_tol=1e-7, abs_tol=1e-6)
-                and search["improvement_in_TS"] >= -1e-7
-                and all(row["log_likelihood_ratio"] <= search["log_likelihood_ratio"]+1e-6 for row in intervals))
+    procedure_ok = (requested_procedure == "skyllh_lbfgs_v1"
+                    and result.get("fit_procedure", "skyllh_lbfgs_v1") == requested_procedure)
     add_check(review, "dr2_fit_procedure", "pass" if procedure_ok else "fail",
-              "fit procedure and recorded maximum-search evidence match the request" if procedure_ok else "fit procedure or maximum-search evidence is inconsistent", False)
+              "SkyLLH fit procedure matches the request" if procedure_ok
+              else "unsupported or inconsistent fit procedure", False)
     if isinstance(ns_bounds, list) and len(ns_bounds) == 2:
         valid = valid and ns_hat is not None and float(ns_bounds[0]) <= ns_hat <= float(ns_bounds[1])
     if result.get("gamma_mode") == "fitted" and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
@@ -162,9 +153,9 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     valid_fractions = len(dataset_fractions) == 4 and all(value is not None and value >= 0.0 for value in dataset_fractions) and abs(sum(value for value in dataset_fractions if value is not None) - 1.0) < 1e-9
     add_check(review, "dr2_dataset_fractions", "pass" if valid_fractions else "fail", "f_k is non-negative and normalized across four datasets" if valid_fractions else "f_k is invalid or not normalized", False)
     minimizer_ok = result.get("minimizer_status", {}).get("warnflag") == 0
-    minimizer_message = ("Original SkyLLH fit and piecewise Gamma maximum search completed"
-                         if requested_procedure == "gamma_piecewise_v1" else "SkyLLH minimizer converged without warnings")
-    add_check(review, "dr2_minimizer", "pass" if minimizer_ok else "fail", minimizer_message if minimizer_ok else "optimizer did not converge", False)
+    add_check(review, "dr2_minimizer", "pass" if minimizer_ok else "fail",
+              "SkyLLH minimizer converged without warnings" if minimizer_ok
+              else "optimizer did not converge", False)
     provenance = result.get("pdf_provenance", {})
     provenance_paths = [root / str(value) for value in provenance.values()] if isinstance(provenance, dict) else []
     expected_provenance_count = 1 if likelihood_mode == "spatial_only" else 2
@@ -272,11 +263,10 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
         scan_procedure = normalized.get("scan_fit_procedure")
         if scan_procedure is not None:
             single_normalized["fit_procedure"] = scan_procedure
-            matches = (isinstance(fit, dict) and fit.get("fit_procedure") == scan_procedure
-                       and (scan_procedure != "skyllh_lbfgs_v1" or not fit.get("maximum_search")))
+            matches = isinstance(fit, dict) and fit.get("fit_procedure") == scan_procedure
             add_check(review, "source_%d_scan_fit_procedure" % number, "pass" if matches else "fail",
                       "individual scan procedure matches its separate request" if matches
-                      else "individual scan procedure or extra maximum search differs from its request", False)
+                      else "individual scan procedure differs from its request", False)
         single_report = dict(report, result=fit)
         child = {"checks": [], "metrics": {}}
         if isinstance(fit, dict):

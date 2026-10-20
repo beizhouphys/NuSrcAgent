@@ -208,3 +208,16 @@ When diagnosing performance, inspect both cache records under
 derivatives and complete fit/optimizer results against the unchanged request.
 Do not apply a scan's declination window to the joint stack or infer full-run
 speedups from a warm-cache benchmark. See `docs/stacking_performance.md`.
+
+## Original SkyLLH optimizer
+
+For all newly created DR2 single-source, catalog-scan and joint stacking fits,
+use `fit_procedure=skyllh_lbfgs_v1`; individual catalog fits also record
+`scan_fit_procedure=skyllh_lbfgs_v1`. Do not add a Gamma-interval or
+interpolation-switch maximum search. Preserve the likelihood, PDFs, bounds,
+event selections and exact caches. Keep flux profiling and its maximum-consistency
+guard: a profile above the recorded primary maximum fails review; do not change
+the optimizer or silently replace the primary fit to repair it. Preserve historical
+task records and results. Unsupported recorded procedures cannot be resumed by
+substitution; create a new explicit request. Observed and corresponding trial
+fits must use the same supported procedure.
