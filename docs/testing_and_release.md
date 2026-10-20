@@ -181,3 +181,42 @@ development tasks have signed relative differences 0 and signed absolute
 differences 0. Zero background trials were executed. The stopped 501-source
 task remains stopped. These checks establish execution/procedure consistency,
 not statistical calibration or parameter coverage.
+
+## Exact stacking cache synchronization — 2026-10-19
+
+The development checkout passed 272 unit tests, including five new bitwise
+cache regressions, 20 golden language cases and setup/input hash verification.
+Checks cover PDF ratios and Gamma derivatives, both signal-energy declination
+modes, changed weights, Gamma endpoints, exact/repeated/nonfinite energy
+inputs, limited-budget fallback, lossless float64 payloads, dataset namespaces
+and new-trial invalidation. The private pre-cache calculation is retained
+only under the owner's test directory and is not shipped.
+
+Seven fresh persistent public-wrapper tasks completed with passing reviews:
+an uncached two-source scan-plus-stack control, followed by a fixed-Gamma
+single source and a fitted-Gamma two-source scan plus uniform stack in each
+of the development, release and test copies. The control explicitly replaces
+`_calculate` in its process with the preserved pre-cache method; ordinary
+source-file provenance alone does not describe that substitution. The private
+verification record records the substitution and reference-file hash.
+
+All compared TS, ns, Gamma, local analytic p-value and significance values
+are bitwise identical: signed relative differences 0, signed absolute
+differences 0. Optimizer status/calls/iterations, selected events, weights,
+bounds and seeds agree. The source fits retain `skyllh_lbfgs_v1`; the stack
+retains its recorded procedure. New multi-source reports contain active
+cache counters; single-source caches remain disabled.
+
+Tables, configurations, scientific/artifact reviews and provenance were
+checked; the scan histogram PDF was rendered and visually inspected. All
+12 production numerical PDF files have matching SHA-256 hashes across the
+three copies. Runtime imports, public CLI startup, bootstrap syntax and
+release inventories passed in an isolated publication checkout without
+owner-test imports. The cache uses standard-library zlib and introduces no
+new dependency. Zero background trials were executed.
+
+The Stacking chat's earlier 501-source/two-CPU performance records remain
+private evidence, separately from these fresh synchronization checks. This
+change preserves the scientific and optimizer definitions; a measured speedup
+depends on the catalog, repeated energies, fit calls and machine load. See
+[stacking cache method and resource accounting](stacking_performance.md).
