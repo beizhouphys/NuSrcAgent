@@ -120,6 +120,7 @@ def main(argv=None) -> int:
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
+
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
             sources = None if args.source is None else [parse_source(value) for value in args.source]
@@ -136,6 +137,8 @@ def main(argv=None) -> int:
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
             set_scan_fit_procedure(task, args)
+            set_stacking_flux(task, args)
+
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -145,7 +148,11 @@ def main(argv=None) -> int:
                 revalidate_task_plan(task, repo_root)
                 save_task(task, repo_root, path)
             elif args.command == "run":
-                task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
+                if args.stage == "flux":
+                    from agent_core.stacking_stages import execute_flux_stage
+                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
+                else:
+                    task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
             elif args.command == "resume":
                 resume_interrupted_task(task)
                 save_task(task, repo_root, path)
@@ -170,6 +177,20 @@ def set_scan_fit_procedure(task, args):
             "omit the additional Gamma interval/stencil-switch search. The joint stack retains its own procedure.")
 
 
+def set_stacking_flux(task, args):
+    from agent_core.task_state import parameter
+    if (args.data_sample == "icecube_public_ps_14yr_dr2" and task["workflow"] != "single_source"
+            and task["parameters"]["likelihood_mode"]["value"] == "spatial_energy"
+            and task["parameters"].get("catalog_operation", {}).get("value") in {"stack", "scan_and_stack"}):
+        enabled = args.flux_upper_limits is not False
+        settings = dict(upper_limit_cl=0.95 if enabled else None,
+            upper_limit_gammas=[-2., -2.5, -3.] if enabled else [],
+            measurement_ts_threshold=9., reporting="two_stage",
+            display_quantity="full_sky_average_intensity")
+        task["parameters"]["stacking_flux"] = parameter(settings, "system_default", True)
+        task["parameters"]["stacking_flux"]["basis"] = "Owner-approved separate primary chat output, then fixed-spectrum 95% limits and strict TS > 9 intensity measurement; catalog total flux / (4*pi sr)."
+
+
 def set_flux_upper_limits(task, args):
     from agent_core.task_state import parameter
     enabled = args.flux_upper_limits
@@ -177,6 +198,12 @@ def set_flux_upper_limits(task, args):
                   and task["parameters"]["likelihood_mode"]["value"] == "spatial_energy"
                   and (task["workflow"] == "single_source"
                        or task["parameters"].get("catalog_operation", {}).get("value") in {"scan", "scan_and_stack"}))
+    stack_only = (task["workflow"] != "single_source"
+                  and task["parameters"].get("catalog_operation", {}).get("value") == "stack"
+                  and args.data_sample == "icecube_public_ps_14yr_dr2"
+                  and task["parameters"]["likelihood_mode"]["value"] == "spatial_energy")
+    if stack_only:
+        enabled = False
     if enabled is True and not applicable:
         raise ValueError("Flux upper limits require DR2 spatial+energy single-source or catalog-scan analysis")
     if enabled is None:
@@ -330,6 +357,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run", help="Execute a READY task and enforce its completion gate.")
     run.add_argument("--task", required=True)
+    run.add_argument("--stage", choices=["primary", "flux"], help="New DR2 stacks return the primary fit first; report it in chat before running --stage flux.")
     run.add_argument("--backend", choices=["likelihood"], default="likelihood")
     run.add_argument("--max-safe-retries", type=int, choices=[0, 1], default=1)
 
@@ -441,6 +469,9 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
                 if scan_summary:
                     from agent_core.catalog_scan_outputs import compact_scan_table
                     summary["catalog_scan_summary"] = dict(scan_summary, chat_table=compact_scan_table(report_result["source_results"]))
+    if task.get("stacking_stages"):
+        from agent_core.stacking_stages import chat_stages
+        summary["stacking_stages"] = chat_stages(task)
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 

@@ -220,3 +220,32 @@ private evidence, separately from these fresh synchronization checks. This
 change preserves the scientific and optimizer definitions; a measured speedup
 depends on the catalog, repeated energies, fit calls and machine load. See
 [stacking cache method and resource accounting](stacking_performance.md).
+
+
+### Joint-stack flux and two-stage reporting (2026-10-20)
+
+The development checkout passed 291 unit tests, setup/input hash checks and
+20 golden cases. Seven focused tests cover weighted catalog-total detector
+yield, split/zero weights, exact 4*pi intensity conversion, Gamma-dependent
+measurement profiles, the strict TS=9 boundary, diffuse-only spectrum curves,
+primary-stage preservation, request/artifact mutation and isolated flux failure
+with at most one identical-request safe retry.
+
+Fresh public-wrapper runs completed a single source and a two-source
+individual scan plus fitted-Gamma joint stack in the development, release and
+NuSrcAgent_test copies. The joint stack completed both reviews and generated
+three 95% limits, 68.27%/95% measured-intensity intervals and joint contours.
+Release checks also exercised a fixed-Gamma TS>9 stack and a TS<9 stack;
+the latter produced limits without a reported measurement and preserved
+applicable boundary warnings. Each flux stage retained primary ns, Gamma, TS,
+p-value, significance and optimizer records exactly. Nonzero reference values
+had signed relative difference 0, then signed absolute difference 0; zero
+reference values have undefined relative difference and absolute difference 0.
+No primary maximization was repeated.
+
+Numeric tables, detector-yield conversion, intensity units, diffuse reference
+identities, primary artifact hashes and output hashes were checked. Spectrum
+and contour figures were visually inspected. An isolated publication checkout
+passed runtime imports, syntax and all release inventory hashes. Zero background
+trials were executed. These checks verify the workflow and conversions; they do
+not establish empirical significance calibration, coverage or systematics.

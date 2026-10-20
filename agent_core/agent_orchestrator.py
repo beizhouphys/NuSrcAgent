@@ -39,6 +39,9 @@ def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend
             attempt["status"] = completion["status"]
             if completion["status"] in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
                 task["status"] = completion["status"]
+                if payload["analysis"].get("stacking_flux"):
+                    from agent_core.stacking_stages import record_primary
+                    record_primary(task, task_path, repo_root, run, payload_hash)
                 write_agent_review(task, task_path.parent)
                 save_task(task, repo_root, task_path)
                 return task
@@ -99,7 +102,7 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
     payload = build_catalog_request(catalog, sources, parameters["name_column"]["value"], parameters["ra_column"]["value"], parameters["dec_column"]["value"], weight_column, manual_weights, [gamma], bool(parameters["include_uniform_baseline"]["value"]), "data_output/runs", data_sample, gamma_mode, likelihood_mode, built_in_catalog, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg, parameters.get("catalog_operation", {}).get("value"))
     if "source_dec_window_deg" in parameters:
         payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
-    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure"):
+    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure", "stacking_flux"):
         if key in parameters:
             payload["analysis"][key] = parameters[key]["value"]
     return payload
@@ -163,6 +166,6 @@ def write_agent_review(task: Dict[str, Any], task_dir: Path) -> None:
 def resume_interrupted_task(task: Dict[str, Any]) -> Dict[str, Any]:
     if task.get("status") not in {"RUNNING", "REVIEWING"}:
         raise ValueError("only RUNNING or REVIEWING tasks can be resumed")
-    task["status"] = RUNNABLE_STATE
+    task["status"] = "AWAITING_FLUX" if task.get("active_stage") == "flux" else RUNNABLE_STATE
     task.setdefault("events", []).append({"event": "manual_resume", "at_utc": utc_now()})
     return refresh_readiness(task)

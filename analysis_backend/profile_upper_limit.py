@@ -76,8 +76,8 @@ def fixed_gamma_flux_upper_limit(analysis, result, confidence):
     """
     import numpy as np
 
-    if result["gamma_mode"] != "fixed" or result["n_sources"] != 1 or result["likelihood_mode"] != "spatial_energy":
-        raise ValueError("Flux upper limits require a fixed-Gamma spatial+energy single source")
+    if result["gamma_mode"] != "fixed" or result["likelihood_mode"] != "spatial_energy":
+        raise ValueError("Flux upper limits require a fixed-Gamma spatial+energy fit")
     if int(result["minimizer_status"].get("warnflag", -1)) != 0:
         raise ValueError("Cannot invert an unconverged fit")
 
@@ -88,9 +88,13 @@ def fixed_gamma_flux_upper_limit(analysis, result, confidence):
     limit = invert_upper_profile(log_ratio, result["ns"], result["fit_bounds"]["ns"][1], confidence)
     if not math.isclose(2 * limit["log_likelihood_ratio_at_best"], result["TS"], abs_tol=1e-6, rel_tol=1e-7):
         raise ValueError("Upper-limit likelihood does not reproduce the maximized TS")
-    # For one source of unit model weight, summed acceptance equals the
-    # expected count for the analysis flux normalization at 1 TeV.
-    yield_by_dataset = {name: float(values[0]) for name, values in result["w_acc_by_dataset"].items()}
+    # With sum_j w_model[j] = 1, phi0 is the sum of the source fluxes.
+    # Each source has phi0_j = w_model[j] * phi0; acceptance is applied once.
+    weights = result.get("w_model", [1.] if result["n_sources"] == 1 else [])
+    if len(weights) != result["n_sources"] or not math.isclose(sum(weights), 1., abs_tol=1e-12):
+        raise ValueError("Flux conversion requires normalized intrinsic source weights")
+    yield_by_dataset = {name: sum(float(w)*float(y) for w, y in zip(weights, values, strict=True) if w > 0)
+                        for name, values in result["w_acc_by_dataset"].items()}
     yield_at_1tev = sum(yield_by_dataset.values())
     if not math.isfinite(yield_at_1tev) or yield_at_1tev <= 0:
         raise ValueError("Invalid detector yield for point-source flux conversion")
@@ -111,4 +115,10 @@ def fixed_gamma_flux_upper_limit(analysis, result, confidence):
         "event_dec_min_deg": result["event_dec_min_deg"],
         "event_dec_max_deg": result["event_dec_max_deg"],
     })
+    if result["n_sources"] > 1:
+        limit.update(intensity0_upper_limit=limit["phi0_upper_limit"]/(4*math.pi),
+                     intensity0_unit="GeV^-1 cm^-2 s^-1 sr^-1", solid_angle_sr=4*math.pi,
+                     e2_intensity_upper_limit_gev_cm2_s_sr=limit["e2_dphi_de_upper_limit_gev_cm2_s"]/(4*math.pi))
+        limit.update(flux_scope="sum_of_source_fluxes", n_sources=result["n_sources"],
+                     source_flux_definition="dPhi_j/dE = w_model_j * phi0_total * (E / 100 TeV)^(-Gamma); sum_j w_model_j = 1")
     return limit

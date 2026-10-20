@@ -8,14 +8,12 @@ from analysis_backend.dr1_catalog import run_catalog_time_integrated
 from analysis_backend.dr1_single_source import run_single_source_time_integrated
 
 DR2_SAMPLE = "icecube_public_ps_14yr_dr2"
-
-
-def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None) -> dict[str, object]:
+def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None, stacking_primary=None) -> dict[str, object]:
     if normalized.time_mode != "time_integrated":
         raise ConfigError("likelihood backend Phase 1.1 only supports time_integrated")
     if normalized.sample == DR2_SAMPLE:
         try:
-            from analysis_backend.skyllh_dr2_stacking import run_dr2_stacking, run_dr2_single_source
+            from analysis_backend.skyllh_dr2_stacking import run_dr2_stacking, run_dr2_single_source, run_dr2_flux_suite
         except ModuleNotFoundError as exc:
             raise ConfigError("the 14-year DR2 backend requires the pinned SkyLLH v26 environment") from exc
         specs = [{"name": source.name, "ra_rad": source.ra_rad, "dec_rad": source.dec_rad, "w_model": source.weight} for source in normalized.sources]
@@ -28,13 +26,24 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             result = run_dr2_single_source(specs, source_dec_window_deg=normalized.source_dec_window_deg,
                 flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold, fit_procedure=normalized.fit_procedure, **limit_options, **options)
         else:
-            result = {} if operation == "scan" else run_dr2_stacking(specs, fit_procedure=normalized.fit_procedure, **options)
+            if stacking_primary is not None:
+                settings = normalized.stacking_flux
+                result = run_dr2_flux_suite(specs, primary_result=stacking_primary,
+                    flux_upper_limit_cl=settings["upper_limit_cl"],
+                    flux_upper_limit_gammas=settings["upper_limit_gammas"],
+                    flux_measurement_ts_threshold=settings["measurement_ts_threshold"],
+                    fit_procedure=normalized.fit_procedure, **options)
+                result["stacking_phase"] = "flux"
+            else:
+                result = {} if operation == "scan" else run_dr2_stacking(specs, fit_procedure=normalized.fit_procedure, **options)
+                if normalized.stacking_flux:
+                    result["stacking_phase"] = "primary"
         if operation != "scan":
             result.update({"ts": result["TS"], "best_fit_ns": result["ns"]})
         result.update({"backend": backend_name})
         if normalized.analysis_type == "catalog_stacking":
             result["catalog_operation"] = operation
-        if operation in {"scan", "scan_and_stack"}:
+        if operation in {"scan", "scan_and_stack"} and stacking_primary is None:
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
             scan_options = dict(options, fit_procedure=normalized.scan_fit_procedure or getattr(normalized, "fit_procedure", "skyllh_lbfgs_v1"))
             result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **scan_options)

@@ -199,8 +199,8 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
 
 
 def source_flux_measurement(analysis, result, ts_threshold):
-    if result["n_sources"] != 1 or result["likelihood_mode"] != "spatial_energy":
-        raise ValueError("Flux measurements require a spatial+energy single-source fit")
+    if result["likelihood_mode"] != "spatial_energy":
+        raise ValueError("Flux measurements require a spatial+energy fit")
     if result["minimizer_status"].get("warnflag") != 0:
         raise ValueError("Cannot measure flux from an unconverged primary fit")
     fitted = result["gamma_mode"] == "fitted"
@@ -219,7 +219,7 @@ def source_flux_measurement(analysis, result, ts_threshold):
             service = analysis.src_detsigyield_weights_service
             service.calculate(src_params_recarray=records)
             weights, _ = service.get_weights()
-            yield_cache[gamma] = float(np.sum(weights[:, 0]))
+            yield_cache[gamma] = float(np.sum(weights[:, 0] if result["n_sources"] == 1 else weights))
         return yield_cache[gamma]
 
     measurement = profile_flux(log_ratio, detector_yield, result["ns"], result["gamma"],
@@ -232,5 +232,11 @@ def source_flux_measurement(analysis, result, ts_threshold):
         raise ValueError("Inconsistent TS reporting gate")
     measurement.update({key: result[key] for key in (
         "event_selection", "event_dec_min_deg", "event_dec_max_deg", "fit_bounds")})
+    if result["n_sources"] > 1:
+        measurement.update(intensity0_hat=measurement["phi0_hat"]/(4*math.pi),
+                           intensity100_hat=measurement["phi100_hat"]/(4*math.pi),
+                           intensity0_unit="GeV^-1 cm^-2 s^-1 sr^-1", solid_angle_sr=4*math.pi)
+        measurement.update(flux_scope="sum_of_source_fluxes", n_sources=result["n_sources"],
+                           source_flux_definition="dPhi_j/dE = w_model_j * phi0_total * (E / 1 TeV)^(-Gamma); sum_j w_model_j = 1")
     log_ratio(result["ns"], result["gamma"])
     return measurement

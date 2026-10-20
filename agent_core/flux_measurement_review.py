@@ -31,7 +31,14 @@ def review_flux_measurement(review, result, normalized, root):
             and measurement["method"] == "asymptotic_profile_likelihood"
             and measurement["coverage_validated"] is False
             and measurement["systematic_uncertainties_included"] is False)
-        yield1 = sum(float(row[0]) for row in result["w_acc_by_dataset"].values())
+        yield1 = sum(float(w)*float(y) for row in result["w_acc_by_dataset"].values()
+                     for w, y in zip(result["w_model"], row, strict=True) if w > 0)
+        if result["n_sources"] > 1:
+            valid = valid and measurement.get("flux_scope") == "sum_of_source_fluxes" and measurement.get("n_sources") == result["n_sources"]
+        if result["n_sources"] > 1:
+            valid = valid and measurement.get("intensity0_unit") == "GeV^-1 cm^-2 s^-1 sr^-1"
+            valid = valid and measurement.get("solid_angle_sr") == 4*math.pi
+            valid = valid and math.isclose(measurement.get("intensity0_hat", -1), measurement["phi0_hat"]/(4*math.pi), rel_tol=1e-12, abs_tol=0.)
         valid = valid and math.isfinite(measurement["phi0_hat"]) and measurement["phi0_hat"] >= 0
         valid = valid and math.isclose(measurement["yield_at_best"], yield1, rel_tol=1e-10)
         valid = valid and math.isclose(measurement["phi0_hat"]*yield1, result["ns"], rel_tol=1e-10, abs_tol=1e-10)
@@ -91,6 +98,8 @@ def review_flux_measurement(review, result, normalized, root):
             for key, reference in dict(base, **interval).items():
                 if isinstance(reference, bool):
                     valid = valid and row[key] == str(reference)
+                elif reference is None:
+                    valid = valid and row[key] == ""
                 elif isinstance(reference, (int, float)):
                     valid = valid and math.isclose(float(row[key]), reference, rel_tol=1e-12, abs_tol=0.)
                 else:
@@ -102,6 +111,12 @@ def review_flux_measurement(review, result, normalized, root):
                 valid = valid and row["parameter"] == point["parameter"]
                 valid = valid and all(math.isclose(float(row[k]), point[k], rel_tol=1e-12, abs_tol=0.) for k in ("phi0", "gamma", "ns", "q"))
             provenance = json.loads(Path(files["flux_plot_provenance"]).read_text())
+            intensity = provenance.get("display_quantity") == "full_sky_average_intensity"
+            if result["n_sources"] > 1:
+                valid = valid and intensity
+            source_factor = 1/(4*math.pi) if intensity else 1.
+            diffuse_factor = 1. if intensity else 4*math.pi
+            display_unit = "GeV cm^-2 s^-1 sr^-1" if intensity else "GeV cm^-2 s^-1"
             valid = valid and all(sha256_file(path) == digest for path, digest in provenance["outputs_sha256"].items())
             valid = valid and all(sha256_file(root/path) == digest for path, digest in provenance["reference_sha256"].items())
             with Path(files["spectrum_curves"]).open() as handle:
@@ -110,12 +125,12 @@ def review_flux_measurement(review, result, normalized, root):
             valid = valid and len(curves) == 401
             for row in curves:
                 energy = float(row["energy_gev"])
-                expected = energy**2*measurement["phi0_hat"]*(energy/1e3)**(-measurement["gamma"])
+                expected = energy**2*measurement["phi0_hat"]*(energy/1e3)**(-measurement["gamma"])*source_factor
                 valid = valid and math.isclose(float(row["e2_flux"]), expected, rel_tol=1e-12, abs_tol=0.)
-                valid = valid and float(row["display_factor"]) == 1 and row["e2_flux_unit"] == "GeV cm^-2 s^-1"
+                valid = valid and float(row["display_factor"]) == source_factor and row["e2_flux_unit"] == display_unit
                 if contours:
                     contour = contours[0]
-                    spectra = [energy**2*p["phi0"]*(energy/1e3)**(-p["gamma"])
+                    spectra = [energy**2*p["phi0"]*(energy/1e3)**(-p["gamma"])*source_factor
                                for p in contour["lower_branch"]+contour["upper_branch"]]
                     expected_lower, expected_upper = min(spectra), max(spectra)
                 else:
@@ -124,7 +139,7 @@ def review_flux_measurement(review, result, normalized, root):
                 valid = valid and math.isclose(float(row["band_lower"]), expected_lower, rel_tol=1e-12, abs_tol=0.)
                 valid = valid and math.isclose(float(row["band_upper"]), expected_upper, rel_tol=1e-12, abs_tol=0.)
             for row in all_curves:
-                factor = 4*math.pi if row["curve"].startswith("diffuse") else 1.
+                factor = diffuse_factor if row["curve"].startswith("diffuse") else source_factor
                 valid = valid and float(row["display_factor"]) == factor
                 valid = valid and math.isclose(float(row["e2_flux"]), float(row["original_e2_flux"])*factor, rel_tol=1e-12, abs_tol=0.)
                 if row["curve"] == "diffuse_starting_tracks":
