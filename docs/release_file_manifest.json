@@ -343,8 +343,8 @@
     },
     {
       "path": "docs/flux_measurements.md",
-      "bytes": 4510,
-      "sha256": "06448cd8b87646b4ecb285482f4eac025bb2fdf97566769e1086db55d10beff2"
+      "bytes": 5035,
+      "sha256": "98dd0f245fe88138fc39f5d4ed929d648ff43c6c8b5975329fb4a26ee4d68d97"
     },
     {
       "path": "docs/flux_upper_limits.md",
