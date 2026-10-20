@@ -49,6 +49,15 @@ non-finite evaluation or unconverged fit is an error. Bounds are never widened.
 Intervals reaching a recorded bound are marked as truncated. Other substantive
 fit, input and artifact checks remain active.
 
+
+Current regression limitation (2026-10-19): the fitted-Gamma NGC 1068
+measurement is rejected because a flux-profile evaluation exceeds the primary
+SkyLLH fit by `2 Delta ln L = 0.000660066263105`. No valid measurement intervals
+are reported for that task. The original optimizer and the existing consistency
+tolerance are retained. The fixed-Gamma NGC 1068 measurement and the two-source
+fitted-Gamma scan plus stacking regressions pass review; this does not establish
+that every free-Gamma flux measurement will succeed.
+
 ## Spectrum and files
 
 The spectrum figure retains the three fixed-spectrum upper limits, NGC 1068
