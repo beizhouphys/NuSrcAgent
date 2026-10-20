@@ -36,13 +36,25 @@ The wrapper records one attempt per execution and hashes the deterministic reque
 
 New single-source tasks record `execution_flow=single_source_two_stage_v1`.
 `run --task` executes the primary fit and its review; chat output must show
-`single_source_llh_summary` before the next command. `AWAITING_FLUX` means
+`single_source_llh_summary` in the first-stage final answer, ask whether to
+continue with flux products, and end the turn before any flux command. `AWAITING_FLUX` means
 that the primary result is valid and the requested flux products remain pending;
-it is not a final task completion. Continue automatically with
-`run --stage flux --task`. Parameters are frozen after the primary result.
+it is not a final task completion. Wait for the user's continuation reply, then
+run `run --stage flux --task <id> --flux-user-reply "<actual user reply>"` in the
+later turn. The CLI rejects a missing/blank reply and records it on each flux
+attempt. This is user authorization, not a change to scientific parameters. Parameters are frozen after the primary result.
 The final run and original LLH run have separate artifact directories and
 reviews. `artifacts.llh_run_directory` and `artifacts.llh_checkpoint` preserve
 the first result even if the second stage fails. `show` returns these states
 and summaries. An interrupted flux stage resumes to `AWAITING_FLUX` after
 `resume`; historical tasks keep their recorded one-call behavior. Modes without
 supported/requested flux products finish after the primary stage.
+
+## Stacking continuation after primary output
+
+At AWAITING_FLUX, report `stacking_stages.primary` in a final answer, ask whether
+to continue, and end the turn. After the user replies, use the same task with
+`run --task <id> --stage flux --flux-user-reply "<actual user reply>"`.
+Do not launch flux from the first turn or fabricate the reply. Report reviewed
+flux quantities and figures in the next final answer. Multiple pending tasks
+must be selected from conversation context; ask only if the selection is unclear.

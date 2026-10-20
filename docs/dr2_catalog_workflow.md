@@ -146,8 +146,9 @@ and bitwise verification requirements.
 ## Joint-stack flux output
 
 New DR2 spatial+energy joint stacks use separate, recorded stacking flux settings.
-The primary result is reviewed and reported in chat before the same task continues
-with `run --task <id> --stage flux`. Three fixed-spectrum 95% limits are default;
+The primary result is reviewed and reported in a final answer. The Agent asks
+whether to continue and ends that turn. Only after the user replies does the same
+task continue with `run --task <id> --stage flux --flux-user-reply "<actual user reply>"`. Three fixed-spectrum 95% limits are default;
 upper-limit spectrum figures are generated and reported regardless of primary
 TS. Primary TS > 9 additionally enables measured intensity and its uncertainty.
 Individual scan limits

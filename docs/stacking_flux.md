@@ -20,20 +20,25 @@ The primary result is saved and independently reviewed before any joint-stack
 flux profiles or companion fixed-spectrum fits. A passing primary stage returns
 `AWAITING_FLUX`. The wrapper's `stacking_stages.primary` contains ns, Gamma, TS,
 local analytic p-value, one-sided significance, method labels and review status.
-The Agent must write these values in a chat bubble before starting stage 2.
+The Agent must report these values in a final answer chat bubble, ask whether
+the user wants flux upper limits/measurements and figures, and end that turn.
+A commentary progress message does not replace this formal first-stage result.
 Warnings remain visible and failed primary review blocks valid reporting.
 `AWAITING_FLUX` means the requested analysis still has flux work to complete.
 
 ## Stage 2: limits, measurements and figures
 
-Continue the same task after reporting the primary result:
+Continue the same task only after the user replies to the primary final answer:
 
 ```bash
-.venv/bin/python run_agent_wrap.py run --task <task_id> --stage flux
+.venv/bin/python run_agent_wrap.py run --task <task_id> --stage flux --flux-user-reply "<actual user reply>"
 ```
 
-The Agent continues automatically within the original analysis request; this is
-not another scientific confirmation gate. Stage 2 checks the original request
+The Agent waits at AWAITING_FLUX. After an explicit reply such as "continue" or
+"继续", it runs stage 2 in that later turn and sends a separate final answer.
+The CLI rejects missing/blank replies before execution and stores the actual
+reply on the flux attempt. Do not invent a reply or infer one from the initial
+analysis request. Stage 2 checks the original request
 hash, sealed primary artifacts, runtime packages, code and scientific-input
 hashes before reconstructing the same likelihood. It evaluates the saved primary
 parameters to verify TS and does not repeat primary maximization. Primary ns,

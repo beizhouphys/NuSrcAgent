@@ -31,7 +31,7 @@ def configure_single_source_stages(task):
                              "run_agent_wrap.py review-run"]
 
 
-def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_safe_retries=1):
+def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_safe_retries=1, user_reply=None):
     """Return after one reviewed stage so the Agent can report it in chat."""
     from agent_core.agent_orchestrator import (
         SAFE_ERROR_TYPES, build_analysis_payload, classify_error, evaluate_completion, write_agent_review)
@@ -49,6 +49,10 @@ def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_saf
         persisted = json.loads(task_path.read_text())
         if persisted != task:
             raise ValueError("task changed since loading; reload it before execution")
+        if stage == "flux" and task["status"] != "AWAITING_FLUX":
+            raise ValueError(f"flux stage requires AWAITING_FLUX; status={task['status']}")
+        if stage == "flux" and (not isinstance(user_reply, str) or not user_reply.strip()):
+            raise ValueError("Flux stage requires the user continuation reply after the primary final answer; use --flux-user-reply")
         refresh_readiness(task)
         expected = "READY" if stage == "llh" else "AWAITING_FLUX"
         if task["status"] != expected:
@@ -64,6 +68,8 @@ def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_saf
             attempt_number = len(task.get("attempts", [])) + 1
             attempt = dict(attempt=attempt_number, stage=stage, started_at_utc=utc_now(),
                            request_sha256=stage_hash, full_request_sha256=full_hash, status="RUNNING")
+            if stage == "flux":
+                attempt["flux_user_reply"] = user_reply
             task.setdefault("attempts", []).append(attempt)
             task["active_stage"] = stage
             task["status"] = "RUNNING"
@@ -207,8 +213,10 @@ def chat_stages(task):
     if task.get("single_source_llh_summary"):
         summary["single_source_llh_summary"] = task["single_source_llh_summary"]
     if task.get("status") == "AWAITING_FLUX":
-        summary["next_action"] = ("Report single_source_llh_summary in a chat bubble, then automatically run "
-                                  "run --stage flux --task " + task["task_id"])
+        summary["flux_user_reply_required"] = True
+        summary["next_action"] = ("Report single_source_llh_summary in the final answer chat bubble, ask whether to continue "
+            "with flux upper limits/measurement and figures, then end this turn. Wait for the user's reply before "
+            "run --stage flux --task " + task["task_id"] + " --flux-user-reply '<actual user reply>'.")
     if task.get("stages", {}).get("flux", {}).get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
         result = load_simple_yaml((Path(task["artifacts"]["run_directory"]) / "report.yaml").read_text())["result"]
         flux = dict(generated_files=result.get("generated_files", {}))

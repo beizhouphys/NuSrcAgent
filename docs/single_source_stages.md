@@ -2,21 +2,22 @@
 
 The primary LLH fit can finish well before flux confidence intervals and figures.
 New wrapper-created single-source tasks return the reviewed primary fit first,
-so the Agent can report it immediately and continue the flux calculation.
+so the Agent can report it in a final answer and wait for the user to continue.
 
 1. Create and confirm the task as usual. Once READY, run
    `.venv/bin/python run_agent_wrap.py run --task <task_id>`.
    This step maximizes LLH and reviews the fit and its saved artifacts. Read
    `single_source_llh_summary`, then send best-fit ns, Gamma, TS, local p value
-   and one-sided significance in a chat bubble. The summary states the spectral
+   and one-sided significance in a final answer chat bubble. Ask whether to
+   continue with flux upper limits/measurements and figures, then end the turn. The summary states the spectral
    exponent convention and whether Gamma was fitted or fixed; p value and
    significance retain the approved analytic estimate and its recorded method.
-2. If status is AWAITING_FLUX, automatically run
-   `.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id>`.
+2. Leave AWAITING_FLUX pending until the user replies to continue. Only then run
+   `.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id> --flux-user-reply "<actual user reply>"`.
    Read `single_source_flux_summary`, report the reviewed flux quantities with
    units and confidence levels, show the spectrum PNG (and contours when
    available), and link the PDF and numerical tables. This is part of the same
-   user request and requires no extra confirmation.
+   analysis, but requires the user's continuation reply after the primary final answer.
 
 The first-stage request contains no flux calculation. The complete scientific
 request is separately hashed in the task and primary checkpoint. The flux stage
@@ -41,7 +42,8 @@ valid. Only dependency, output-generation and transient I/O errors may retry
 once with the identical stage request; a flux retry never reruns the primary fit.
 
 An interrupted RUNNING/REVIEWING flux process must first be confirmed stopped.
-Use `resume --task <task_id>`, then `run --stage flux --task <task_id>`.
+Use `resume --task <task_id>`, then repeat the flux command with the existing
+explicit user continuation reply; never rerun the primary fit.
 The continuation checks checkpoint and artifact hashes, code, inputs and package
 versions; changes block it and require a new explicit request. A per-task process
 lock rejects simultaneous stage execution. Parameters cannot change while flux

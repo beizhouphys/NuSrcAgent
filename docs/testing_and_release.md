@@ -249,3 +249,28 @@ and contour figures were visually inspected. An isolated publication checkout
 passed runtime imports, syntax and all release inventory hashes. Zero background
 trials were executed. These checks verify the workflow and conversions; they do
 not establish empirical significance calibration, coverage or systematics.
+
+
+### User-confirmed flux continuation (2026-10-20)
+
+Single-source and joint stacking first-turn results now end in a final answer
+and ask whether the user wants flux products. Stage 2 requires the actual later
+reply through --flux-user-reply; each flux attempt stores that reply. There is
+no automatic transition from the primary result to flux calculation.
+
+The development checkout passed 294 unit tests, 20 golden cases and setup
+hash checks. Focused tests verify that missing/blank replies start no backend,
+leave the task and primary checkpoint unchanged, and that an explicit reply
+allows only the flux stage, including an identical-request safe retry.
+
+Fresh single-source and small scan-plus-stack tasks completed in development,
+release and test copies. Each stopped at AWAITING_FLUX, rejected missing and
+blank replies without changing the primary record, then completed under an
+explicitly labelled regression-fixture reply. Fixture text is test input, not a
+claimed human conversation. The flux stages retained primary ns, Gamma, TS,
+p-value, significance and optimizer records exactly; all primary artifact
+hashes remained unchanged. Nonzero reference values had signed relative
+difference 0 and signed absolute difference 0; for zero references, relative
+difference is undefined and absolute difference is 0. Tables, spectrum PNG/PDF/
+SVG and scientific/artifact reviews passed, with existing boundary warnings
+retained. No scientific definition or analysis-backend code was changed.
