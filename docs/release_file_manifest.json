@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 12577,
-      "sha256": "359890d1aab8955ce0c28cc8ffbfaae38426b62dabeeab5f466aa23257640d75"
+      "bytes": 13521,
+      "sha256": "ca24634130c7cb035b5ad2340a5c2eb79ea490f616d3425600cd01ed653dce8c"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16103,
-      "sha256": "973ceef3192102da67482ce9c08a95c45c348d8e8b0893fe8b477e9f278533ae"
+      "bytes": 16503,
+      "sha256": "ae6fc5b7dccfa069221994b84903522198fa9c641dd5ae727214f1f80dd537b0"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -213,8 +213,8 @@
     },
     {
       "path": "analysis_backend/skyllh_chunked.py",
-      "bytes": 19650,
-      "sha256": "3f3b79610f6d33ef96144fe4341af902c41dcf4fe3dcfc1a06f6a01c04c7d03e"
+      "bytes": 28130,
+      "sha256": "5cbf2a11b3b54976e34e19aebfe63ed21838ed80fc9dc45ba544db519f7d5c14"
     },
     {
       "path": "analysis_backend/skyllh_dr2_catalog_scan.py",
@@ -238,8 +238,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 30205,
-      "sha256": "a1d72669e5aca2473398362751d4a8011db8d502b148483e05aed057d08d9ad5"
+      "bytes": 30601,
+      "sha256": "25a55333a9929d1d358b54af03a6cf3db9ee028a69e391dd51e4368f32c5ac9e"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -333,8 +333,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 8430,
-      "sha256": "1e39aa2ca43f02db297297d5742c326144d37f39a005bdc40de10875ca1fc4dd"
+      "bytes": 9335,
+      "sha256": "67b4aab1ad89779ac3ed20eb57d69205f2a5e139d4e887db5f38637d143328d8"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -422,9 +422,14 @@
       "sha256": "edc395bc290bef809d501a6a956b322f2a0e56f593876e418269e0064cc8ce82"
     },
     {
+      "path": "docs/stacking_performance.md",
+      "bytes": 6734,
+      "sha256": "26822b60f1915cb36c41eb239cb06e3009f4a20f23f3ce42f1000dc4d9d23ed6"
+    },
+    {
       "path": "docs/testing_and_release.md",
-      "bytes": 11533,
-      "sha256": "b8cec023a9f66410f892edf54752b98eff6fc208dfe27b9dadf2c1877ccfb895"
+      "bytes": 13925,
+      "sha256": "ebb958861dac835f99d6c555ae43d3cc2138d6ed86897da1965ecbd3806ae429"
     },
     {
       "path": "install.sh",

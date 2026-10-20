@@ -259,3 +259,9 @@ New DR2 spatial+energy **single-source** tasks also report the primary-spectrum 
 
 New catalog scans explicitly record the original SkyLLH optimizer separately
 from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).
+
+DR2 spatial+energy stacking reduces repeated PDF calculations with a lossless
+spatial PDF block cache (1 GiB shared per fitted-Gamma stack) and exact observed-
+energy interpolation lookups (16 MiB per dataset). Budgets apply per analysis
+process; CPU settings and scientific fit definitions retain their existing values.
+See [stacking performance and cache lifecycle](docs/stacking_performance.md).

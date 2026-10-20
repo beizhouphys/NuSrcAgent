@@ -125,3 +125,20 @@ field retains its supported recorded procedure, with the original optimizer
 as the fallback when no procedure was recorded. Stopped tasks are not restarted.
 No coordinates, catalog membership, PDFs, spectral hypotheses, optimizer
 bounds or background-trial settings are changed by this recording safeguard.
+
+## Exact stacking PDF caches
+
+Multi-source DR2 spatial+energy fits use exact observed-energy interpolation
+lookups with a 16 MiB payload limit per dataset. Fitted-Gamma stacks additionally
+share a lossless spatial PDF block cache with a 1 GiB compressed-payload limit
+per fit. Cache misses and exhausted budgets use the original calculation.
+New trials invalidate the previous geometry and energy lookups. This preserves
+event/source membership, current-Gamma weights, three-node Gamma interpolation,
+its derivative and weighted reduction order. It changes no CPU configuration
+or recorded optimizer procedure.
+
+Use the ordinary create/READY/run/review sequence. Inspect
+`working_set.datasets.<dataset>.spatial_cache` and
+`energy_interpolation_cache` in `report.yaml` when checking runtime.
+See [stacking performance](stacking_performance.md) for memory accounting
+and bitwise verification requirements.

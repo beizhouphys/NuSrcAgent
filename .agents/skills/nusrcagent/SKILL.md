@@ -193,3 +193,18 @@ a change of fit procedure before launching a large catalog; benchmark the
 recorded procedure and worker configuration first. Do not infer runtime from
 a previous scan with a different procedure. Preserve historical procedure
 records, the flux-profile maximum-consistency guard and user-stopped tasks.
+
+## Exact stacking cache workflow
+
+DR2 multi-source spatial+energy fits automatically use exact observed-energy
+interpolation lookups (16 MiB per dataset); fitted-Gamma stacks also share a
+lossless spatial PDF cache (1 GiB compressed payload per fit). These are
+per-process budgets plus bookkeeping/temporary arrays, not total machine limits.
+They do not change scientific settings, fit procedures or CPU configuration.
+Keep the existing create/READY/run/review workflow and the requested CPU budget.
+New trials invalidate both caches; full budgets fall back to original formulas.
+When diagnosing performance, inspect both cache records under
+`working_set.datasets` in `report.yaml`, and compare PDF ratios, Gamma
+derivatives and complete fit/optimizer results against the unchanged request.
+Do not apply a scan's declination window to the joint stack or infer full-run
+speedups from a warm-cache benchmark. See `docs/stacking_performance.md`.

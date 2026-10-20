@@ -33,6 +33,7 @@ from analysis_backend.skyllh_chunked import (
     ChunkedSpatialOnlySourceWeightedPDFRatio,
     ChunkedSourceWeightedPDFRatio,
     EventOnlyAllEventSelectionMethod,
+    _ExactSpatialBlockCache,
 )
 from analysis_backend.skyllh_dr2_pdfs import (
     BACKGROUND_ENERGY_FIELD,
@@ -303,6 +304,10 @@ def create_dr2_stacking_analysis(
         raise ValueError("RA-scramble seeds must be non-negative integers")
     event_ra_rng = None if event_ra_scramble_seed is None else np.random.default_rng(int(event_ra_scramble_seed))
     chunked_ratios = []
+    # One shared payload budget for this fit; single-source and fixed-Gamma
+    # fits do not amortize the compression cost over repeated spectral updates.
+    spatial_cache = (_ExactSpatialBlockCache() if likelihood_mode == "spatial_energy"
+                     and gamma_mode == "fitted" and len(sources) > 1 else None)
 
     for dataset_idx, dataset in enumerate(datasets):
         data = loaded_data[dataset_idx]
@@ -361,6 +366,7 @@ def create_dr2_stacking_analysis(
             ratio = ChunkedSourceWeightedPDFRatio(
                 gamma_grid=gamma_grid,
                 signal_energy_declination_mode=signal_energy_declination_mode,
+                spatial_cache=spatial_cache,
                 **ratio_kwargs,
             )
         else:
