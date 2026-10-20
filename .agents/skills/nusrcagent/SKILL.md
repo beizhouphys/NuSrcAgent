@@ -326,3 +326,20 @@ packages or checkpoint bytes block continuation. Historical tasks retain their
 recorded flow. Single-source modes with no supported/requested flux products
 finish after their primary stage; do not invent a flux calculation. Catalog
 individual-source scans retain their existing execution and optional flux switch.
+
+## Single-source linear Gamma interpolation
+
+For new standalone DR2 spatial+energy single-source tasks, verify that the
+wrapper records signal_energy_gamma_interpolation=linear_v1. Primary LLH
+maximization, flux profiling and fixed-spectrum upper-limit fits must all use
+the same two-node linear interpolation on the existing Gamma grid. Verify the
+result and per-dataset working-set metadata in both stages. A method mismatch
+blocks continuation and valid reporting; create a new task when changing the
+scientific definition. Do not relabel historical results or checkpoints.
+
+Catalog scan fits also contain one source at a time: do not infer interpolation
+from source count or change catalog/stack defaults. They retain the original
+quadratic procedure. Preserve the original optimizer, bounds, tolerances and
+maximum-consistency guard. Keep the existing first-final-answer/user-reply
+boundary for interactive flux execution. Do not proactively add interpolation
+switch diagnostics to normal results. See docs/single_source_linear_interpolation.md.

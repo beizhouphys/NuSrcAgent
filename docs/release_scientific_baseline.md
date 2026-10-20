@@ -75,3 +75,8 @@ New DR2 spatial+energy single-source tasks default to three separate fixed-spect
 ## Single-source measurement workflow, 2026-10-19
 
 New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
+
+
+New standalone DR2 spatial+energy single-source tasks explicitly select linear_v1;
+catalog scans and joint stacks retain parabola_v1. See the
+[single-source interpolation definition](single_source_linear_interpolation.md).

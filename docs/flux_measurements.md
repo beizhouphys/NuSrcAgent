@@ -94,3 +94,8 @@ then calculate measured catalog intensity only for strict TS > 9, together with
 the three default fixed-spectrum limits. Catalog intensity is total flux divided
 by 4*pi sr; its figure contains only the two diffuse benchmarks. See
 [stacking flux definitions](stacking_flux.md).
+
+New standalone DR2 spatial+energy single-source tasks record linear_v1 for the
+signal-energy Gamma interpolation. Primary and flux calculations share it;
+continuation with a different recorded method is rejected. See
+[single-source interpolation](single_source_linear_interpolation.md).

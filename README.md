@@ -284,3 +284,9 @@ and asks whether to continue. After the user replies, it runs the flux stage wit
 regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
 Joint-stack figures use total flux / (4*pi sr),
 with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).
+
+New DR2 spatial+energy standalone single-source tasks use two-node linear Gamma
+interpolation for the signal energy PDF in both the primary fit and flux
+calculation. Catalog scan and joint stacking defaults retain their original
+quadratic interpolation. Optimizer, tolerances and the flux-profile consistency
+guard remain unchanged. See [single-source interpolation](docs/single_source_linear_interpolation.md).
