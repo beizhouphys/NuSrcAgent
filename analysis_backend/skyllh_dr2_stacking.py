@@ -555,13 +555,40 @@ def run_dr2_single_source(source_specs, flux_upper_limit_cl=None, flux_upper_lim
     """Run the requested fit plus separately recorded fixed-spectrum limits."""
     if len(source_specs) != 1:
         raise ValueError("Individual-source fits require exactly one source")
+    return run_dr2_flux_suite(source_specs, flux_upper_limit_cl, flux_upper_limit_gammas,
+                             flux_measurement_ts_threshold, runtime_cache, **fit_options)
+
+
+def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_gammas=None,
+                       flux_measurement_ts_threshold=None, runtime_cache=None,
+                       primary_result=None, **fit_options):
+    """Use the existing primary fit or maximize once, then calculate flux outputs."""
     gammas = list(flux_upper_limit_gammas or [])
     owned_cache = runtime_cache is None and bool(gammas)
     cache = {} if owned_cache else runtime_cache
     try:
-        result = run_dr2_stacking(source_specs, runtime_cache=cache,
-            flux_upper_limit_cl=None if gammas else flux_upper_limit_cl,
-            flux_measurement_ts_threshold=flux_measurement_ts_threshold, **fit_options)
+        if primary_result is None:
+            result = run_dr2_stacking(source_specs, runtime_cache=cache,
+                flux_upper_limit_cl=None if gammas else flux_upper_limit_cl,
+                flux_measurement_ts_threshold=flux_measurement_ts_threshold, **fit_options)
+        else:
+            import copy
+            result = copy.deepcopy(primary_result)
+            result.pop("generated_files", None)
+            analysis_options = {key: value for key, value in fit_options.items()
+                                if key not in {"random_seed", "fit_procedure"}}
+            analysis = create_dr2_stacking_analysis(source_specs=source_specs,
+                runtime_cache=cache, **analysis_options)
+            analysis.initialize_trial([data.exp for data in analysis._data_list])
+            fitted = result["gamma_mode"] == "fitted"
+            values = np.asarray([result["ns"], result["gamma"]] if fitted else [result["ns"]])
+            value, _ = analysis.llhratio.evaluate(values)
+            if not np.isclose(2*value, result["TS"], rtol=1e-7, atol=1e-6):
+                raise ValueError("Saved primary fit does not match the reconstructed likelihood")
+            if flux_measurement_ts_threshold is not None:
+                from analysis_backend.profile_flux import source_flux_measurement
+                result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold)
+            result["primary_maximization_repeated"] = False
         if gammas:
             fixed_options = dict(fit_options, gamma_mode="fixed", fit_procedure="skyllh_lbfgs_v1")
             result["flux_upper_limit_fits"] = []

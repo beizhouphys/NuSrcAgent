@@ -114,7 +114,7 @@ def build_provenance(config_path: Path, normalized: NormalizedAnalysis, repo_roo
     input_paths = [repo_root / path for path in _required_paths(normalized.sample, normalized.likelihood_mode)]
     if config.catalog is not None and config.catalog.file is not None:
         input_paths.append(resolve_path(repo_root, config.catalog.file))
-    if normalized.flux_upper_limit_gammas or normalized.flux_measurement_ts_threshold is not None:
+    if normalized.stacking_flux or normalized.flux_upper_limit_gammas or normalized.flux_measurement_ts_threshold is not None:
         input_paths.extend(sorted((repo_root / "data_input/references/neutrino_spectra").glob("*")))
     input_hashes = {str(path): sha256_file(path) for path in input_paths if path.is_file()}
     try:
@@ -146,6 +146,11 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         if summary.get("sqrt_ts_png"):
             lines.extend(["", "![Observed source sqrt(TS) distribution](" + summary["sqrt_ts_png"] + ")"])
     flux_entries = [(report["result"], "Source")] if not source_results else [(item["fit"], item["source_name"]) for item in source_results]
+    if report["result"].get("stacking_phase") == "flux":
+        from agent_core.stacking_stages import stack_flux_markdown
+        lines.extend(stack_flux_markdown(report["result"]))
+        if not source_results:
+            flux_entries = []
     measurements = [(fit["flux_measurement"], name, fit.get("generated_files", {}))
                     for fit, name in flux_entries if fit.get("flux_measurement", {}).get("reported")]
     if measurements:

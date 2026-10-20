@@ -89,3 +89,11 @@ CSV contents, file hashes, plotted spectra, common units and diffuse conversion.
 ## Single-source measurement workflow, 2026-10-19
 
 New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
+
+## Joint-stack limits
+
+New DR2 spatial+energy joint stacks calculate the same three fixed spectra with
+separate stacking settings after the primary fit has been reported. Intrinsic
+weights are applied to each source detector yield once. Numeric artifacts retain
+total flux and explicit full-sky-average intensity; stack plots use intensity and
+only diffuse references. See [stacking flux definitions](stacking_flux.md).

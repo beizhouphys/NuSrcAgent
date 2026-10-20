@@ -1,0 +1,116 @@
+# Joint-stack flux limits, intensity measurements and two-stage reporting
+
+New DR2 time-integrated spatial+energy joint-stack tasks report results in two
+stages. The primary fit keeps its requested ns/Gamma hypotheses, selected sources,
+intrinsic weights, event selection, frozen PDFs, bounds and original optimizer.
+This workflow applies to `stack` and the joint stack in `scan_and_stack`.
+Individual-source scan limits retain their separate opt-in setting. DR1 and
+spatial-only tasks retain their existing procedures. Historical tasks are not
+silently converted to this workflow.
+
+## Stage 1: maximize and report the likelihood
+
+Create the task through the public wrapper and require `READY`. Run it normally:
+
+```bash
+.venv/bin/python run_agent_wrap.py run --task <task_id>
+```
+
+The primary result is saved and independently reviewed before any joint-stack
+flux profiles or companion fixed-spectrum fits. A passing primary stage returns
+`AWAITING_FLUX`. The wrapper's `stacking_stages.primary` contains ns, Gamma, TS,
+local analytic p-value, one-sided significance, method labels and review status.
+The Agent must write these values in a chat bubble before starting stage 2.
+Warnings remain visible and failed primary review blocks valid reporting.
+`AWAITING_FLUX` means the requested analysis still has flux work to complete.
+
+## Stage 2: limits, measurements and figures
+
+Continue the same task after reporting the primary result:
+
+```bash
+.venv/bin/python run_agent_wrap.py run --task <task_id> --stage flux
+```
+
+The Agent continues automatically within the original analysis request; this is
+not another scientific confirmation gate. Stage 2 checks the original request
+hash, sealed primary artifacts, runtime packages, code and scientific-input
+hashes before reconstructing the same likelihood. It evaluates the saved primary
+parameters to verify TS and does not repeat primary maximization. Primary ns,
+Gamma, TS, p-value, significance and optimizer records are retained.
+
+The default companions are three separate fixed-Gamma fits at Gamma=2, 2.5 and 3,
+each with a one-sided 95% profile-likelihood upper limit. Their upper crossings
+satisfy `2[ln L(ns_hat,Gamma)-ln L(ns_upper,Gamma)] = 2.705543454095404` inside
+the recorded bounds. `--no-flux-upper-limits` at task creation omits these
+companions; the strict measurement gate remains recorded independently.
+
+Only primary TS > 9 produces a measured primary-spectrum intensity, 68.27%/95%
+profile intervals, spectral shading and, for fitted Gamma, joint contours.
+TS=9 does not trigger measurement reporting. At each fixed total-flux
+normalization, free-Gamma profiling includes its Gamma-dependent detector yield;
+it does not freeze the primary Gamma to rescale an ns interval. The existing
+maximum-consistency guard, thresholds and bound-truncation checks remain active.
+A failed flux stage cannot invalidate the separately preserved primary artifacts,
+but its flux numbers must not be reported as valid. No background trials are
+started by this workflow.
+
+## Catalog total flux and intensity
+
+The normalized intrinsic model weights satisfy sum_j w_model_j=1. For a common
+power law, source j has
+
+`dPhi_j/dE = w_model_j * phi0_total * (E/E0)^(-Gamma)`.
+
+The expected count is
+
+`ns = phi0_total * sum_k sum_j w_model_j * Y_j^k(Gamma; E0)`.
+
+Here Y is the same effective-area/livetime detector yield used in the likelihood.
+The acceptance factor is applied once. Both uniform and catalog-column weighting
+therefore define a catalog-total flux, rather than an unweighted sum of detector
+yields or a flux for one representative source. A duplicated co-located source
+with split intrinsic weight leaves the total-flux conversion unchanged.
+
+The displayed quantity is the full-sky average
+
+`dI_catalog/dE = (sum_j dPhi_j/dE)/(4*pi sr)`.
+
+This is an explicit full-sky averaging convention for the selected catalog; it
+does not assign isotropic emission or a local solid-angle aperture to each point
+source. Differential intensity is in GeV^-1 cm^-2 s^-1 sr^-1; E^2 dI/dE is in
+GeV cm^-2 s^-1 sr^-1. The flavor is nu_mu+anti_nu_mu, with no factor of three.
+Limits use the 100 TeV pivot; the primary measurement uses 1 TeV and also stores
+its 100 TeV normalization. Numeric artifacts retain total flux and explicit
+intensity fields, with the exact 4*pi sr conversion recorded.
+
+## Figures, artifacts and review
+
+The joint-stack spectrum has one intensity axis. Catalog limits, measured
+spectra and their bands are total flux divided by exactly 4*pi sr. The two
+published diffuse astrophysical spectra and bands remain in their original
+per-steradian intensity units. Only the 9.5-year tracks and 10.3-year starting-track
+benchmarks appear; NGC 1068 is excluded from the joint-stack figure. Preserve
+the starting-track band's confidence-level qualification. The single-source
+figure conventions remain separate.
+
+The spectrum curves describe complete power-law hypotheses over 1 TeV–10 PeV;
+that display range is not a measured sensitive range or independent energy-bin
+limits. Measurement shading retains the existing confidence-region meaning.
+Joint contours display intensity normalization versus Gamma. PNG, vector PDF
+and editable SVG are generated under `figures/runs/<run>/stack/`.
+
+Each stage has its own run directory and review. The task record retains both
+through `stacking_stages` and the primary/flux run-directory references. Stage 2
+writes `flux_upper_limits.csv`, `upper_limit_profiles.csv`,
+`spectrum_curves.csv`, `flux_plot_provenance.json`, and applicable
+measurement/profile/contour tables. `stacking_stages.flux` provides a compact chat
+summary and figure/table paths only after successful review. Review checks each
+fixed fit, detector-yield conversion, strict TS gate, statistical intervals,
+intensity scaling, reference identities, tables and output hashes.
+
+The exact spatial-PDF and observed-energy interpolation caches remain enabled
+where applicable. A new CLI process rebuilds its own fit-local caches; loaded
+input templates and validated PDF tables can be reused within the companion-fit
+suite. Keep the requested CPU budget for both stages. Source membership, weights
+and optimizer settings must never be changed to repair a failed profile.

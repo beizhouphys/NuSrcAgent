@@ -9,8 +9,8 @@ separately using the fit's existing Gamma-dependent analytic estimate.
 
 This feature applies to single-source analysis. Catalog scans retain their
 current fits and optional fixed-spectrum upper limits; they do not enable the
-new measurement profiles or contours. Stacking, DR1 and spatial-only analyses
-retain their current procedures. Existing tasks retain their recorded settings.
+new measurement profiles or contours. Joint stacks use the separately recorded intensity workflow described below.
+DR1 and spatial-only analyses retain their current procedures. Existing tasks retain their recorded settings.
 
 ## Flux normalization and intervals
 
@@ -85,3 +85,12 @@ The three methodological details identified in the owner's 2026-10-19 reporting
 policy remain available in numerical metadata and are discussed when requested;
 they alone do not generate warnings or prevent COMPLETED. This policy does not
 suppress genuine fit, input or artifact failures.
+
+## Joint-stack measurements
+
+The same profile construction now supports a joint stack using the sum of the
+intrinsic-weighted detector yields. New stack tasks report the primary fit first,
+then calculate measured catalog intensity only for strict TS > 9, together with
+the three default fixed-spectrum limits. Catalog intensity is total flux divided
+by 4*pi sr; its figure contains only the two diffuse benchmarks. See
+[stacking flux definitions](stacking_flux.md).

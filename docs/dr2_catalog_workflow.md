@@ -142,3 +142,11 @@ Use the ordinary create/READY/run/review sequence. Inspect
 `energy_interpolation_cache` in `report.yaml` when checking runtime.
 See [stacking performance](stacking_performance.md) for memory accounting
 and bitwise verification requirements.
+
+## Joint-stack flux output
+
+New DR2 spatial+energy joint stacks use separate, recorded stacking flux settings.
+The primary result is reviewed and reported in chat before the same task continues
+with `run --task <id> --stage flux`. Three fixed-spectrum 95% limits are default;
+primary TS > 9 additionally enables measured intensity. Individual scan limits
+remain opt-in. See [stacking flux and two-stage reporting](stacking_flux.md).

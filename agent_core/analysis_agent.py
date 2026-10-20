@@ -37,8 +37,7 @@ class AnalysisAgent:
         with path.open("w", encoding="utf-8") as handle:
             handle.write(dump_simple_yaml(payload))
         return path
-
-    def run(self, config_path: str | Path, backend: str = "likelihood", prepare_only: bool = False) -> AgentRun:
+    def run(self, config_path: str | Path, backend: str = "likelihood", prepare_only: bool = False, stacking_primary=None) -> AgentRun:
         path = Path(config_path)
         if not path.is_absolute():
             path = self.repo_root / path
@@ -51,7 +50,8 @@ class AnalysisAgent:
             return AgentRun(config_path=path, normalized=normalized, result={}, run_dir=None)
         if backend != "likelihood":
             raise ConfigError("unsupported analysis backend: %s" % backend)
-        result = run_likelihood_backend(normalized, self.repo_root)
+        result = (run_likelihood_backend(normalized, self.repo_root) if stacking_primary is None
+                  else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary))
         run_dir = write_run_artifacts(path, config, normalized, result, self.repo_root)
         review = review_run(str(run_dir), str(self.repo_root), write_artifacts=True)
         return AgentRun(config_path=path, normalized=normalized, result=result, run_dir=run_dir, review=review)

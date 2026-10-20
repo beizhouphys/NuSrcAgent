@@ -20,6 +20,21 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
                 or config.analysis.type != AnalysisType.CATALOG_STACKING
                 or config.analysis.catalog_operation not in {"scan", "scan_and_stack"}):
             result.errors.append("analysis.scan_fit_procedure requires a DR2 catalog scan")
+    stack_flux = config.analysis.stacking_flux
+    if not isinstance(stack_flux, dict):
+        result.errors.append("analysis.stacking_flux must be a settings mapping")
+    elif stack_flux:
+        approved = dict(upper_limit_cl=0.95, upper_limit_gammas=[-2., -2.5, -3.],
+                        measurement_ts_threshold=9., reporting="two_stage",
+                        display_quantity="full_sky_average_intensity")
+        omitted = dict(approved, upper_limit_cl=None, upper_limit_gammas=[])
+        if stack_flux not in (approved, omitted):
+            result.errors.append("Stacking flux settings must retain the approved hypotheses, TS gate, intensity units and two-stage reporting")
+        if (config.data.sample != "icecube_public_ps_14yr_dr2"
+                or config.analysis.type != AnalysisType.CATALOG_STACKING
+                or config.analysis.likelihood_mode != "spatial_energy"
+                or config.analysis.catalog_operation not in {"stack", "scan_and_stack"}):
+            result.errors.append("Stacking flux outputs require a DR2 spatial+energy joint stack")
     measurement_threshold = config.analysis.flux_measurement_ts_threshold
     if measurement_threshold is not None:
         if not math.isfinite(measurement_threshold) or measurement_threshold != 9.0:

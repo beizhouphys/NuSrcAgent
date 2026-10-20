@@ -187,7 +187,23 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
                 reference = finite_float(result.get(key))
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
         add_check(review, "dr2_fit_table", "pass" if table_ok else "fail", "fit CSV matches the numeric report" if table_ok else "fit CSV is missing or inconsistent", False)
-
+    if normalized.get("stacking_flux") and not normalized.get("_flux_suite_member") and result.get("n_sources", 0) > 1:
+        stage = result.get("stacking_phase")
+        add_check(review, "stacking_reporting_stage", "pass" if stage in {"primary", "flux"} else "fail",
+                  "stacking reporting stage is explicit", False)
+        if stage == "flux":
+            settings = normalized["stacking_flux"]
+            stack_normalized = dict(normalized, flux_upper_limit_cl=settings["upper_limit_cl"],
+                flux_upper_limit_gammas=settings["upper_limit_gammas"],
+                flux_measurement_ts_threshold=settings["measurement_ts_threshold"])
+            from agent_core.flux_measurement_review import review_flux_measurement
+            review_flux_measurement(review, result, stack_normalized, root)
+            if settings["upper_limit_gammas"]:
+                review_flux_suite(review, report, stack_normalized, root)
+        else:
+            clean = not any(key in result for key in ("flux_upper_limit_fits", "flux_measurement"))
+            add_check(review, "stacking_primary_only", "pass" if clean else "fail",
+                      "flux calculations are deferred until the second stage", False)
     if normalized.get("flux_measurement_ts_threshold") is not None and normalized.get("analysis_type") == "single_source" and result.get("n_sources") == 1:
         from agent_core.flux_measurement_review import review_flux_measurement
         review_flux_measurement(review, result, normalized, root)
@@ -216,15 +232,24 @@ def review_flux_upper_limit(review, result, normalized):
     yield100 = finite_float(limit.get("yield_per_phi0_at_100tev"))
     valid = valid and ns_upper is not None and float(result["ns"]) < ns_upper < float(result["fit_bounds"]["ns"][1]) and phi is not None and phi > 0 and yield100 is not None and yield100 > 0
     if valid:
-        yield1 = sum(float(values[0]) for values in result["w_acc_by_dataset"].values())
+        yield1 = sum(float(w)*float(y) for values in result["w_acc_by_dataset"].values()
+                     for w, y in zip(result["w_model"], values, strict=True) if w > 0)
         valid = math.isclose(yield100, yield1 * 100 ** float(result["gamma"]), rel_tol=1e-12)
         for value, reference in ((phi * yield100, ns_upper), (limit.get("e2_dphi_de_upper_limit_gev_cm2_s"), phi * 1e10), (limit.get("e2_dphi_de_upper_limit_tev_cm2_s"), phi * 1e7), (2 * limit.get("log_likelihood_ratio_at_best", float("nan")), result["TS"])):
             value = finite_float(value)
             valid = valid and value is not None and math.isclose(value, reference, rel_tol=1e-7, abs_tol=1e-12)
-    valid = valid and result.get("gamma_mode") == "fixed" and result.get("n_sources") == 1 and result.get("likelihood_mode") == "spatial_energy" and limit.get("method") == "asymptotic_fixed_gamma_profile_likelihood" and limit.get("sidedness") == "one_sided_upper" and limit.get("flavor") == "nu_mu+anti_nu_mu" and limit.get("pivot_energy_gev") == 1e5 and limit.get("phi0_unit") == "GeV^-1 cm^-2 s^-1" and limit.get("coverage_validated") is False and limit.get("systematic_uncertainties_included") is False
+    valid = valid and result.get("gamma_mode") == "fixed" and result.get("n_sources", 0) >= 1 and result.get("likelihood_mode") == "spatial_energy" and limit.get("method") == "asymptotic_fixed_gamma_profile_likelihood" and limit.get("sidedness") == "one_sided_upper" and limit.get("flavor") == "nu_mu+anti_nu_mu" and limit.get("pivot_energy_gev") == 1e5 and limit.get("phi0_unit") == "GeV^-1 cm^-2 s^-1" and limit.get("coverage_validated") is False and limit.get("systematic_uncertainties_included") is False
+    if result.get("n_sources", 0) > 1:
+        valid = valid and limit.get("flux_scope") == "sum_of_source_fluxes" and limit.get("n_sources") == result["n_sources"]
+    if result["n_sources"] > 1:
+        valid = valid and limit.get("intensity0_unit") == "GeV^-1 cm^-2 s^-1 sr^-1"
+        valid = valid and limit.get("solid_angle_sr") == 4*math.pi
+        valid = valid and math.isclose(limit.get("intensity0_upper_limit", -1), limit["phi0_upper_limit"]/(4*math.pi), rel_tol=1e-12, abs_tol=0.)
     for field in ("event_selection", "event_dec_min_deg", "event_dec_max_deg"):
         valid = valid and limit.get(field) == result.get(field)
     add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
+    if ns_upper is not None and finite_float(result.get("ns")) is not None and result["ns"] <= 1e-5:
+        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit has ns at the physical zero boundary", False)
     if normalized.get("_flux_suite_member"):
         return
     files = result.get("generated_files", {})
@@ -502,7 +527,7 @@ def review_flux_suite(review, report, normalized, root):
     for fit, gamma in zip(fits, expected):
         child_normalized = dict(normalized, gamma_mode="fixed", spectral_indices=[-gamma],
                                 flux_upper_limit_gammas=[], flux_measurement_ts_threshold=None,
-                                fit_procedure="skyllh_lbfgs_v1", _flux_suite_member=True)
+                                fit_procedure="skyllh_lbfgs_v1", stacking_flux={}, _flux_suite_member=True)
         child = {"checks": [], "metrics": {}}
         review_dr2_run(child, dict(report, result=fit), child_normalized, root)
         for check in child["checks"]:
@@ -525,6 +550,12 @@ def review_flux_suite(review, report, normalized, root):
                 parsed = finite_float(row.get(key))
                 valid = valid and parsed is not None and math.isclose(parsed, value, rel_tol=1e-12, abs_tol=1e-12)
         provenance = json.loads(Path(files["flux_plot_provenance"]).read_text())
+        intensity = provenance.get("display_quantity") == "full_sky_average_intensity"
+        source_factor = 1/(4*math.pi) if intensity else 1.
+        diffuse_factor = 1. if intensity else 4*math.pi
+        display_unit = "GeV cm^-2 s^-1 sr^-1" if intensity else "GeV cm^-2 s^-1"
+        if intensity:
+            valid = valid and provenance.get("source_display_factor") == source_factor and provenance.get("diffuse_display_factor") == diffuse_factor
         valid = valid and all(Path(path).is_file() and sha256_file(path) == digest for path, digest in provenance["outputs_sha256"].items())
         valid = valid and all(sha256_file(root / path) == digest for path, digest in provenance["reference_sha256"].items())
         valid = valid and all(Path(files["flux_spectrum_"+suffix]).stat().st_size > 100 for suffix in ("png", "pdf", "svg"))
@@ -533,24 +564,28 @@ def review_flux_suite(review, report, normalized, root):
         measurement = result.get("flux_measurement", {})
         if measurement.get("reported"):
             hypotheses["source_measurement"] = None
-        references = {"NGC_1068", "diffuse_tracks", "diffuse_starting_tracks"}
+        references = {"diffuse_tracks", "diffuse_starting_tracks"}
+        if result["n_sources"] == 1:
+            references.add("NGC_1068")
+        else:
+            valid = valid and intensity and provenance.get("flux_scope") == "sum_of_source_fluxes"
         valid = valid and {row["curve"] for row in curves} == set(hypotheses) | references
         for row in curves:
-            factor = 4*math.pi if row["curve"].startswith("diffuse") else 1.
+            factor = diffuse_factor if row["curve"].startswith("diffuse") else source_factor
             value = float(row["e2_flux"])
-            valid = valid and row["e2_flux_unit"] == "GeV cm^-2 s^-1" and float(row["display_factor"]) == factor
+            valid = valid and row["e2_flux_unit"] == display_unit and float(row["display_factor"]) == factor
             valid = valid and math.isclose(value, float(row["original_e2_flux"])*factor, rel_tol=1e-12, abs_tol=0.)
             if row["curve"] == "source_measurement":
                 energy = float(row["energy_gev"])
-                expected_value = energy**2 * measurement["phi0_hat"] * (energy/measurement["pivot_energy_gev"])**(-measurement["gamma"])
+                expected_value = energy**2 * measurement["phi0_hat"] * (energy/measurement["pivot_energy_gev"])**(-measurement["gamma"])*source_factor
                 valid = valid and math.isclose(value, expected_value, rel_tol=1e-12, abs_tol=0.)
             elif row["curve"] in hypotheses:
                 limit = hypotheses[row["curve"]];energy = float(row["energy_gev"])
-                expected_value = energy**2 * limit["phi0_upper_limit"] * (energy / 1e5)**(-limit["gamma"])
+                expected_value = energy**2 * limit["phi0_upper_limit"] * (energy / 1e5)**(-limit["gamma"])*source_factor
                 valid = valid and math.isclose(value, expected_value, rel_tol=1e-12, abs_tol=0.)
             elif row.get("band_lower"):
                 valid = valid and 0 < float(row["band_lower"]) <= float(row["band_upper"])
     except (OSError, ValueError, KeyError, TypeError):
         valid = False
     add_check(review, "dr2_flux_artifacts", "pass" if valid else "fail",
-              "limit/profile tables, reference hashes, common flux units, diffuse 4pi conversion and plotted power laws are consistent" if valid else "missing or inconsistent flux tables, figures, reference data or plot provenance", False)
+              "limit/profile tables, reference hashes, recorded flux/intensity scaling and plotted power laws are consistent" if valid else "missing or inconsistent flux tables, figures, reference data or plot provenance", False)

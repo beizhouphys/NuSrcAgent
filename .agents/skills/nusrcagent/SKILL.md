@@ -130,7 +130,7 @@ Do not change the event selection of historical tasks or background ensembles.
 
 ## Fixed-spectrum flux upper limits and reference-spectrum figures
 
-New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit retains its requested Gamma mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. This feature does not change joint stacking, DR1 or spatial-only results.
+New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit retains its requested Gamma mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. Joint stacking has separate default flux outputs and two-stage intensity reporting, described below; DR1 and spatial-only results retain their existing procedures.
 
 Read `docs/flux_upper_limits.md` for units, profile threshold, confidence qualifications and reference provenance. Plot the source limits, NGC 1068 and both diffuse benchmarks in one panel using common flux units, with diffuse multiplied by exactly 4*pi sr and published uncertainty bands. Do not add NGC 4151. Preserve the starting-track band CL qualification. Describe the limits as asymptotic profile-likelihood estimates; follow the default reporting policy below. A curve represents one complete fixed power-law hypothesis; do not call it a differential energy-bin limit. Review every fixed fit and its tables/figures. No background trials are performed by this feature.
 
@@ -221,3 +221,37 @@ the optimizer or silently replace the primary fit to repair it. Preserve histori
 task records and results. Unsupported recorded procedures cannot be resumed by
 substitution; create a new explicit request. Observed and corresponding trial
 fits must use the same supported procedure.
+
+## Joint-stack two-stage intensity reporting
+
+For new DR2 time-integrated spatial+energy `stack` and joint `scan_and_stack`
+tasks, the wrapper records separate `stacking_flux` defaults: 95% limits for
+Gamma=2, 2.5, 3; primary measured intensity only for strict TS > 9; two-stage
+reporting and catalog-total flux divided by exact 4*pi sr. Individual source
+scan limits retain their separate opt-in setting. Preserve historical tasks.
+
+1. Run the READY task normally. The primary stage performs likelihood
+   maximization and review, then returns AWAITING_FLUX. Read
+   `stacking_stages.primary` and its review. Before starting any joint-stack
+   flux calculation, write a chat bubble with weighting/source count, best-fit
+   ns and Gamma, TS, local analytic p-value and one-sided significance, with
+   estimate labels and every material warning. Failed primary review blocks
+   reporting and continuation.
+2. After that chat bubble, automatically run the same task with `run --task
+   <id> --stage flux`; no additional user confirmation is needed. This stage
+   validates the sealed primary result and unchanged request/code/inputs. It
+   does not repeat primary maximization. Report the three catalog-total flux upper
+   limits with their full-sky intensity equivalents and, only for primary TS > 9, measured intensity and 68.27%/95%
+   profile intervals. Show the PNG spectrum inline, link PDF and complete
+   tables, and show fitted-Gamma intensity-Gamma contours when available.
+
+Use `I_catalog = sum_j Phi_j/(4*pi sr)` consistently for catalog curves and
+bands. Keep the diffuse benchmarks in their original intensity units, with
+published bands. Use one intensity axis and include only diffuse_tracks and
+diffuse_starting_tracks; do not add NGC 1068. Report the pivots and per-sr units
+explicitly. A boundary warning remains preliminary; a failed flux review blocks
+valid flux reporting even though the earlier independently reviewed primary
+result is preserved. Do not describe AWAITING_FLUX as a completed full task or
+stop after stage 1 when the full analysis was requested. Re-entering the primary
+stage or changing parameters while awaiting flux is rejected. See
+`docs/stacking_flux.md` for definitions, artifacts and the two commands.

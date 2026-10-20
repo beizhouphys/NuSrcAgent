@@ -265,3 +265,10 @@ spatial PDF block cache (1 GiB shared per fitted-Gamma stack) and exact observed
 energy interpolation lookups (16 MiB per dataset). Budgets apply per analysis
 process; CPU settings and scientific fit definitions retain their existing values.
 See [stacking performance and cache lifecycle](docs/stacking_performance.md).
+
+New DR2 spatial+energy stacks report the primary ns, Gamma, TS, p-value and
+one-sided significance first. Continue the same task with `run --task <id>
+--stage flux` for default Gamma=2, 2.5, 3 upper limits and primary intensity
+measurements when TS > 9. The Agent reports the primary result in chat before
+continuing automatically. Joint-stack figures use total flux / (4*pi sr),
+with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).
