@@ -45,6 +45,20 @@ task_id=task_REPLACE_WITH_RETURNED_ID
 .venv/bin/python run_agent_wrap.py run --task "$task_id"
 ```
 
+The first `run` now returns the reviewed primary fit. Read the best-fit ns and
+Gamma, TS, local p value and significance in `single_source_llh_summary`.
+When its status is `AWAITING_FLUX`, continue with:
+
+```bash
+.venv/bin/python run_agent_wrap.py run --stage flux --task "$task_id"
+```
+
+The Agent sends the primary values in a chat bubble before this command and
+automatically continues it without another confirmation. The second result
+contains reviewed flux limits and/or measurements and figures. The two stages
+retain separate reports, and the primary fit is not repeated. See
+[single-source stage states and recovery](single_source_stages.md).
+
 ## 2. Three-source scan plus stack
 
 The [example catalog](../configs/examples/catalog_sources_example.csv) contains

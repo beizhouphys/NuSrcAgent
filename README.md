@@ -169,6 +169,13 @@ The assistant interprets natural language. The Python command-line interface
 does not: its `--request` text is only a description kept with the analysis.
 When using Python commands directly, provide positions and settings explicitly.
 
+For new single-source requests, the Agent first reports best-fit ns and Gamma,
+TS, local p value and one-sided significance in chat after LLH review. It then
+automatically continues the requested flux calculation and reports upper limits
+and/or measurements, figures and tables in a second chat output. Terminal users
+run `run --stage flux --task <task_id>` after `AWAITING_FLUX`. The primary fit is
+saved and is not maximized again. See the [two-stage workflow](docs/single_source_stages.md).
+
 ## Minimal examples and outputs
 
 Codex is not required for the numerical fits. Follow the

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from analysis_backend.sources import BUILTIN_CATALOG_NAMES
 from agent_core.agent_orchestrator import execute_task, resume_interrupted_task
+from agent_core.single_source_stages import configure_single_source_stages, execute_single_source_stage
 from agent_core.catalog_inspector import inspect_catalog
 from agent_core.environment import check_environment
 from agent_core.planner import plan_catalog_task, plan_single_task, revalidate_task_plan
@@ -120,6 +121,7 @@ def main(argv=None) -> int:
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
+            configure_single_source_stages(task)
 
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
@@ -136,6 +138,7 @@ def main(argv=None) -> int:
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
+            configure_single_source_stages(task)
             set_scan_fit_procedure(task, args)
             set_stacking_flux(task, args)
 
@@ -148,7 +151,9 @@ def main(argv=None) -> int:
                 revalidate_task_plan(task, repo_root)
                 save_task(task, repo_root, path)
             elif args.command == "run":
-                if args.stage == "flux":
+                if args.stage == "flux" and task.get("execution_flow") == "single_source_two_stage_v1":
+                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries)
+                elif args.stage == "flux":
                     from agent_core.stacking_stages import execute_flux_stage
                     task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
                 else:
@@ -357,7 +362,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run", help="Execute a READY task and enforce its completion gate.")
     run.add_argument("--task", required=True)
-    run.add_argument("--stage", choices=["primary", "flux"], help="New DR2 stacks return the primary fit first; report it in chat before running --stage flux.")
+    run.add_argument("--stage", choices=["primary", "flux"], help="New single-source tasks and DR2 stacks return the primary fit first; report it in chat before running --stage flux.")
     run.add_argument("--backend", choices=["likelihood"], default="likelihood")
     run.add_argument("--max-safe-retries", type=int, choices=[0, 1], default=1)
 
@@ -472,6 +477,9 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
     if task.get("stacking_stages"):
         from agent_core.stacking_stages import chat_stages
         summary["stacking_stages"] = chat_stages(task)
+    if task.get("execution_flow") == "single_source_two_stage_v1":
+        from agent_core.single_source_stages import chat_stages as single_chat_stages
+        summary.update(single_chat_stages(task))
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 

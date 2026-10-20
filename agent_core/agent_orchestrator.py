@@ -14,6 +14,11 @@ SAFE_ERROR_TYPES = {"OUTPUT_GENERATION_ERROR", "DEPENDENCY_ERROR", "TRANSIENT_IO
 
 
 def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend: str = "likelihood", max_safe_retries: int = 1) -> Dict[str, Any]:
+    if task.get("execution_flow") == "single_source_two_stage_v1":
+        from agent_core.single_source_stages import execute_single_source_stage
+        if backend != "likelihood":
+            raise ValueError("two-stage single-source analysis requires the likelihood backend")
+        return execute_single_source_stage(task, task_path, repo_root, "llh", max_safe_retries)
     refresh_readiness(task)
     if task.get("status") != RUNNABLE_STATE:
         raise ValueError("task is not ready to run; status=%s; missing=%s" % (task.get("status"), task.get("missing_parameters", [])))

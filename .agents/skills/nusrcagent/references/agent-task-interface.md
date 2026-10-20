@@ -31,3 +31,18 @@ or materialize another catalog when the supplied CSV already matches the request
 ## Recovery
 
 The wrapper records one attempt per execution and hashes the deterministic request. Only dependency, output-generation, and transient I/O failures may retry automatically, at most once, using the identical request hash. Use `resume` only for a task left in `RUNNING` or `REVIEWING` after an interrupted process.
+
+## Single-source stage state
+
+New single-source tasks record `execution_flow=single_source_two_stage_v1`.
+`run --task` executes the primary fit and its review; chat output must show
+`single_source_llh_summary` before the next command. `AWAITING_FLUX` means
+that the primary result is valid and the requested flux products remain pending;
+it is not a final task completion. Continue automatically with
+`run --stage flux --task`. Parameters are frozen after the primary result.
+The final run and original LLH run have separate artifact directories and
+reviews. `artifacts.llh_run_directory` and `artifacts.llh_checkpoint` preserve
+the first result even if the second stage fails. `show` returns these states
+and summaries. An interrupted flux stage resumes to `AWAITING_FLUX` after
+`resume`; historical tasks keep their recorded one-call behavior. Modes without
+supported/requested flux products finish after the primary stage.

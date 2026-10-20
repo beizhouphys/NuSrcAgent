@@ -588,6 +588,9 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
             if flux_measurement_ts_threshold is not None:
                 from analysis_backend.profile_flux import source_flux_measurement
                 result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold)
+            if flux_upper_limit_cl is not None and not gammas:
+                from analysis_backend.profile_upper_limit import fixed_gamma_flux_upper_limit
+                result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
             result["primary_maximization_repeated"] = False
         if gammas:
             fixed_options = dict(fit_options, gamma_mode="fixed", fit_procedure="skyllh_lbfgs_v1")
