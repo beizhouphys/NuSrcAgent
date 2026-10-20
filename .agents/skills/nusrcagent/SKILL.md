@@ -20,6 +20,14 @@ Update the estimate as work completes and label a phase-only estimate as such;
 allow separately for later stacking, artifacts and review. Never count restored
 checkpoints as newly timed work. Read `NuSrcAgent progress:` stderr events and
 `execution_timing` in wrapper JSON; translate these into natural chat updates.
+During a joint stacking fit, use its `completed_evaluations`, `remaining_seconds`
+and `remaining_seconds_range` as soon as a sample exists. Give a numeric, explicitly
+rough fit-only ETA in chat and refresh it during the fit. The revisable evaluation
+budget is a stopping-time heuristic, not a fixed total or completion percentage.
+A matched reviewed fit supplies only its evaluation count; speed comes from the
+current fit. Without history, a heuristic call budget still permits a labelled
+rough range; do not keep saying ETA is unavailable after evaluations finish.
+These estimates exclude later artifacts/review and never change fit settings.
 Before a usable sample exists, state that a reliable estimate is pending. For
 unbounded continuous scrambling, state that no end time is set; never add a
 trial target or stop condition for reporting. Other work, including inspection,

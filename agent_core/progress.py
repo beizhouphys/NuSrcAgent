@@ -19,6 +19,7 @@ class CommandProgress:
         self.interval = interval
         self.started = clock()
         self.phase = None
+        self.phase_provider = None
         self.lock = RLock()
         self.stop = Event()
 
@@ -32,6 +33,8 @@ class CommandProgress:
                 result.update(self.phase)
                 result["estimate_age_seconds"] = max(0.0, now - self.phase["measured_at"])
                 result.pop("measured_at")
+            if self.phase_provider is not None:
+                result.update(self.phase_provider(now))
             return result
 
     def emit(self, event="progress"):

@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 24371,
-      "sha256": "31cf4fe202ef8a73d3e4b090894a09bb2288d50b65ad5ccf1a6759576c10226d"
+      "bytes": 25016,
+      "sha256": "95ecdf243736275bc9592019dbbcce5bdfb457b534f13de9e9fe7cec611f5201"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 18587,
-      "sha256": "0e7f6bd694e94a7d15366134b4ecba4f57821bcc97089185256936a90c551d1f"
+      "bytes": 18717,
+      "sha256": "46c610e4ecea57f66c3eee8d5a9a5e7eee7e9b8ac5e83b3ff3680bf83a4273a7"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -143,8 +143,8 @@
     },
     {
       "path": "agent_core/progress.py",
-      "bytes": 4720,
-      "sha256": "50f76c943651dc965e441832a9c89a6e402686ac510acb089f344a31b1c67729"
+      "bytes": 4859,
+      "sha256": "d25cb5ab4f39284261aefb809ae97e397b2156077c5909ff362e38973a37e721"
     },
     {
       "path": "agent_core/report.py",
@@ -170,6 +170,11 @@
       "path": "agent_core/single_source_stages.py",
       "bytes": 14685,
       "sha256": "f1d50382f1a205d7761016c7e980d2651756784fd3c3c39f63143b3a8e67fa64"
+    },
+    {
+      "path": "agent_core/stacking_progress.py",
+      "bytes": 8934,
+      "sha256": "839ccd39ce5c3d645613596bf62ece8cab4718758223f9fb6b376a99fc5081e7"
     },
     {
       "path": "agent_core/stacking_stages.py",
@@ -248,8 +253,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 32346,
-      "sha256": "89575a3f86c93a21bda3224c3bdb89d58d5e3fbb1e46729299f022b03f8113c1"
+      "bytes": 34518,
+      "sha256": "669473b9af410649ddf1597ff072802105826c1aba610e2ef4a200bde695e502"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -448,13 +453,13 @@
     },
     {
       "path": "docs/stacking_performance.md",
-      "bytes": 6734,
-      "sha256": "26822b60f1915cb36c41eb239cb06e3009f4a20f23f3ce42f1000dc4d9d23ed6"
+      "bytes": 7290,
+      "sha256": "a05ddea0fa9864832fa57250f572dce1f7dc3090b0c3f54e4124bfc0d94a3d27"
     },
     {
       "path": "docs/task_timing.md",
-      "bytes": 2259,
-      "sha256": "0272b43d071c504511dbb26bcb41b8d2b0ecedc48751f713bed26ed3aba32146"
+      "bytes": 4024,
+      "sha256": "1b696a4503505db30db66b1724667a8549e23e650fba7ec29f8085cf7549ade8"
     },
     {
       "path": "docs/testing_and_release.md",
