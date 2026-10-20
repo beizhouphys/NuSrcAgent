@@ -274,3 +274,20 @@ difference 0 and signed absolute difference 0; for zero references, relative
 difference is undefined and absolute difference is 0. Tables, spectrum PNG/PDF/
 SVG and scientific/artifact reviews passed, with existing boundary warnings
 retained. No scientific definition or analysis-backend code was changed.
+
+
+### Flux/intensity figure line styles (2026-10-20)
+
+Published reference spectra use dashed lines; upper limits, measured spectra
+and contour boundaries computed by this analysis use solid lines. The same
+renderer serves single-source and stacking figures. New plot provenance records
+this convention under line_styles.
+
+All 26 existing flux/stacking checks passed. Twelve paired redraw comparisons
+(three saved-result cases in development, release, test and isolated publication
+copies) verified actual Matplotlib line styles, including a non-default global
+line style. Exported curve and uncertainty-band values are byte-identical before
+and after, and have identical hashes across all four copies. Colors, labels and
+point counts are unchanged. Spectrum PNGs were visually inspected; PNG, vector
+PDF and SVG exports were verified. This rendering change reruns no LLH fit or
+background trial and does not overwrite historical figures or numerical products.

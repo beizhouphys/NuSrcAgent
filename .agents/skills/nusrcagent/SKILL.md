@@ -343,3 +343,12 @@ quadratic procedure. Preserve the original optimizer, bounds, tolerances and
 maximum-consistency guard. Keep the existing first-final-answer/user-reply
 boundary for interactive flux execution. Do not proactively add interpolation
 switch diagnostics to normal results. See docs/single_source_linear_interpolation.md.
+
+## Flux/intensity figure line styles
+
+For single-source and joint stacking figures, use solid lines for results
+computed by the current analysis (upper limits, measured spectra and contour
+boundaries). Use dashed lines for all published reference spectra from IceCube
+or other authors. Preserve colors, markers, uncertainty bands and units. This
+is a rendering convention; do not rerun LLH fits or alter numerical results
+only to change line styles.

@@ -97,7 +97,9 @@ intensity fields, with the exact 4*pi sr conversion recorded.
 
 ## Figures, artifacts and review
 
-The joint-stack spectrum has one intensity axis. Catalog limits, measured
+The joint-stack spectrum has one intensity axis. Current-analysis upper limits
+and measured spectra use solid lines; all published reference spectra use dashed
+lines. Computed intensity-Gamma contour boundaries also use solid lines. Catalog limits, measured
 spectra and their bands are total flux divided by exactly 4*pi sr. The two
 published diffuse astrophysical spectra and bands remain in their original
 per-steradian intensity units. Only the 9.5-year tracks and 10.3-year starting-track
