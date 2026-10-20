@@ -13,8 +13,7 @@ from scipy.stats import chi2
 
 
 def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
-                 gamma_bounds=None, ts_threshold=9.0, observed_ts=None,
-                 gamma_profile=None, detector_yield_derivative=None):
+                 gamma_bounds=None, ts_threshold=9.0, observed_ts=None):
     """Profile phi1TeV and Gamma without changing events, PDFs or fit bounds.
 
     log_ratio(ns, gamma) returns (ln L/L0, d ln L/d ns). detector_yield(gamma)
@@ -40,8 +39,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
         ns, gamma = float(ns), float(gamma)
         key = (ns, gamma)
         if key not in evaluations:
-            values = gamma_profile.evaluate(ns, gamma)[:2] if gamma_profile is not None else log_ratio(ns, gamma)
-            value, slope = map(float, values)
+            value, slope = map(float, log_ratio(ns, gamma))
             if not math.isfinite(value) or not math.isfinite(slope):
                 raise ValueError("Non-finite primary-spectrum likelihood profile")
             evaluations[key] = (value, slope)
@@ -88,19 +86,6 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
 
         if gamma_bounds is None:
             candidates = [(objective(gamma_hat), gamma_hat)]
-        elif gamma_profile is not None:
-            from analysis_backend.gamma_maximum import maximize_pieces
-            if gamma_profile.maximum is None or detector_yield_derivative is None:
-                raise ValueError("Flux profiling requires the recorded Gamma maximum and detector-yield derivative")
-            def value_gradient(gamma):
-                ns = phi*yield_at(gamma)
-                if ns > ns_max:
-                    raise ValueError("Flux profile reaches the recorded ns bound in a retained Gamma interval")
-                value, grad_ns, grad_gamma = gamma_profile.evaluate(ns, gamma)
-                return value, grad_gamma+grad_ns*phi*detector_yield_derivative(gamma)
-            maximum = maximize_pieces(value_gradient, gamma_bounds, gamma_profile.switches,
-                initial=gamma_hat, interval_maxima=gamma_profile.maximum["intervals"])
-            candidates = [(-maximum["log_likelihood_ratio"], maximum["gamma"])]
         else:
             # Check the whole recorded range, then refine each resolved maximum.
             grid = sorted(set(np.linspace(gamma_lo, gamma_hi, 13).tolist()+[gamma_hat]))
@@ -123,9 +108,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
 
     def maximize_ns(gamma):
         gamma = float(gamma)
-        if gamma_profile is not None:
-            ns = gamma_profile.profile_ns(gamma)["ns"]
-        elif evaluate(0., gamma)[1] <= 0:
+        if evaluate(0., gamma)[1] <= 0:
             ns = 0.
         else:
             upper = min(ns_max, max(1., ns_hat))
@@ -184,10 +167,6 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
             lower_g, upper_g = endpoints("gamma", threshold)
             gamma_grid = sorted(set(np.linspace(lower_g["value"], upper_g["value"], 33).tolist()
                                     + [gamma_hat]))
-            if gamma_profile is not None:
-                epsilon = gamma_profile.maximum["one_sided_epsilon"]
-                gamma_grid = sorted(set(gamma_grid+[point+offset for point in gamma_profile.switches
-                    for offset in (-epsilon, 0., epsilon) if lower_g["value"] < point+offset < upper_g["value"]]))
             lower_branch, upper_branch = [], []
             for index, gamma in enumerate(gamma_grid):
                 row = maximize_ns(gamma)
@@ -216,13 +195,10 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
     result["warnings"] = list(dict.fromkeys(result["warnings"]))
     result["profiles"] = list(profiles.values())
     result["likelihood_evaluations"] = len(evaluations)
-    if gamma_profile is not None:
-        result["gamma_search_procedure"] = gamma_profile.maximum["procedure"]
-        result["likelihood_evaluations"] = len(gamma_profile.values)
     return result
 
 
-def source_flux_measurement(analysis, result, ts_threshold, gamma_profile=None):
+def source_flux_measurement(analysis, result, ts_threshold):
     if result["n_sources"] != 1 or result["likelihood_mode"] != "spatial_energy":
         raise ValueError("Flux measurements require a spatial+energy single-source fit")
     if result["minimizer_status"].get("warnflag") != 0:
@@ -237,24 +213,18 @@ def source_flux_measurement(analysis, result, ts_threshold, gamma_profile=None):
         return value, gradient[0]
 
     yield_cache = {}
-    def yield_and_derivative(gamma):
-        if gamma in yield_cache:
-            return yield_cache[gamma]
-        records = analysis.pmm.create_src_params_recarray(gflp_values=parameters(result["ns"], gamma))
-        service = analysis.src_detsigyield_weights_service
-        service.calculate(src_params_recarray=records)
-        weights, derivatives = service.get_weights()
-        derivative = float(np.sum(derivatives[analysis.pmm.get_gflp_idx("gamma")][:, 0])) if fitted else 0.
-        yield_cache[gamma] = (float(np.sum(weights[:, 0])), derivative)
-        return yield_cache[gamma]
-
     def detector_yield(gamma):
-        return yield_and_derivative(gamma)[0]
+        if gamma not in yield_cache:
+            records = analysis.pmm.create_src_params_recarray(gflp_values=parameters(result["ns"], gamma))
+            service = analysis.src_detsigyield_weights_service
+            service.calculate(src_params_recarray=records)
+            weights, _ = service.get_weights()
+            yield_cache[gamma] = float(np.sum(weights[:, 0]))
+        return yield_cache[gamma]
 
     measurement = profile_flux(log_ratio, detector_yield, result["ns"], result["gamma"],
         result["fit_bounds"]["ns"], result["fit_bounds"]["gamma_skyllh"], ts_threshold,
-        observed_ts=result["TS"], gamma_profile=gamma_profile,
-        detector_yield_derivative=lambda g: yield_and_derivative(g)[1])
+        observed_ts=result["TS"])
     if not math.isclose(measurement["TS"], result["TS"], rel_tol=1e-7, abs_tol=1e-6):
         raise ValueError("Flux profile does not reproduce the maximized TS")
     # The policy uses the original TS, including its strict equality boundary.

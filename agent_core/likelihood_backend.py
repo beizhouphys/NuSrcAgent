@@ -28,7 +28,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             result = run_dr2_single_source(specs, source_dec_window_deg=normalized.source_dec_window_deg,
                 flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold, fit_procedure=normalized.fit_procedure, **limit_options, **options)
         else:
-            result = {} if operation == "scan" else run_dr2_stacking(specs, **options)
+            result = {} if operation == "scan" else run_dr2_stacking(specs, fit_procedure=normalized.fit_procedure, **options)
         if operation != "scan":
             result.update({"ts": result["TS"], "best_fit_ns": result["ns"]})
         result.update({"backend": backend_name})

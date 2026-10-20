@@ -195,9 +195,8 @@ def set_flux_measurement(task, args):
             or task["parameters"]["likelihood_mode"]["value"] != "spatial_energy"
             or task.get("intent") == "gaussian_score_diagnostic"):
         return
-    fitted = task["parameters"]["gamma_mode"]["value"] == "fitted"
-    task["parameters"]["fit_procedure"] = parameter("gamma_piecewise_v1" if fitted else "skyllh_lbfgs_v1", "system_default", True)
-    task["parameters"]["fit_procedure"]["basis"] = "Owner-approved single-source maximum search; likelihood, PDFs and bounds retained. Any corresponding trials must use the same recorded procedure."
+    task["parameters"]["fit_procedure"] = parameter("skyllh_lbfgs_v1", "system_default", True)
+    task["parameters"]["fit_procedure"]["basis"] = "Owner requested the original SkyLLH optimizer for all fits; likelihood, PDFs and bounds retained. Corresponding trials must use the same recorded procedure."
     task["parameters"]["flux_measurement_ts_threshold"] = parameter(9.0, "system_default", True)
     task["parameters"]["flux_measurement_ts_threshold"]["basis"] = "Owner-approved strict TS > 9 criterion for reporting primary-spectrum flux measurement, profile intervals and free-Gamma joint contours."
 

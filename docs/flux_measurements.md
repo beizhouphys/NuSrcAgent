@@ -36,12 +36,13 @@ for 68.27% and 95%. Joint flux-Gamma regions use two degrees of freedom and
 thresholds 2.295748929 and 5.991464547. The existing one-sided 95% upper limits
 retain threshold 2.705543454 and their fixed E^-2, E^-2.5 and E^-3 hypotheses.
 
-The fitted-Gamma single-source procedure records `gamma_piecewise_v1`, the
-owner-approved maximum search from the reference workflow. It retains the
-existing likelihood, interpolation, PDFs, selection, fit bounds and original
-optimizer result. Historical tasks without a procedure use `skyllh_lbfgs_v1`.
-The same recorded procedure must be used by any corresponding future background
-trials; this feature does not launch trials or alter existing ensembles.
+All new fits record `skyllh_lbfgs_v1`, the original SkyLLH optimizer.
+The likelihood, interpolation, PDFs, selection and fit bounds are retained.
+No additional Gamma-interval or interpolation-switch maximum search is performed.
+Existing task records and numerical results retain their original procedure;
+requests naming an unsupported procedure must be recreated explicitly before execution.
+Corresponding observed and background-trial fits must use the same procedure.
+This change does not launch trials or alter existing ensembles.
 
 A likelihood profile above the recorded maximum, an unavailable crossing,
 non-finite evaluation or unconverged fit is an error. Bounds are never widened.

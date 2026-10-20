@@ -37,8 +37,6 @@ def review_flux_measurement(review, result, normalized, root):
         valid = valid and math.isclose(measurement["phi0_hat"]*yield1, result["ns"], rel_tol=1e-10, abs_tol=1e-10)
         valid = valid and math.isclose(measurement["phi100_hat"], measurement["phi0_hat"]*100**(-result["gamma"]), rel_tol=1e-12, abs_tol=0.)
         valid = valid and all(measurement[k] == result[k] for k in ("event_selection", "event_dec_min_deg", "event_dec_max_deg", "fit_bounds"))
-        if measurement["reported"] and result["gamma_mode"] == "fitted" and normalized.get("fit_procedure") == "gamma_piecewise_v1":
-            valid = valid and measurement.get("gamma_search_procedure") == "gamma_piecewise_v1"
     except (ValueError, TypeError, KeyError):
         valid = False
     add_check(review, "dr2_flux_measurement_gate", "pass" if valid else "fail",

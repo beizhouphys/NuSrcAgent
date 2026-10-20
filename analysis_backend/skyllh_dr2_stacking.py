@@ -435,6 +435,8 @@ def run_dr2_stacking(
     fit_procedure="skyllh_lbfgs_v1",
 ):
     """Run an unblinded catalog stack and return serializable results."""
+    if fit_procedure != "skyllh_lbfgs_v1":
+        raise ValueError("Unsupported DR2 fit procedure; this runtime uses skyllh_lbfgs_v1")
     analysis = create_dr2_stacking_analysis(
         repo_root=repo_root,
         source_specs=source_specs,
@@ -457,24 +459,6 @@ def run_dr2_stacking(
         source_dec_window_deg=source_dec_window_deg,
     )
     ts, fitparams, minimizer_status = analysis.unblind(RandomStateService(seed=int(random_seed)))
-    from analysis_backend.gamma_maximum import LEGACY_FIT, PIECEWISE_FIT, runtime_gamma_profile
-    gamma_profile, maximum_search = None, None
-    if fit_procedure not in {LEGACY_FIT, PIECEWISE_FIT}:
-        raise ValueError("Unknown DR2 fit procedure")
-    if fit_procedure == PIECEWISE_FIT:
-        if gamma_mode != "fitted" or likelihood_mode != "spatial_energy":
-            raise ValueError("Piecewise Gamma maximization requires fitted-Gamma spatial+energy")
-        if minimizer_status.get("warnflag") != 0:
-            raise ValueError("Original SkyLLH optimizer did not converge")
-        gamma_profile = runtime_gamma_profile(analysis, [0., ns_max], [gamma_min, gamma_max], fitparams["ns"])
-        maximum_search = gamma_profile.maximize(fitparams["ns"], fitparams["gamma"])
-        maximum_search["original_minimizer_status"] = _json_safe(minimizer_status)
-        fitparams = dict(fitparams, ns=maximum_search["ns"], gamma=maximum_search["gamma"])
-        parameters = np.asarray([fitparams["ns"], fitparams["gamma"]], dtype=np.float64)
-        value, gradients = analysis.llhratio.evaluate(parameters)
-        ts = analysis.calculate_test_statistic(value, parameters)
-        minimizer_status = dict(warnflag=0, task="Completed search of Gamma pieces and both sides of stencil switches",
-                                grad=_json_safe(gradients), method=PIECEWISE_FIT)
     result_gamma = float(fitparams.get("gamma", gamma))
     a_jk, _ = analysis.src_detsigyield_weights_service.get_weights()
     f_k, _ = analysis.ds_sig_weight_factors_service.get_weights()
@@ -556,7 +540,6 @@ def run_dr2_stacking(
         "f_k": {name: float(f_k[idx]) for idx, name in enumerate(dataset_names)},
         "minimizer_status": _json_safe(minimizer_status),
         "fit_procedure": fit_procedure,
-        "maximum_search": maximum_search,
     }
 
     if flux_upper_limit_cl is not None:
@@ -564,7 +547,7 @@ def run_dr2_stacking(
         result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
     if flux_measurement_ts_threshold is not None:
         from analysis_backend.profile_flux import source_flux_measurement
-        result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold, gamma_profile)
+        result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold)
     return result
 
 

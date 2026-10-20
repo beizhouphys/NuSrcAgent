@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 13521,
-      "sha256": "ca24634130c7cb035b5ad2340a5c2eb79ea490f616d3425600cd01ed653dce8c"
+      "bytes": 14297,
+      "sha256": "843a26d975a72a494d1f0033655a153b20a491d4ccea782335cf7a6a0fd08e89"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -88,8 +88,8 @@
     },
     {
       "path": "agent_core/dr2_empirical_scramble.py",
-      "bytes": 95751,
-      "sha256": "ac9b9f26c0809b723302d5d6e53a46115c9f80bd16738623550d5be49615b709"
+      "bytes": 96560,
+      "sha256": "d25f4cc025419a41b1379cee6b2d87d04f9fe06927212b45640419fdd9c3d969"
     },
     {
       "path": "agent_core/dr2_pdf_release.py",
@@ -108,8 +108,8 @@
     },
     {
       "path": "agent_core/flux_measurement_review.py",
-      "bytes": 9941,
-      "sha256": "7b9c43950c45657d356a58167cf4fcc94e673a2cd3f7290da45b4ad9abbf1e59"
+      "bytes": 9712,
+      "sha256": "7b4d2878cc7d27653bdcd273cba41a70af975faeec339a5c81e286efe825dceb"
     },
     {
       "path": "agent_core/flux_outputs.py",
@@ -123,8 +123,8 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 4271,
-      "sha256": "e5c49d9a07821adb9d5f4eca6483eaf0e1eb54bf377a0c86938da4560091da41"
+      "bytes": 4311,
+      "sha256": "6eb56fc25354859b054065223bdcc09b51633ae6444e7ff464e8a3b0da789b22"
     },
     {
       "path": "agent_core/normalize.py",
@@ -148,8 +148,8 @@
     },
     {
       "path": "agent_core/review.py",
-      "bytes": 45671,
-      "sha256": "afa8edf183008e60613dadfb4771868414170fc536a03ea16c9bfd5a6b3859aa"
+      "bytes": 44590,
+      "sha256": "5546dbd69d4b32f8ee23dee8ada87a07d282057ca489a7506ae1c1f3dc3ee353"
     },
     {
       "path": "agent_core/schemas.py",
@@ -168,8 +168,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 13157,
-      "sha256": "66600ad816cf559da514432003c33c0cd8e9b046cbb3f8c9fa1a27c8955ace67"
+      "bytes": 12742,
+      "sha256": "441132cb54529110fcc6a33ebef75448530faaa929ecea285f0465344ca3675f"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -192,19 +192,14 @@
       "sha256": "e43384d3bc19f1cda831b8f58c6dbaaba5a0dea23ace51e10dda8a1fee9fa78c"
     },
     {
-      "path": "analysis_backend/gamma_maximum.py",
-      "bytes": 7642,
-      "sha256": "836b102e242c510422e95df7982e24c692de95d75ce2ce04db596e9f0d416658"
-    },
-    {
       "path": "analysis_backend/ns2flux.py",
       "bytes": 5844,
       "sha256": "cd8dfd56d9676db5bd9ed48de53ce428d4721fab8bada7ad5c465ef038430902"
     },
     {
       "path": "analysis_backend/profile_flux.py",
-      "bytes": 14109,
-      "sha256": "c30f9e20546f573f4379739093b78fac0a6467ac34acdc1a88adf8ec468fc89c"
+      "bytes": 12027,
+      "sha256": "798ea81d71ef691b9193177de2266728518191c970a138bafbf66eebad19049f"
     },
     {
       "path": "analysis_backend/profile_upper_limit.py",
@@ -238,8 +233,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 30601,
-      "sha256": "25a55333a9929d1d358b54af03a6cf3db9ee028a69e391dd51e4368f32c5ac9e"
+      "bytes": 29296,
+      "sha256": "b9177114a889f6a9bf624e472354c103f47967050b0e200200c025efda3ca114"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -348,8 +343,8 @@
     },
     {
       "path": "docs/flux_measurements.md",
-      "bytes": 4432,
-      "sha256": "dea56ffa03e1b62474788ca7394207f4eb2b65145ee26445205474dfe8cc556f"
+      "bytes": 4510,
+      "sha256": "06448cd8b87646b4ecb285482f4eac025bb2fdf97566769e1086db55d10beff2"
     },
     {
       "path": "docs/flux_upper_limits.md",
@@ -413,8 +408,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 9433,
-      "sha256": "0219eaa8bb08924d6714f3361f52420de7a3e5100046d588f27af556ffc8936b"
+      "bytes": 10042,
+      "sha256": "f90d74ae8f7e42b9afd337072b9ee129c1eead6f624e696c6843809d2580305a"
     },
     {
       "path": "docs/single_source_performance.md",
@@ -448,8 +443,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 30673,
-      "sha256": "84b0d0060a2b901e35bb1e50e5f5e8e71eaff1033608b90b7bc81b304de84c88"
+      "bytes": 30581,
+      "sha256": "5850d78a47b889eda14eac9093e22b730a32b98cf35407c92c2096784dc72d59"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

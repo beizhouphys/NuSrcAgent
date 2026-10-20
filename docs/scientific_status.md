@@ -135,3 +135,14 @@ are independent. Historical tasks retain their recorded procedure. An extra
 Gamma-interval/stencil-switch search must not be silently inherited by new
 source scans. This safeguard changes procedure provenance and checks; it does
 not validate asymptotic significance, parameter bias or interval coverage.
+
+## Original SkyLLH optimizer, 2026-10-19
+
+All new DR2 single-source, catalog-scan and joint stacking fits use
+`skyllh_lbfgs_v1`. The owner requested removal of the additional Gamma-interval
+and interpolation-switch maximum search. Likelihoods, PDFs, selections, bounds
+and exact caches are retained. Flux profiling keeps its maximum-consistency
+guard: a profile above the recorded primary optimum fails review. Historical
+task records and results are not rewritten; unsupported procedures are rejected
+before execution. Corresponding observed and background-trial fits must use the
+same supported procedure.
