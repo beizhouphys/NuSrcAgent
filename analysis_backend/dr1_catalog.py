@@ -1,6 +1,8 @@
 #!/usr/bin/python
 from __future__ import annotations
 
+from agent_core.progress import track_progress
+
 # The stacking likelihood core is a callable extraction of the corresponding
 # blocks in legacy_codex_revised/likelihood_v4.py.  Agent-facing task and result handling
 # that does not exist in the legacy script remains local to this module.
@@ -26,7 +28,7 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -
     stacking_curves: list[dict[str, object]] = []
     stacking_warnings: list[str] = []
     schemes = build_weighting_schemes(normalized)
-    for gamma in normalized.spectral_indices:
+    for gamma in track_progress(normalized.spectral_indices, "DR1 stacking spectra"):
         data = load_backend_data(repo_root, gamma)
         for scheme_name, weights in schemes:
             result, curve = run_stacking_likelihood(normalized, weights, scheme_name, gamma, data)
@@ -56,7 +58,7 @@ def run_source_scan(normalized: NormalizedAnalysis, repo_root='.') -> tuple[list
     rows: list[dict[str, object]] = []
     warnings: list[str] = []
     n_tests = len(normalized.sources)
-    for source in normalized.sources:
+    for source in track_progress(normalized.sources, "DR1 catalog source fits"):
         result = run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=normalized.spectral_indices[0])
         pre_trial_p = float(result["pre_trial_p"])
         post_trial_p = 1.-(1.-pre_trial_p)**n_tests

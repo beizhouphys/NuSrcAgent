@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from agent_core.progress import timed_command, print_result
 from analysis_backend.sources import BUILTIN_CATALOG_NAMES
 from agent_core.agent_orchestrator import execute_task, resume_interrupted_task
 from agent_core.single_source_stages import configure_single_source_stages, execute_single_source_stage
@@ -16,6 +17,7 @@ from agent_core.review import review_run
 from agent_core.task_state import confirm_parameters, load_task, save_task
 
 
+@timed_command
 def main(argv=None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -25,7 +27,7 @@ def main(argv=None) -> int:
             from agent_core.input_install import install_inputs
             result = install_inputs(repo_root, args.data_sample, args.likelihood_mode,
                                     args.bundle_dir, args.base_url)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 0
         if args.command == "dr2-empirical-scramble":
             from agent_core.dr2_empirical_scramble import (
@@ -80,35 +82,35 @@ def main(argv=None) -> int:
                 result = snapshot(args.output_directory)
             else:
                 result = report(args.output_directory)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 2 if result.get("status") == "FAILED" else 0
         if args.command == "environment-check":
             result = check_environment(repo_root, args.data_sample, args.likelihood_mode)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "inspect-catalog":
             result = inspect_catalog(args.catalog, args.name_column, args.ra_column, args.dec_column, args.weight_column)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "review-run":
             result = review_run(args.run_directory, repo_root, write_artifacts=not args.no_write)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "dominance":
             from analysis_backend.skyllh_dr2_dominance import run_dominance_analysis
             result = run_dominance_analysis(repo_root, args.baseline_run_directory, args.output_directory, args.request, args.candidate_count, args.top_n)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 0 if result.get("status") == "COMPLETED" else 2
         if args.command == "review-dominance":
             from analysis_backend.skyllh_dr2_dominance import review_dominance_analysis
             result = review_dominance_analysis(repo_root, args.output_directory)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "dr2-ra-scramble":
             from analysis_backend.skyllh_dr2_ra_scramble import run_dr2_ra_scramble_diagnostic
             seeds = [int(value.strip()) for value in args.seeds.split(",") if value.strip()]
             result = run_dr2_ra_scramble_diagnostic(repo_root, args.baseline_run_directory, args.output_directory, seeds)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print_result(result)
             return 0 if result.get("status") == "COMPLETED_WITH_WARNINGS" else 2
         if args.command == "create-single":
             likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
@@ -485,7 +487,7 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
     if task.get("execution_flow") == "single_source_two_stage_v1":
         from agent_core.single_source_stages import chat_stages as single_chat_stages
         summary.update(single_chat_stages(task))
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    print_result(summary)
 
 
 if __name__ == "__main__":

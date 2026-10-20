@@ -19,6 +19,10 @@ tables are provided automatically. Time-dependent analysis is not available yet.
 Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
 and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
 
+Progress updates include an estimate of time remaining, based on completed work
+when available. Final chat answers include total elapsed time for requests taking
+more than one minute. See [progress and elapsed time](docs/task_timing.md).
+
 ## What analyses can I run?
 
 | Data / mode | Implemented analysis | Status |

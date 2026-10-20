@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 22928,
-      "sha256": "c7674e964f6cae0d25d343aab5d61f483737c23d9a96100e19c20f68cf9334c7"
+      "bytes": 24371,
+      "sha256": "31cf4fe202ef8a73d3e4b090894a09bb2288d50b65ad5ccf1a6759576c10226d"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -43,8 +43,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 1632,
-      "sha256": "faff9f3d5a9b857797e18b21df691901a8fbeeeaa82481d993363e1601ba957c"
+      "bytes": 3232,
+      "sha256": "97a70dff97d53681fb69d89ee30a6d9ed9bdc36f221d7ddd201656914e609e41"
     },
     {
       "path": "AGENT_VERSION.txt",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 18348,
-      "sha256": "be662e8199cb67b4cf02ee83963e0994b9832e09ba4d209314eee774c16c029c"
+      "bytes": 18587,
+      "sha256": "0e7f6bd694e94a7d15366134b4ecba4f57821bcc97089185256936a90c551d1f"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -88,8 +88,8 @@
     },
     {
       "path": "agent_core/dr2_empirical_scramble.py",
-      "bytes": 96560,
-      "sha256": "d25f4cc025419a41b1379cee6b2d87d04f9fe06927212b45640419fdd9c3d969"
+      "bytes": 97023,
+      "sha256": "a1f9af69f29d6c759c3538e14b78a954af645ecd9ff2cc2454d7d5a77ea5fec9"
     },
     {
       "path": "agent_core/dr2_pdf_release.py",
@@ -142,6 +142,11 @@
       "sha256": "85acac92e5822fa43d9d34cd3a1ef923eac2f9418962b7ba629dfaffeb7d3e57"
     },
     {
+      "path": "agent_core/progress.py",
+      "bytes": 4720,
+      "sha256": "50f76c943651dc965e441832a9c89a6e402686ac510acb089f344a31b1c67729"
+    },
+    {
       "path": "agent_core/report.py",
       "bytes": 17326,
       "sha256": "5aeb1d98e4763c102bfb52f75b21b8506493da922a228097272941f054221414"
@@ -188,8 +193,8 @@
     },
     {
       "path": "analysis_backend/dr1_catalog.py",
-      "bytes": 13376,
-      "sha256": "aaa9b1753e185758cb8bde2b9ee63f9789b4a48a22904f785f571bdc2241b099"
+      "bytes": 13507,
+      "sha256": "15aea918c779ad3bb48de9229e433ce2b6a847c7a7a2ed3f7db21b95458ca833"
     },
     {
       "path": "analysis_backend/dr1_single_source.py",
@@ -223,13 +228,13 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_catalog_scan.py",
-      "bytes": 1721,
-      "sha256": "aae0f55b29014d454b0590aaca34274e67546c0e97d9867ef757eb41e1ecdcb5"
+      "bytes": 1808,
+      "sha256": "643632bb0598d7a7ca15c32e25def566ced7b944ebe8d71b3cd897b10ac51762"
     },
     {
       "path": "analysis_backend/skyllh_dr2_dominance.py",
-      "bytes": 23475,
-      "sha256": "bc658241035d7d790325f14275e79640a35b223b289d36c8a7f695560917ebea"
+      "bytes": 23790,
+      "sha256": "231e962023599e5e2ebfb56a8b027027304413cf2ef5e9313137e5332acca242"
     },
     {
       "path": "analysis_backend/skyllh_dr2_pdfs.py",
@@ -238,13 +243,13 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_ra_scramble.py",
-      "bytes": 10357,
-      "sha256": "2884893cd1dbaee12967dc2118714ec45724b7c059f16eb71d31d0fd9cd06e1d"
+      "bytes": 10514,
+      "sha256": "3a4af5e59dd025b87c7a52acee4bc23254c6a88be1918b49e334e8c6607f53fb"
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 32246,
-      "sha256": "f01d62d017e0c4f2542b99bc89571e5a2105621f2ff4eb5aa3433b00fc045ec2"
+      "bytes": 32346,
+      "sha256": "89575a3f86c93a21bda3224c3bdb89d58d5e3fbb1e46729299f022b03f8113c1"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -447,6 +452,11 @@
       "sha256": "26822b60f1915cb36c41eb239cb06e3009f4a20f23f3ce42f1000dc4d9d23ed6"
     },
     {
+      "path": "docs/task_timing.md",
+      "bytes": 2259,
+      "sha256": "0272b43d071c504511dbb26bcb41b8d2b0ecedc48751f713bed26ed3aba32146"
+    },
+    {
       "path": "docs/testing_and_release.md",
       "bytes": 18142,
       "sha256": "63bb7bf16d4afeb7584b4abbf4b3b5d8e48f2a8be959ef414d13da06b42120d6"
@@ -468,8 +478,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 33990,
-      "sha256": "2a26c8ab33a3a37a50e5fa90cafb3d32c7c5c509c98dc443237fbc2e7d24cb80"
+      "bytes": 33786,
+      "sha256": "679281d695dce40eabde8dd98fdc146ed90a43e6e514e1a7febd08b6934f4855"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

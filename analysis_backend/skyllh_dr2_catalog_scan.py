@@ -1,6 +1,8 @@
 """Input-ordered individual-source fits through the supported DR2 backend."""
 from __future__ import annotations
 
+from agent_core.progress import track_progress
+
 import os
 from pathlib import Path
 from time import perf_counter
@@ -35,6 +37,6 @@ def run_individual_source_scan(source_specs, **fit_options):
     _WORKER_RUNTIME_CACHE.clear()
     try:
         return [_fit_source((number, spec, fit_options))
-                for number, spec in enumerate(source_specs, start=1)]
+                for number, spec in enumerate(track_progress(source_specs, "catalog source fits"), start=1)]
     finally:
         _WORKER_RUNTIME_CACHE.clear()

@@ -5,6 +5,8 @@ fitted-Gamma configuration. No PDF optimization or analytic TS calibration.
 """
 from __future__ import annotations
 
+from agent_core.progress import update_work_progress
+
 import csv
 from contextlib import redirect_stderr, redirect_stdout
 import errno
@@ -490,6 +492,8 @@ def _run_locked(root, out, resume, max_hours, max_fits):
         write_json(task['central_task_path'], task)
     persist()
     start = time.monotonic()
+    timing_target = max(0, config['n_trials'] - prior['completed_trials'])
+    update_work_progress('background trials', 0, timing_target, 0.)
     try:
         pending = [i for i in [-1, *range(config['n_trials'])]
                    if not (out/'fits'/('observed.json' if i < 0 else f'trial_{i:04d}.json')).exists()]
@@ -535,6 +539,9 @@ def _run_locked(root, out, resume, max_hours, max_fits):
                     _advance_trial_cursor(out, completed)
                 offset += len(batch)
                 current = report(out)
+                update_work_progress('background trials',
+                    current['completed_trials'] - prior['completed_trials'], timing_target,
+                    time.monotonic() - start)
                 print(json.dumps(current, sort_keys=True), flush=True)
             else:
                 task['status'] = 'PAUSED' if limited and not _discard_negative_ts(config) else 'COMPLETED_WITH_WARNINGS'
@@ -1244,6 +1251,7 @@ def _run_continuous_locked(root, out):
     if task['status'] not in ('READY', 'PAUSED'):
         raise ValueError('Continuous task must be READY or PAUSED')
     config = _validate_task_inputs(root, out, task)
+    update_work_progress('continuous background trials', 0, None, 0.)
     for name in THREAD_VARIABLES:
         os.environ[name] = '1'
     control = read_json(out/'control.json')

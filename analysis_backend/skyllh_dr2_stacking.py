@@ -7,6 +7,8 @@ dataset signal-weight service supplies ``f_k``.
 
 from __future__ import annotations
 
+from agent_core.progress import track_progress
+
 from copy import copy, deepcopy
 from pathlib import Path
 
@@ -607,7 +609,7 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
         if gammas:
             fixed_options = dict(fit_options, gamma_mode="fixed", fit_procedure="skyllh_lbfgs_v1")
             result["flux_upper_limit_fits"] = []
-            for exponent in gammas:
+            for exponent in track_progress(gammas, "fixed-spectrum flux upper limits"):
                 fixed_options["gamma"] = abs(float(exponent))
                 fit = run_dr2_stacking(source_specs, runtime_cache=cache,
                     flux_upper_limit_cl=flux_upper_limit_cl, **fixed_options)

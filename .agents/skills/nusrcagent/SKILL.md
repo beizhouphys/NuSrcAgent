@@ -8,6 +8,28 @@ description: Coordinate supported IceCube time-integrated single-source searches
 Use the repository wrapper for every analysis. Read `AGENTS.md` and
 `docs/scientific_status.md`; numerical success does not establish scientific validity.
 
+
+## Progress estimates and final elapsed time
+
+For every project task, record wall-clock time from the current user request.
+Include a remaining-time estimate in every progress update, using completed
+comparable work under the current fit procedure and worker configuration:
+`remaining = completed_work_seconds / completed_units * remaining_units`.
+For example, 100 of 1000 sources in 60 seconds predicts another 540 seconds.
+Update the estimate as work completes and label a phase-only estimate as such;
+allow separately for later stacking, artifacts and review. Never count restored
+checkpoints as newly timed work. Read `NuSrcAgent progress:` stderr events and
+`execution_timing` in wrapper JSON; translate these into natural chat updates.
+Before a usable sample exists, state that a reliable estimate is pending. For
+unbounded continuous scrambling, state that no end time is set; never add a
+trial target or stop condition for reporting. Other work, including inspection,
+code changes, plotting and verification, follows the same chat rule; give a
+clearly labelled rough range based on completed work or explain why unknown.
+In each final answer, include total elapsed wall-clock time only when it strictly
+exceeds 60 seconds, including unsuccessful requests. Measure the whole current
+request, not just its last command; exclude waiting for a later user reply.
+The primary and user-authorized flux turns each report their own duration.
+
 ## Required first-turn result boundary
 
 For single-source and joint stacking analyses with supported/requested flux

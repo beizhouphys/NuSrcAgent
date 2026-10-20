@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from agent_core.progress import track_progress
+
 import json
 from pathlib import Path
 
@@ -173,7 +175,7 @@ def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_dir
         "signal_energy_declination_mode": baseline_report.get("signal_energy_declination_mode", "source"),
     }
     for mode in SCRAMBLE_MODES:
-        for seed in seeds:
+        for seed in track_progress([seed for seed in seeds if f"{mode}_seed_{seed}" not in state["trials"]], f"RA scrambling: {mode}"):
             label = f"{mode}_seed_{seed}"
             if label in state["trials"]:
                 continue

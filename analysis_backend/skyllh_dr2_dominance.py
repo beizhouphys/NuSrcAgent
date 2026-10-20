@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from agent_core.progress import track_progress
+
 import csv
 import hashlib
 import json
@@ -269,7 +271,7 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
         raise ValueError("Fixed-fit screening does not reproduce the baseline TS within tolerance")
     completed_individual = {int(item["removed_source_numbers"][0]): item for item in state["individual_refits"]}
     candidates = screening["rows"][: int(candidate_count)]
-    for candidate in candidates:
+    for candidate in track_progress([row for row in candidates if int(row["source_number"]) not in completed_individual], "dominance individual refits"):
         number = int(candidate["source_number"])
         if number in completed_individual:
             continue
@@ -289,7 +291,8 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
     gamma_seed = float(baseline["gamma"])
     ns_seed = float(baseline["ns"])
     removed = []
-    for rank, candidate in enumerate(top, start=1):
+    for rank, candidate in track_progress(list(enumerate(top, start=1)), "dominance cumulative refits",
+                                          skip=lambda item: item[0] in completed_cumulative):
         removed.append(int(candidate["removed_source_numbers"][0]))
         if rank in completed_cumulative:
             existing = completed_cumulative[rank]
