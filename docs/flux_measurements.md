@@ -99,3 +99,10 @@ New standalone DR2 spatial+energy single-source tasks record linear_v1 for the
 signal-energy Gamma interpolation. Primary and flux calculations share it;
 continuation with a different recorded method is rejected. See
 [single-source interpolation](single_source_linear_interpolation.md).
+
+## Line styles
+
+In single-source and joint-stack flux/intensity figures, current-analysis
+upper limits, measured spectra and profile-contour boundaries use solid lines.
+All published reference spectra (IceCube or other authors) use dashed lines.
+Colors, markers, uncertainty shading and flux/intensity units are unchanged.

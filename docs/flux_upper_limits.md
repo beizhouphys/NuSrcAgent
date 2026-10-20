@@ -48,10 +48,13 @@ are reused between fits.
 
 ## Figure and files
 
-The single-panel logarithmic spectrum figure follows the owner-approved final
-figure in the `Single` chat: red dashed Gamma=2, blue solid Gamma=2.5 and green
-dash-dot Gamma=3 upper-limit curves with downward arrows; NGC 1068 in black;
-two diffuse benchmarks in purple and cyan with their published uncertainty bands.
+The single-panel logarithmic spectrum figure uses solid lines for all results
+computed by the current analysis: red Gamma=2, blue Gamma=2.5 and green Gamma=3
+upper-limit curves with downward arrows, and the primary measured spectrum when
+reported. Published reference spectra from IceCube or other authors use dashed
+lines: NGC 1068 in black and the two diffuse benchmarks in purple and cyan.
+Published uncertainty bands, colors and all numerical values are retained. The plot
+provenance records the convention as `line_styles`.
 Source curves display complete power-law hypotheses from 1 TeV to 10 PeV;
 this display interval is not a measured sensitive range or a set of independent
 energy-bin limits. Reference curves are restricted to their published energy ranges.

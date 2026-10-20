@@ -47,7 +47,7 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
     common_intensity = intensity_display and source_solid_angle == 4*math.pi
     source_unit = "GeV cm^-2 s^-1 sr^-1" if common_intensity else "GeV cm^-2 s^-1"
     rows = []
-    styles = [("#e43d30", "--"), ("#2458d3", "-"), ("#198446", "-.")]
+    styles = [("#e43d30", "-"), ("#2458d3", "-"), ("#198446", "-")]
     settings = {"font.family": "serif", "font.serif": ["STIXGeneral", "DejaVu Serif"],
                 "mathtext.fontset": "stix", "font.size": 13, "axes.linewidth": 1.05,
                 "pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none"}
@@ -78,7 +78,7 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
             central, lower, upper = central*source_factor, lower*source_factor, upper*source_factor
             ax.fill_between(energy, lower, upper, color="#d17c12", alpha=.2,
                             label=band_label, zorder=2)
-            ax.plot(energy, central, color="#d17c12", lw=2.4, label=label_name+" primary best fit", zorder=5)
+            ax.plot(energy, central, color="#d17c12", ls="-", lw=2.4, label=label_name+" primary best fit", zorder=5)
             limit_values.extend(central)
             rows.extend(dict(curve="source_measurement", energy_gev=float(e), e2_flux=float(y),
                 e2_flux_unit=source_unit, original_e2_flux=float(raw),
@@ -103,8 +103,8 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
                              original_e2_flux=float(raw), original_e2_flux_unit="GeV cm^-2 s^-1",
                              display_factor=source_factor, band_lower=None, band_upper=None, band_confidence_level=None)
                         for e, y, raw in zip(energy, values, raw_values))
-        reference_styles = [("#171717", "-", "NGC 1068 + 68% band [1]"),
-                            ("#7952a8", "-", r"$4\pi I$: 9.5 yr tracks + 68% band [2]"),
+        reference_styles = [("#171717", "--", "NGC 1068 + 68% band [1]"),
+                            ("#7952a8", "--", r"$4\pi I$: 9.5 yr tracks + 68% band [2]"),
                             ("#008b95", "--", r"$4\pi I$: 10.3 yr starting tracks + band [3]")]
         for (ref, band), (color, linestyle, label) in zip(references, reference_styles, strict=True):
             if ref["id"] == "NGC_1068" and not include_ngc1068:
@@ -207,10 +207,10 @@ def plot_flux_contours(measurement, source_name, output_stem, solid_angle=1.):
             if contour["closed"]:
                 points += points[:1]
                 ax.fill([p["gamma"] for p in points], [p["phi0"]*1e14/solid_angle for p in points], color=color, alpha=.12)
-                ax.plot([p["gamma"] for p in points], [p["phi0"]*1e14/solid_angle for p in points], color=color, label=label)
+                ax.plot([p["gamma"] for p in points], [p["phi0"]*1e14/solid_angle for p in points], color=color, ls="-", label=label)
             else:
                 for index, branch in enumerate((lower, upper)):
-                    ax.plot([p["gamma"] for p in branch], [p["phi0"]*1e14/solid_angle for p in branch], color=color,
+                    ax.plot([p["gamma"] for p in branch], [p["phi0"]*1e14/solid_angle for p in branch], color=color, ls="-",
                             label=label+" (truncated)" if index == 0 else None)
         ax.plot(measurement["gamma"], measurement["phi0_hat"]*1e14/solid_angle, "k*", ms=12, label="Primary best fit")
         ax.set_xlabel(r"$\Gamma$ in $\mathrm{d}\Phi/\mathrm{d}E\propto E^{-\Gamma}$", fontsize=16)
@@ -316,6 +316,7 @@ def write_flux_outputs(run_dir, normalized, result, root):
         artifact_paths = [*outputs.values(), str(curve_path)]
         artifact_paths.extend(files[key] for key in ("flux_upper_limits", "upper_limit_profiles", "flux_measurement", "flux_measurement_profiles", "flux_measurement_contours") if key in files)
         provenance = dict(source_name=name, reference_sha256=hashes,
+            line_styles=dict(current_analysis="solid", published_reference="dashed"),
             diffuse_conversion="F_diffuse(E) = 4*pi sr * I_diffuse(E); full-sky integrated isotropic flux",
             flavor="nu_mu+anti_nu_mu; no factor of three", energy_flux_unit="GeV cm^-2 s^-1",
             source_energy_range_gev=[1e3, 1e7], source_range_meaning="power-law hypothesis display range; not a measured sensitive range",

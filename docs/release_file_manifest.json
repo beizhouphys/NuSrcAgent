@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 22477,
-      "sha256": "3772452523969dd6d9882d61de4e7601bfdb9e7076c26be34e4b40c30af4a383"
+      "bytes": 22928,
+      "sha256": "c7674e964f6cae0d25d343aab5d61f483737c23d9a96100e19c20f68cf9334c7"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -113,8 +113,8 @@
     },
     {
       "path": "agent_core/flux_outputs.py",
-      "bytes": 23635,
-      "sha256": "dfa08857ec9097e4b90d083a5ec44bbc971635d596219a38bf2779dd144058e0"
+      "bytes": 23745,
+      "sha256": "abe9562dfeddd943a3c57ea706927df61f18cbd72a3031c4b4bf0a40dcb50d2c"
     },
     {
       "path": "agent_core/input_install.py",
@@ -353,13 +353,13 @@
     },
     {
       "path": "docs/flux_measurements.md",
-      "bytes": 5857,
-      "sha256": "25e218764f1f92e30e51f4ac6a381c12a3e4cdd223fdda64a0e14ea7538c7d16"
+      "bytes": 6181,
+      "sha256": "ee5fe7fa5bec3db3d7be07c2b4b5a5ca912e5b7cc00b751654556294f8a2dafc"
     },
     {
       "path": "docs/flux_upper_limits.md",
-      "bytes": 6417,
-      "sha256": "d0c3f1c0113b701b4d54551f4eecbe853ccd691b77e6a3a9a309d000d0046c59"
+      "bytes": 6629,
+      "sha256": "7715f2604931390b460b1d22f48aad772bfe89718381bd20e3028f392bc1a993"
     },
     {
       "path": "docs/input_bundles.json",
@@ -438,8 +438,8 @@
     },
     {
       "path": "docs/stacking_flux.md",
-      "bytes": 7031,
-      "sha256": "d79db4e3d3076581970b103b21ef8c8dc3080be510cdf13415fbf196e804e954"
+      "bytes": 7215,
+      "sha256": "ee7d5d1cef91f44ded832bfb907eb5d27e12f62cac4818fd73f9e4a6ed4e6942"
     },
     {
       "path": "docs/stacking_performance.md",
@@ -448,8 +448,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 17182,
-      "sha256": "442c3d2bb8023c33374b51882437a9a0b60d1c66303585988f7c67671f37fe3c"
+      "bytes": 18142,
+      "sha256": "63bb7bf16d4afeb7584b4abbf4b3b5d8e48f2a8be959ef414d13da06b42120d6"
     },
     {
       "path": "install.sh",
