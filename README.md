@@ -21,7 +21,9 @@ and both real DR2 examples. See the [verification record](docs/input_installatio
 
 Progress updates include an estimate of time remaining, based on completed work
 when available. Final chat answers include total elapsed time for requests taking
-more than one minute. See [progress and elapsed time](docs/task_timing.md).
+more than one minute. Joint stacking also estimates remaining fit time from
+completed objective evaluations, with an explicitly rough, revisable range.
+See [progress and elapsed time](docs/task_timing.md).
 
 ## What analyses can I run?
 
