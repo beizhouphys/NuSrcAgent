@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 16634,
-      "sha256": "afde90c23063b5c4bc64fe3d233cba4d4b848f47306d07a19b98d4b5361dba4f"
+      "bytes": 18912,
+      "sha256": "ba496a6a87364cd522df6e53abe4d3eb395219fa039012f6c898c29ef7205a25"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -13,8 +13,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
-      "bytes": 3233,
-      "sha256": "77e8797b24e486156c35c79e577c6a152844e04b4e7984d3b2d5aa2713857461"
+      "bytes": 4160,
+      "sha256": "a73444a4879f3fd6e4f312933914889d050b46fe83238935791138d65253386b"
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
@@ -53,13 +53,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 16987,
-      "sha256": "ebab3d5e15255d5f7594352fd59d02df27b9fc68d1c42045f2c70e210ac27669"
+      "bytes": 17482,
+      "sha256": "2f3921f4b89c140424183a2c16ed6918aa7e5d9948936dd7082282446f9babea"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
-      "bytes": 10688,
-      "sha256": "d9cb1d3238e3b66a7da41c7387a7f2559b1bcf38ed9db25173afe9207d79b47b"
+      "bytes": 11064,
+      "sha256": "34834cf4d775b7584105425e8f7c7e478c51371133dcdada483905ca665491c8"
     },
     {
       "path": "agent_core/analysis_agent.py",
@@ -162,6 +162,11 @@
       "sha256": "92947098f2b8c7d63cba7d5992921e2a0861b6789ee0d81172e85c073ad69e11"
     },
     {
+      "path": "agent_core/single_source_stages.py",
+      "bytes": 13901,
+      "sha256": "56e576d77de2cdc4f53ba76e51898d5ea7637f04aebad5495a6c2d64e6b32fe1"
+    },
+    {
       "path": "agent_core/stacking_stages.py",
       "bytes": 11311,
       "sha256": "4122fc335cf66f927397da503936d32b313cd2f7dfaff9d5fe2e01faa6ac4896"
@@ -238,8 +243,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 31058,
-      "sha256": "b6738453f83bea23b9b221ed0845c141008a140ec41a374b1c9e9834ff321361"
+      "bytes": 31328,
+      "sha256": "da853c5a93ce667ffb51d83c34f5fa006426387833f3debcf34f7160f63a7cff"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -378,8 +383,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 10830,
-      "sha256": "75bbf29311fcfb0855732586a8f2e59b4a58d835dbc2ebf43369bf4a02713299"
+      "bytes": 11482,
+      "sha256": "b2a05252d1c662d7110cb9091f73d15ac3aef437b0509912ed7ffc99813dc98e"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -413,13 +418,18 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 10042,
-      "sha256": "f90d74ae8f7e42b9afd337072b9ee129c1eead6f624e696c6843809d2580305a"
+      "bytes": 10323,
+      "sha256": "b950e9f915f0bd2cc18c187703a25553e2d79066d0e577a3ab031e9f9cf7d972"
     },
     {
       "path": "docs/single_source_performance.md",
       "bytes": 2999,
       "sha256": "edc395bc290bef809d501a6a956b322f2a0e56f593876e418269e0064cc8ce82"
+    },
+    {
+      "path": "docs/single_source_stages.md",
+      "bytes": 4096,
+      "sha256": "6e2b6f547124a56264da3a6b9b8e06927dab9100b0eecdedbfa9b5438c57a21d"
     },
     {
       "path": "docs/stacking_flux.md",
@@ -453,8 +463,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 32546,
-      "sha256": "0ea22e53505c4f617fa517c9ff5fdd770a22c716fc32034610bc81ed6cf84b43"
+      "bytes": 33189,
+      "sha256": "9f781ae8f719ecd685dc0934637d2dda12da86e9eb760689474a77b6b3bcae06"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

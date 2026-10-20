@@ -255,3 +255,41 @@ result is preserved. Do not describe AWAITING_FLUX as a completed full task or
 stop after stage 1 when the full analysis was requested. Re-entering the primary
 stage or changing parameters while awaiting flux is rejected. See
 `docs/stacking_flux.md` for definitions, artifacts and the two commands.
+
+## Single-source calculation and chat output in two stages
+
+For newly created single-source tasks, `run --task <task_id>` performs and
+reviews the primary LLH maximization first. The wrapper returns
+`single_source_llh_summary`: best-fit ns and Gamma, TS, local p value and
+one-sided Gaussian significance, with Gamma convention and p-value method.
+**Immediately send these values in a commentary chat bubble before starting
+any flux calculation.** Identify the analytic p value/significance as estimates,
+and distinguish fixed Gamma (or spatial-only acceptance Gamma) from fitted Gamma.
+Preserve any material review warnings. A failed primary review blocks reporting
+its numbers as valid and blocks the flux stage.
+
+If the wrapper returns `AWAITING_FLUX`, automatically continue in the same turn:
+
+```bash
+.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id>
+```
+
+Do not ask for another confirmation or end the turn between these stages.
+The flux stage reads the immutable, reviewed primary checkpoint, reconstructs
+the same LLH and verifies its saved value without repeating primary maximization.
+It then performs the requested fixed-spectrum limit fits and, for strict TS > 9,
+the primary-spectrum measurement. After review, report the upper limits and/or
+measurement with units and confidence levels, display the spectrum PNG inline,
+and link the PDF and numerical tables. Display the contour PNG when produced.
+Use `single_source_flux_summary` and its artifact paths. Do not proactively
+include the three excluded reporting topics described above.
+
+A flux-stage failure does not invalidate a successfully reviewed primary fit.
+Keep the first chat bubble and its checkpoint, explain the failed second stage,
+and do not report failed flux products as valid. After an interrupted flux
+process is confirmed stopped, `resume` restores `AWAITING_FLUX`; continue with
+`run --stage flux`, never repeat the primary fit. Changed requests, code, inputs,
+packages or checkpoint bytes block continuation. Historical tasks retain their
+recorded flow. Single-source modes with no supported/requested flux products
+finish after their primary stage; do not invent a flux calculation. Catalog
+individual-source scans retain their existing execution and optional flux switch.

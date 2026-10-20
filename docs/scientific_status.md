@@ -146,3 +146,9 @@ guard: a profile above the recorded primary optimum fails review. Historical
 task records and results are not rewritten; unsupported procedures are rejected
 before execution. Corresponding observed and background-trial fits must use the
 same supported procedure.
+
+
+New single-source tasks return a reviewed primary LLH result before flux
+calculation. The flux stage uses its immutable best fit without repeating primary
+maximization; stage separation changes execution/reporting order only. See
+[single-source stages](single_source_stages.md).
