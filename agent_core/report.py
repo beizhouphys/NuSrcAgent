@@ -135,7 +135,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     lines.extend(f"- {key}: `{value}`" for key, value in report["analysis"].items() if value is not None)
     lines.extend(["", "## Result", ""])
     for key, value in report["result"].items():
-        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "fit_procedure"}:
+        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "fit_procedure", "signal_energy_gamma_interpolation"}:
             lines.append(f"- {key}: `{value}`")
     source_results = report["result"].get("source_results", [])
     if source_results:

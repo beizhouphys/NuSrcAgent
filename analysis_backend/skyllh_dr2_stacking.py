@@ -180,8 +180,12 @@ def create_dr2_stacking_analysis(
     background_pdf_version="v3",
     runtime_cache=None,
     source_dec_window_deg=None,
+    signal_energy_gamma_interpolation=None,
 ):
     """Construct the exact, memory-bounded all-event SkyLLH analysis."""
+    interpolation = signal_energy_gamma_interpolation or "parabola_v1"
+    if interpolation not in {"parabola_v1", "linear_v1"}:
+        raise ValueError("Unsupported signal-energy Gamma interpolation")
     if likelihood_mode not in {"spatial_energy", "spatial_only"}:
         raise ValueError("likelihood_mode must be 'spatial_energy' or 'spatial_only'")
     if gamma_mode not in {"fitted", "fixed"}:
@@ -365,6 +369,7 @@ def create_dr2_stacking_analysis(
         if likelihood_mode == "spatial_energy":
             ratio = ChunkedSourceWeightedPDFRatio(
                 gamma_grid=gamma_grid,
+                signal_energy_gamma_interpolation=interpolation,
                 signal_energy_declination_mode=signal_energy_declination_mode,
                 spatial_cache=spatial_cache,
                 **ratio_kwargs,
@@ -430,6 +435,7 @@ def run_dr2_stacking(
     background_pdf_version="v3",
     runtime_cache=None,
     source_dec_window_deg=None,
+    signal_energy_gamma_interpolation=None,
     flux_upper_limit_cl=None,
     flux_measurement_ts_threshold=None,
     fit_procedure="skyllh_lbfgs_v1",
@@ -457,6 +463,7 @@ def run_dr2_stacking(
         background_pdf_version=background_pdf_version,
         runtime_cache=runtime_cache,
         source_dec_window_deg=source_dec_window_deg,
+        signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
     )
     ts, fitparams, minimizer_status = analysis.unblind(RandomStateService(seed=int(random_seed)))
     result_gamma = float(fitparams.get("gamma", gamma))
@@ -491,6 +498,7 @@ def run_dr2_stacking(
         "background_method": background_method,
         "background_pdf_version": analysis.background_pdf_version if data_selection == "full14" else "on_the_fly_skyllh_v1",
         "likelihood_mode": likelihood_mode,
+        "signal_energy_gamma_interpolation": (signal_energy_gamma_interpolation or "parabola_v1") if likelihood_mode == "spatial_energy" else None,
         "energy_pdf": energy_pdf if likelihood_mode == "spatial_energy" else "not_used",
         "signal_energy_declination_mode": analysis.signal_energy_declination_mode if likelihood_mode == "spatial_energy" else None,
         "ra_scramble": {
@@ -572,6 +580,10 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
                 flux_upper_limit_cl=None if gammas else flux_upper_limit_cl,
                 flux_measurement_ts_threshold=flux_measurement_ts_threshold, **fit_options)
         else:
+            expected = fit_options.get("signal_energy_gamma_interpolation") or "parabola_v1"
+            recorded = primary_result.get("signal_energy_gamma_interpolation") or "parabola_v1"
+            if recorded != expected:
+                raise ValueError("Primary checkpoint uses a different Gamma interpolation; create a new task")
             import copy
             result = copy.deepcopy(primary_result)
             result.pop("generated_files", None)

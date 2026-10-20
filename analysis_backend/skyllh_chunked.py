@@ -38,8 +38,9 @@ class _ExactEnergyInterpolationCache:
     The payload budget includes the inverse map and the distinct energies.
     """
 
-    def __init__(self, max_bytes=DEFAULT_ENERGY_CACHE_BYTES):
+    def __init__(self, max_bytes=DEFAULT_ENERGY_CACHE_BYTES, node_count=3):
         self.max_bytes = max(0, int(max_bytes))
+        self.node_count = int(node_count)
         self.initialize(np.empty(0), 0.0, 0.0, prepare=False)
 
     def initialize(self, loge, energy_min, energy_max, prepare=True):
@@ -59,9 +60,9 @@ class _ExactEnergyInterpolationCache:
             return
         valid = (loge >= energy_min) & (loge < energy_max)
         energies, inverse = np.unique(loge[valid], return_inverse=True)
-        # Only prepare a lookup if the budget can also hold three PDF nodes.
+        # Reserve the requested two-node or three-node interpolation lookups.
         base_bytes = position_bytes + energies.nbytes
-        if base_bytes + 3 * (len(energies) + 1) * 8 > self.max_bytes:
+        if base_bytes + self.node_count * (len(energies) + 1) * 8 > self.max_bytes:
             return
         positions = np.full(len(loge), len(energies), dtype=dtype)
         positions[valid] = inverse
@@ -232,6 +233,8 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
     the product of the two source weights and its Gamma derivative.
     """
 
+    signal_energy_gamma_interpolation = "parabola_v1"
+
     def __init__(
         self,
         dataset_idx,
@@ -248,9 +251,13 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
         max_source_chunk=DEFAULT_MAX_SOURCE_CHUNK,
         spatial_cache=None,
         energy_cache_max_bytes=DEFAULT_ENERGY_CACHE_BYTES,
+        signal_energy_gamma_interpolation="parabola_v1",
         **kwargs,
     ):
         super().__init__(sig_param_names=["gamma"], bkg_param_names=None, **kwargs)
+        if signal_energy_gamma_interpolation not in {"parabola_v1", "linear_v1"}:
+            raise ValueError("Unsupported signal-energy Gamma interpolation")
+        self.signal_energy_gamma_interpolation = signal_energy_gamma_interpolation
         self.dataset_idx = int(dataset_idx)
         self.dataset_name = str(dataset_name)
         self.store = store
@@ -293,13 +300,15 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
         self._spatial_cache_namespace = object()
         if self._spatial_cache is not None:
             self._spatial_cache.reset(self._spatial_cache_namespace)
-        self._energy_cache = (_ExactEnergyInterpolationCache(energy_cache_max_bytes)
+        self._energy_cache = (_ExactEnergyInterpolationCache(energy_cache_max_bytes,
+            node_count=2 if self.signal_energy_gamma_interpolation == "linear_v1" else 3)
                               if len(self.source_ras) > 1 else None)
 
     @property
     def chunk_provenance(self):
         return {
             "strategy": "exact_adaptive_event_source_double_batching",
+            "signal_energy_gamma_interpolation": self.signal_energy_gamma_interpolation,
             "n_events": self.n_events,
             "target_pairs": self.target_pairs,
             "event_chunk": self.event_chunk,
@@ -370,6 +379,13 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
         return int(ids[0] - 1)
 
     def _gamma_slice_indices(self, gamma):
+        if self.signal_energy_gamma_interpolation == "linear_v1":
+            if not np.isfinite(gamma) or not self.gamma_values[0] <= gamma <= self.gamma_values[-1]:
+                raise ValueError("Gamma is outside the signal-energy interpolation grid")
+            upper = min(int(np.searchsorted(self.gamma_values, gamma, side="right")), len(self.gamma_values)-1)
+            lower = upper-1
+            x0, x1 = self.gamma_values[[lower, upper]]
+            return float(x0), float(x1-x0), [lower, upper]
         x1 = float(self.gamma_grid.round_to_nearest_grid_point(gamma))
         dx = float(self.gamma_grid.delta)
         x0 = float(self.gamma_grid.round_to_nearest_grid_point(x1 - dx))
@@ -418,11 +434,16 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
                         source_mask = dec_indices == dec_idx
                         M0 = self._interpolate_energy(loge, energy_grid[dec_idx, :, 0], (dec_idx, gamma_indices[0]), energy_positions)
                         M1 = self._interpolate_energy(loge, energy_grid[dec_idx, :, 1], (dec_idx, gamma_indices[1]), energy_positions)
-                        M2 = self._interpolate_energy(loge, energy_grid[dec_idx, :, 2], (dec_idx, gamma_indices[2]), energy_positions)
-                        parabola_a = 0.5 * (M0 - 2.0 * M1 + M2) / dx**2
-                        parabola_b = 0.5 * (M2 - M0) / dx
-                        energy = parabola_a * offset**2 + parabola_b * offset + M1
-                        energy_grad = 2.0 * parabola_a * offset + parabola_b
+                        if self.signal_energy_gamma_interpolation == "linear_v1":
+                            fraction = offset / dx
+                            energy = (1.0-fraction)*M0 + fraction*M1
+                            energy_grad = (M1-M0) / dx
+                        else:
+                            M2 = self._interpolate_energy(loge, energy_grid[dec_idx, :, 2], (dec_idx, gamma_indices[2]), energy_positions)
+                            parabola_a = 0.5 * (M0 - 2.0 * M1 + M2) / dx**2
+                            parabola_b = 0.5 * (M2 - M0) / dx
+                            energy = parabola_a * offset**2 + parabola_b * offset + M1
+                            energy_grad = 2.0 * parabola_a * offset + parabola_b
                         spatial_subset = spatial[:, source_mask]
                         weighted_spatial = spatial_subset @ a[s0:s1][source_mask]
                         weighted_spatial_grad = spatial_subset @ da[s0:s1][source_mask]
@@ -444,11 +465,16 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
                     positions = energy_positions[event_mask] if energy_positions is not None else None
                     M0 = self._interpolate_energy(loge[event_mask], energy_grid[dec_idx, :, 0], (dec_idx, gamma_indices[0]), positions)
                     M1 = self._interpolate_energy(loge[event_mask], energy_grid[dec_idx, :, 1], (dec_idx, gamma_indices[1]), positions)
-                    M2 = self._interpolate_energy(loge[event_mask], energy_grid[dec_idx, :, 2], (dec_idx, gamma_indices[2]), positions)
-                    parabola_a = 0.5 * (M0 - 2.0 * M1 + M2) / dx**2
-                    parabola_b = 0.5 * (M2 - M0) / dx
-                    energy[event_mask] = parabola_a * offset**2 + parabola_b * offset + M1
-                    energy_grad[event_mask] = 2.0 * parabola_a * offset + parabola_b
+                    if self.signal_energy_gamma_interpolation == "linear_v1":
+                        fraction = offset / dx
+                        energy[event_mask] = (1.0-fraction)*M0 + fraction*M1
+                        energy_grad[event_mask] = (M1-M0) / dx
+                    else:
+                        M2 = self._interpolate_energy(loge[event_mask], energy_grid[dec_idx, :, 2], (dec_idx, gamma_indices[2]), positions)
+                        parabola_a = 0.5 * (M0 - 2.0 * M1 + M2) / dx**2
+                        parabola_b = 0.5 * (M2 - M0) / dx
+                        energy[event_mask] = parabola_a * offset**2 + parabola_b * offset + M1
+                        energy_grad[event_mask] = 2.0 * parabola_a * offset + parabola_b
                 block_sum = energy * spatial_sum
                 block_grad = energy_grad * spatial_sum + energy * spatial_grad
 

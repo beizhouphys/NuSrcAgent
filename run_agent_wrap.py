@@ -231,6 +231,8 @@ def set_flux_measurement(task, args):
         return
     task["parameters"]["fit_procedure"] = parameter("skyllh_lbfgs_v1", "system_default", True)
     task["parameters"]["fit_procedure"]["basis"] = "Owner requested the original SkyLLH optimizer for all fits; likelihood, PDFs and bounds retained. Corresponding trials must use the same recorded procedure."
+    task["parameters"]["signal_energy_gamma_interpolation"] = parameter("linear_v1", "system_default", True)
+    task["parameters"]["signal_energy_gamma_interpolation"]["basis"] = "Owner-approved two-node linear Gamma interpolation for standalone single-source primary and flux fits; catalog scans and joint stacks retain their existing procedure."
     task["parameters"]["flux_measurement_ts_threshold"] = parameter(9.0, "system_default", True)
     task["parameters"]["flux_measurement_ts_threshold"]["basis"] = "Owner-approved strict TS > 9 criterion for reporting primary-spectrum flux measurement, profile intervals and free-Gamma joint contours."
 

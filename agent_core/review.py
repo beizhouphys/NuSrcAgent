@@ -89,6 +89,14 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     add_check(review, "dr2_fit_procedure", "pass" if procedure_ok else "fail",
               "SkyLLH fit procedure matches the request" if procedure_ok
               else "unsupported or inconsistent fit procedure", False)
+    interpolation = normalized.get("signal_energy_gamma_interpolation") or "parabola_v1"
+    if likelihood_mode == "spatial_energy" and (interpolation == "linear_v1" or "signal_energy_gamma_interpolation" in result):
+        datasets = result.get("working_set", {}).get("datasets", {})
+        consistent = (result.get("signal_energy_gamma_interpolation", "parabola_v1") == interpolation
+                      and all(dataset.get("signal_energy_gamma_interpolation", "parabola_v1") == interpolation
+                              for dataset in datasets.values()))
+        add_check(review, "dr2_gamma_interpolation", "pass" if consistent else "fail",
+                  "signal-energy Gamma interpolation matches the request" if consistent else "signal-energy Gamma interpolation differs from the request", False)
     if isinstance(ns_bounds, list) and len(ns_bounds) == 2:
         valid = valid and ns_hat is not None and float(ns_bounds[0]) <= ns_hat <= float(ns_bounds[1])
     if result.get("gamma_mode") == "fitted" and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:

@@ -12,6 +12,12 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
     result = ValidationResult()
     if config.analysis.fit_procedure != "skyllh_lbfgs_v1":
         result.errors.append("analysis.fit_procedure must be skyllh_lbfgs_v1 in this runtime")
+    interpolation = config.analysis.signal_energy_gamma_interpolation
+    if interpolation is not None:
+        if interpolation not in {"linear_v1", "parabola_v1"}:
+            result.errors.append("Unsupported signal-energy Gamma interpolation")
+        if config.data.sample != "icecube_public_ps_14yr_dr2" or config.analysis.likelihood_mode != "spatial_energy":
+            result.errors.append("Signal-energy Gamma interpolation requires DR2 spatial+energy analysis")
     scan_procedure = config.analysis.scan_fit_procedure
     if scan_procedure is not None:
         if scan_procedure != "skyllh_lbfgs_v1":

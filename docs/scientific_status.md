@@ -160,3 +160,12 @@ stop at AWAITING_FLUX after primary review. The Agent reports the primary result
 continue, and ends the turn. Only a later affirmative user reply starts flux;
 `--flux-user-reply` records the actual reply on the flux attempt. No primary
 maximization, scientific setting, upper-limit definition or TS gate is changed.
+
+
+## Single-source linear Gamma interpolation (2026-10-20)
+
+New standalone DR2 spatial+energy single-source tasks use linear_v1 consistently
+for the primary fit and all flux calculations. Catalog scans, joint stacks and
+historical requests retain their recorded definitions. Frozen tables, optimizer,
+tolerances and the profile maximum-consistency guard are unchanged. See
+[single-source interpolation](single_source_linear_interpolation.md).

@@ -196,6 +196,7 @@ def _run_flux(request_path, primary, root):
         event_abs_dec_max_deg=normalized.event_abs_dec_max_deg,
         event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg,
         source_dec_window_deg=normalized.source_dec_window_deg, fit_procedure=normalized.fit_procedure,
+        signal_energy_gamma_interpolation=normalized.signal_energy_gamma_interpolation,
         flux_upper_limit_cl=normalized.flux_upper_limit_cl,
         flux_upper_limit_gammas=normalized.flux_upper_limit_gammas,
         flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold)

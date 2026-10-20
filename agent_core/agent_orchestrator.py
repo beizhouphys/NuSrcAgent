@@ -94,7 +94,7 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
         payload = build_single_source_request(str(source.get("name") or "source_0001"), float(source["ra_deg"]), float(source["dec_deg"]), gamma, "data_output/runs", data_sample, gamma_mode, likelihood_mode, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)
         if "source_dec_window_deg" in parameters:
             payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
-        for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measurement_ts_threshold", "fit_procedure"):
+        for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measurement_ts_threshold", "fit_procedure", "signal_energy_gamma_interpolation"):
             if key in parameters:
                 payload["analysis"][key] = parameters[key]["value"]
         return payload

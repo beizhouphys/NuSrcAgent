@@ -65,3 +65,8 @@ Comparing the one-call and two-stage fixed-Gamma results gave signed relative
 difference 0 and signed absolute difference 0 for all 22 checked fit, limit and
 interval quantities. These comparisons verify the execution change without
 changing the scientific definitions.
+
+New standalone DR2 spatial+energy single-source tasks record linear_v1 for the
+signal-energy Gamma interpolation. Primary and flux calculations share it;
+continuation with a different recorded method is rejected. See
+[single-source interpolation](single_source_linear_interpolation.md).
