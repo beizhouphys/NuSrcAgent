@@ -151,11 +151,13 @@ def main(argv=None) -> int:
                 revalidate_task_plan(task, repo_root)
                 save_task(task, repo_root, path)
             elif args.command == "run":
+                if args.flux_user_reply is not None and args.stage != "flux":
+                    raise ValueError("--flux-user-reply is only valid with --stage flux after the primary final answer")
                 if args.stage == "flux" and task.get("execution_flow") == "single_source_two_stage_v1":
-                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries)
+                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries, user_reply=args.flux_user_reply)
                 elif args.stage == "flux":
                     from agent_core.stacking_stages import execute_flux_stage
-                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
+                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, user_reply=args.flux_user_reply)
                 else:
                     task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
             elif args.command == "resume":
@@ -362,7 +364,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run", help="Execute a READY task and enforce its completion gate.")
     run.add_argument("--task", required=True)
-    run.add_argument("--stage", choices=["primary", "flux"], help="New single-source tasks and DR2 stacks return the primary fit first; report it in chat before running --stage flux.")
+    run.add_argument("--stage", choices=["primary", "flux"], help="New single-source tasks and DR2 stacks return the primary fit first; report it in a final answer and wait for the user reply before --stage flux.")
+    run.add_argument("--flux-user-reply", help="Actual user reply authorizing flux continuation after the primary final answer; required for --stage flux.")
     run.add_argument("--backend", choices=["likelihood"], default="likelihood")
     run.add_argument("--max-safe-retries", type=int, choices=[0, 1], default=1)
 

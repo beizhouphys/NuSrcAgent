@@ -47,14 +47,15 @@ task_id=task_REPLACE_WITH_RETURNED_ID
 
 The first `run` now returns the reviewed primary fit. Read the best-fit ns and
 Gamma, TS, local p value and significance in `single_source_llh_summary`.
-When its status is `AWAITING_FLUX`, continue with:
+When its status is `AWAITING_FLUX`, report the primary result and wait for the
+user to reply. Only after that reply continue with:
 
 ```bash
-.venv/bin/python run_agent_wrap.py run --stage flux --task "$task_id"
+.venv/bin/python run_agent_wrap.py run --stage flux --task "$task_id" --flux-user-reply "<actual user reply>"
 ```
 
-The Agent sends the primary values in a chat bubble before this command and
-automatically continues it without another confirmation. The second result
+The Agent ends the first turn with the primary values in a final answer and
+asks whether to continue. This command belongs to the later user-authorized turn. The second result
 contains reviewed flux limits and/or measurements and figures. The two stages
 retain separate reports, and the primary fit is not repeated. See
 [single-source stage states and recovery](single_source_stages.md).
@@ -84,6 +85,14 @@ Use the **new** returned task ID, not the single-source ID. Check `READY`, then 
 task_id=task_REPLACE_WITH_RETURNED_ID
 .venv/bin/python run_agent_wrap.py show --task "$task_id"
 .venv/bin/python run_agent_wrap.py run --task "$task_id"
+```
+
+This first command returns the source scan and reviewed joint-stack primary
+fit at AWAITING_FLUX. The Agent reports the primary result in its final answer,
+asks whether to continue and ends the turn. After the user replies, run:
+
+```bash
+.venv/bin/python run_agent_wrap.py run --task "$task_id" --stage flux --flux-user-reply "<actual user reply>"
 ```
 
 The scan independently fits each source with the same settings. The stack is a
@@ -141,7 +150,8 @@ part of `review.json`. Separate per-source directories are not promised. DR2
 does not generate the DR1 PDF figures or optional workbook. Read both the run
 review and the central agent review before quoting a result.
 
-Expected completion for these checks is `COMPLETED`, when all other review checks
+The first run of these two-stage examples returns `AWAITING_FLUX`. After the
+user-authorized flux stage, completion is `COMPLETED` when all review checks
 pass. Report local p-value and one-sided Gaussian significance estimates
 together: half-chi-square dof=2 for fitted Gamma, dof=1 for fixed Gamma; zero background trials and absent empirical/catalog-global calibration
 are method information, not warnings on their own. Actual fit or artifact warnings
@@ -207,4 +217,4 @@ loaded data and validated PDF tables. [Settings and limitations](single_source_p
 
 ### Fixed-spectrum flux limits
 
-The single-source example now also writes limits for E^-2, E^-2.5 and E^-3 and a reference-spectrum plot. Add `--no-flux-upper-limits` when creating a task to omit these extra fits. Scans omit them by default; add `--flux-upper-limits` to `create-catalog --catalog-operation scan` or `scan_and_stack` when per-source limits and figures are wanted. See [definitions and limitations](flux_upper_limits.md).
+After the user-authorized second stage, the single-source and joint-stack examples write limits for E^-2, E^-2.5 and E^-3 and reference-spectrum figures. Add `--no-flux-upper-limits` when creating a task to omit these extra fits. Scans omit them by default; add `--flux-upper-limits` to `create-catalog --catalog-operation scan` or `scan_and_stack` when per-source limits and figures are wanted. See [definitions and limitations](flux_upper_limits.md).

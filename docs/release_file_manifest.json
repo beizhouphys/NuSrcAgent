@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 19178,
-      "sha256": "82018dda5a81064eaa2827692a15fe8d11d2008bc5e87d16b26683736d0c0195"
+      "bytes": 21425,
+      "sha256": "9f55f0dcaaf9ca68fd2e128c6fd62dccd01b459ef021f29a594c5166e05668d5"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -13,8 +13,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
-      "bytes": 4160,
-      "sha256": "a73444a4879f3fd6e4f312933914889d050b46fe83238935791138d65253386b"
+      "bytes": 4998,
+      "sha256": "a93b0fd50fd819882fa9def8562d5af185f593fc7ff33a6e981520439861ed51"
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17619,
-      "sha256": "b2b920dda30bf740010a6cc8d32f0263b585ec6afe0c04b34868aa3c51c8aec8"
+      "bytes": 17935,
+      "sha256": "ddf2e82cd4ad6064b876272b9bccf8e406350fb1f875c7f967dbb0f81b287ebf"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -163,13 +163,13 @@
     },
     {
       "path": "agent_core/single_source_stages.py",
-      "bytes": 13901,
-      "sha256": "56e576d77de2cdc4f53ba76e51898d5ea7637f04aebad5495a6c2d64e6b32fe1"
+      "bytes": 14597,
+      "sha256": "e14cb8b8013c78a119114c5ec529ab4cfa2bef606ce1bb2ecb7928bf1d3f7411"
     },
     {
       "path": "agent_core/stacking_stages.py",
-      "bytes": 11311,
-      "sha256": "4122fc335cf66f927397da503936d32b313cd2f7dfaff9d5fe2e01faa6ac4896"
+      "bytes": 11841,
+      "sha256": "db2369c54631885ca1b9a7c30b2e644b91916c9776f6a7f7a6af183f1863a91a"
     },
     {
       "path": "agent_core/task_state.py",
@@ -338,8 +338,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 9871,
-      "sha256": "8f91d150ee0135a2f8b1eabd9ae9a4121cd56aa691f6cddba46ef14e55b72c60"
+      "bytes": 10002,
+      "sha256": "8025292370cb6908fadadc32901a89e03ac6281ce1c0c0fdae5b9f49edfa3d7b"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -383,8 +383,8 @@
     },
     {
       "path": "docs/quickstart.md",
-      "bytes": 11482,
-      "sha256": "b2a05252d1c662d7110cb9091f73d15ac3aef437b0509912ed7ffc99813dc98e"
+      "bytes": 12100,
+      "sha256": "a318dbec0594e5f8b5a9451677a5f8d1ef45e2f2eb385893bf61b6ec3e5bcb7c"
     },
     {
       "path": "docs/raw_input_manifest.json",
@@ -418,8 +418,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 10323,
-      "sha256": "b950e9f915f0bd2cc18c187703a25553e2d79066d0e577a3ab031e9f9cf7d972"
+      "bytes": 10802,
+      "sha256": "bb5e8450f6737dc62d3e783efa230e2a9f74f35da4538954266c328be2b4072a"
     },
     {
       "path": "docs/single_source_performance.md",
@@ -428,13 +428,13 @@
     },
     {
       "path": "docs/single_source_stages.md",
-      "bytes": 4096,
-      "sha256": "6e2b6f547124a56264da3a6b9b8e06927dab9100b0eecdedbfa9b5438c57a21d"
+      "bytes": 4386,
+      "sha256": "8de8027707049c309e2cdea82079fd3f7563023abdad64e867d8853db4f5d045"
     },
     {
       "path": "docs/stacking_flux.md",
-      "bytes": 6599,
-      "sha256": "68f1aff56ee98ccdcf0d6d7a63c2e11e44d03ffcc136700358e442df91ff0cd1"
+      "bytes": 7031,
+      "sha256": "d79db4e3d3076581970b103b21ef8c8dc3080be510cdf13415fbf196e804e954"
     },
     {
       "path": "docs/stacking_performance.md",
@@ -443,8 +443,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 15683,
-      "sha256": "13ab51fc80d948ba8dd7294a937a0dd353f23b0ca33932982f661e2e2f064823"
+      "bytes": 17182,
+      "sha256": "442c3d2bb8023c33374b51882437a9a0b60d1c66303585988f7c67671f37fe3c"
     },
     {
       "path": "install.sh",
@@ -463,8 +463,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 33189,
-      "sha256": "9f781ae8f719ecd685dc0934637d2dda12da86e9eb760689474a77b6b3bcae06"
+      "bytes": 33641,
+      "sha256": "af8130f0b5941475634452b7a5dc8be44f4a71e1c35599f280130dcb2258dd98"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

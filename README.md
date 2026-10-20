@@ -170,10 +170,12 @@ does not: its `--request` text is only a description kept with the analysis.
 When using Python commands directly, provide positions and settings explicitly.
 
 For new single-source requests, the Agent first reports best-fit ns and Gamma,
-TS, local p value and one-sided significance in chat after LLH review. It then
-automatically continues the requested flux calculation and reports upper limits
+TS, local p value and one-sided significance in a final answer after LLH review.
+It asks whether to continue and ends that turn. Only after the user replies does
+it continue the flux calculation and report upper limits
 and/or measurements, figures and tables in a second chat output. Terminal users
-run `run --stage flux --task <task_id>` after `AWAITING_FLUX`. The primary fit is
+run `run --stage flux --task <task_id> --flux-user-reply "<actual user reply>"`
+after the first-stage result and continuation reply. The primary fit is
 saved and is not maximized again. See the [two-stage workflow](docs/single_source_stages.md).
 
 ## Minimal examples and outputs
@@ -275,9 +277,10 @@ See [stacking performance and cache lifecycle](docs/stacking_performance.md).
 
 New DR2 spatial+energy stacks report the primary ns, Gamma, TS, p-value and
 one-sided significance first. Continue the same task with `run --task <id>
---stage flux` for default Gamma=2, 2.5, 3 upper limits and primary intensity
-measurements when TS > 9. The Agent reports the primary result in chat before
-continuing automatically. Upper-limit spectrum figures are generated and reported
+--stage flux --flux-user-reply "<actual user reply>"` for default Gamma=2, 2.5, 3 upper limits and primary intensity
+measurements when TS > 9. The Agent ends the first turn with the primary result
+and asks whether to continue. After the user replies, it runs the flux stage with
+`--flux-user-reply "<actual user reply>"` and reports that stage in a new final answer. Upper-limit spectrum figures are generated and reported
 regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
 Joint-stack figures use total flux / (4*pi sr),
 with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).

@@ -152,3 +152,11 @@ New single-source tasks return a reviewed primary LLH result before flux
 calculation. The flux stage uses its immutable best fit without repeating primary
 maximization; stage separation changes execution/reporting order only. See
 [single-source stages](single_source_stages.md).
+
+## User-confirmed flux continuation, 2026-10-20
+
+Single-source and joint stacking tasks with supported/requested flux products
+stop at AWAITING_FLUX after primary review. The Agent reports the primary result in a final answer, asks whether to
+continue, and ends the turn. Only a later affirmative user reply starts flux;
+`--flux-user-reply` records the actual reply on the flux attempt. No primary
+maximization, scientific setting, upper-limit definition or TS gate is changed.

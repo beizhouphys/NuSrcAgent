@@ -8,6 +8,16 @@ description: Coordinate supported IceCube time-integrated single-source searches
 Use the repository wrapper for every analysis. Read `AGENTS.md` and
 `docs/scientific_status.md`; numerical success does not establish scientific validity.
 
+## Required first-turn result boundary
+
+For single-source and joint stacking analyses with supported/requested flux
+products, the first turn ends with a FINAL ANSWER containing the reviewed primary ns/Gamma, TS, p value and significance,
+followed by a question asking whether to calculate flux products. Leave
+AWAITING_FLUX pending. Do not run flux in this turn or replace this final answer
+with commentary. Only a subsequent affirmative user reply authorizes stage 2;
+pass the actual reply with --flux-user-reply and report flux/figures in that
+later turn's final answer. This supersedes earlier automatic-continuation rules.
+
 ## Response language
 
 - Follow the user's explicit language request. Otherwise, honor an explicitly
@@ -233,12 +243,17 @@ scan limits retain their separate opt-in setting. Preserve historical tasks.
 1. Run the READY task normally. The primary stage performs likelihood
    maximization and review, then returns AWAITING_FLUX. Read
    `stacking_stages.primary` and its review. Before starting any joint-stack
-   flux calculation, write a chat bubble with weighting/source count, best-fit
+   flux calculation, write a FINAL ANSWER chat bubble with weighting/source count, best-fit
    ns and Gamma, TS, local analytic p-value and one-sided significance, with
    estimate labels and every material warning. Failed primary review blocks
-   reporting and continuation.
-2. After that chat bubble, automatically run the same task with `run --task
-   <id> --stage flux`; no additional user confirmation is needed. This stage
+   reporting and continuation. Ask whether to continue with flux upper limits,
+   applicable measurements and figures, then END THIS TURN at AWAITING_FLUX.
+   A commentary progress message does not satisfy this first-stage output.
+2. Only after the user replies to continue in a later turn, run the same task
+   with `run --task <id> --stage flux --flux-user-reply "<actual user reply>"`.
+   Preserve the actual reply; never infer it from the initial analysis request.
+   If several pending tasks could match "continue", resolve them from this
+   conversation; ask which task(s) only if the selection remains ambiguous. This stage
    validates the sealed primary result and unchanged request/code/inputs. It
    does not repeat primary maximization. Report the three catalog-total flux
    upper limits with their full-sky intensity equivalents. Regardless of primary
@@ -256,7 +271,12 @@ diffuse_starting_tracks; do not add NGC 1068. Report the pivots and per-sr units
 explicitly. A boundary warning remains preliminary; a failed flux review blocks
 valid flux reporting even though the earlier independently reviewed primary
 result is preserved. Do not describe AWAITING_FLUX as a completed full task or
-stop after stage 1 when the full analysis was requested. Re-entering the primary
+launch stage 2 before the user has replied to the first-stage final answer.
+For multiple requested sources/weightings, the first turn may report all requested
+primary fits together and ask which/all should continue; do not start any flux
+stage in that first turn. The next turn reports the authorized flux products in
+its own final answer, with figures regardless of TS and measurements only for
+TS > 9. Re-entering the primary
 stage or changing parameters while awaiting flux is rejected. See
 `docs/stacking_flux.md` for definitions, artifacts and the two commands.
 
@@ -266,19 +286,27 @@ For newly created single-source tasks, `run --task <task_id>` performs and
 reviews the primary LLH maximization first. The wrapper returns
 `single_source_llh_summary`: best-fit ns and Gamma, TS, local p value and
 one-sided Gaussian significance, with Gamma convention and p-value method.
-**Immediately send these values in a commentary chat bubble before starting
-any flux calculation.** Identify the analytic p value/significance as estimates,
+**Report these values in the final answer chat bubble, ask whether the user
+wants flux upper limits/measurements and figures, and END THIS TURN.**
+A commentary progress message does not satisfy this first-stage result output. Identify the analytic p value/significance as estimates,
 and distinguish fixed Gamma (or spatial-only acceptance Gamma) from fitted Gamma.
 Preserve any material review warnings. A failed primary review blocks reporting
 its numbers as valid and blocks the flux stage.
 
-If the wrapper returns `AWAITING_FLUX`, automatically continue in the same turn:
+If the wrapper returns `AWAITING_FLUX`, leave the task pending and wait for an
+explicit user continuation reply in a later turn. Only after that reply run:
 
 ```bash
-.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id>
+.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id> --flux-user-reply "<actual user reply>"
 ```
 
-Do not ask for another confirmation or end the turn between these stages.
+Ask once in the first-stage final answer: "Would you like to continue with flux
+upper limits, applicable measurements and figures?" Use the conversation's
+language. A reply such as "继续" or "continue" authorizes the second stage;
+a refusal leaves the reviewed primary result available without flux execution.
+Do not treat the initial analysis request, a progress message or elapsed time as
+this reply, and never invent a user reply. Record the actual reply with
+`--flux-user-reply`. The CLI requires it and stores it on each flux attempt.
 The flux stage reads the immutable, reviewed primary checkpoint, reconstructs
 the same LLH and verifies its saved value without repeating primary maximization.
 It then performs the requested fixed-spectrum limit fits and, for strict TS > 9,
@@ -291,8 +319,9 @@ include the three excluded reporting topics described above.
 A flux-stage failure does not invalidate a successfully reviewed primary fit.
 Keep the first chat bubble and its checkpoint, explain the failed second stage,
 and do not report failed flux products as valid. After an interrupted flux
-process is confirmed stopped, `resume` restores `AWAITING_FLUX`; continue with
-`run --stage flux`, never repeat the primary fit. Changed requests, code, inputs,
+process is confirmed stopped, `resume` restores `AWAITING_FLUX`; continue only
+under the user's existing explicit flux authorization, passing its actual reply
+with `run --stage flux --flux-user-reply`, never repeat the primary fit. Changed requests, code, inputs,
 packages or checkpoint bytes block continuation. Historical tasks retain their
 recorded flow. Single-source modes with no supported/requested flux products
 finish after their primary stage; do not invent a flux calculation. Catalog

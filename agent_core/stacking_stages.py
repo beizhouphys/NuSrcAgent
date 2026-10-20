@@ -59,7 +59,7 @@ def load_primary(task, root, payload):
     return result
 
 
-def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_retries=1, cpus=1):
+def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_retries=1, cpus=1, user_reply=None):
     from agent_core.agent_orchestrator import (
         build_analysis_payload, classify_error, evaluate_completion, write_agent_review,
         SAFE_ERROR_TYPES,
@@ -69,6 +69,8 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
         raise ValueError("CPU budget must be positive and at most one safe retry is allowed")
     if task.get("status") != "AWAITING_FLUX" or not task["parameters"].get("stacking_flux", {}).get("value"):
         raise ValueError("Flux stage requires AWAITING_FLUX; run the primary stage first")
+    if (not isinstance(user_reply, str) or not user_reply.strip()):
+        raise ValueError("Flux stage requires the user continuation reply after the primary final answer; use --flux-user-reply")
     payload = build_analysis_payload(task, root)
     primary = load_primary(task, root, payload)
     request_hash = stable_payload_hash(payload)
@@ -76,6 +78,7 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
         number = len(task["attempts"]) + 1
         attempt = dict(attempt=number, stage="flux", request_sha256=request_hash,
                        started_at_utc=utc_now(), status="RUNNING")
+        attempt["flux_user_reply"] = user_reply
         task["attempts"].append(attempt)
         task["status"] = "RUNNING"
         task["active_stage"] = "flux"
@@ -152,7 +155,10 @@ def chat_stages(task):
             output[name] = dict(stage["chat_summary"], status=stage["status"],
                                 review_status=stage["review_status"], warnings=stage.get("warnings", []))
     if task.get("status") == "AWAITING_FLUX":
-        output["next_action"] = "Report the primary result in chat, then run --task " + task["task_id"] + " --stage flux"
+        output["flux_user_reply_required"] = True
+        output["next_action"] = ("Report the primary result in the final answer chat bubble, ask whether to continue "
+            "with flux upper limits/measurement and figures, then end this turn. Wait for the user's reply before "
+            "run --task " + task["task_id"] + " --stage flux --flux-user-reply '<actual user reply>'.")
     return output
 
 
