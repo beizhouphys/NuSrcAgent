@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 18912,
-      "sha256": "ba496a6a87364cd522df6e53abe4d3eb395219fa039012f6c898c29ef7205a25"
+      "bytes": 19178,
+      "sha256": "82018dda5a81064eaa2827692a15fe8d11d2008bc5e87d16b26683736d0c0195"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17482,
-      "sha256": "2f3921f4b89c140424183a2c16ed6918aa7e5d9948936dd7082282446f9babea"
+      "bytes": 17619,
+      "sha256": "b2b920dda30bf740010a6cc8d32f0263b585ec6afe0c04b34868aa3c51c8aec8"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -338,8 +338,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 9769,
-      "sha256": "ad0386235486d7b80939446d832d4c91a49da306537deb5fd49c007823f249f8"
+      "bytes": 9871,
+      "sha256": "8f91d150ee0135a2f8b1eabd9ae9a4121cd56aa691f6cddba46ef14e55b72c60"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -358,8 +358,8 @@
     },
     {
       "path": "docs/flux_upper_limits.md",
-      "bytes": 6279,
-      "sha256": "9be34e528bac9b618fe44adb0071149f723927f83df6985ba70ac61c10824366"
+      "bytes": 6417,
+      "sha256": "d0c3f1c0113b701b4d54551f4eecbe853ccd691b77e6a3a9a309d000d0046c59"
     },
     {
       "path": "docs/input_bundles.json",
@@ -433,8 +433,8 @@
     },
     {
       "path": "docs/stacking_flux.md",
-      "bytes": 6231,
-      "sha256": "a24b2b161f73afd0ae07da4593b769447e59af7bef9332e01c726415a803c4b3"
+      "bytes": 6599,
+      "sha256": "68f1aff56ee98ccdcf0d6d7a63c2e11e44d03ffcc136700358e442df91ff0cd1"
     },
     {
       "path": "docs/stacking_performance.md",

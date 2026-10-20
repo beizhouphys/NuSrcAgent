@@ -277,5 +277,7 @@ New DR2 spatial+energy stacks report the primary ns, Gamma, TS, p-value and
 one-sided significance first. Continue the same task with `run --task <id>
 --stage flux` for default Gamma=2, 2.5, 3 upper limits and primary intensity
 measurements when TS > 9. The Agent reports the primary result in chat before
-continuing automatically. Joint-stack figures use total flux / (4*pi sr),
+continuing automatically. Upper-limit spectrum figures are generated and reported
+regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
+Joint-stack figures use total flux / (4*pi sr),
 with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).

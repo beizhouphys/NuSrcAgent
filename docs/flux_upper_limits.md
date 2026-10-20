@@ -96,4 +96,6 @@ New DR2 spatial+energy joint stacks calculate the same three fixed spectra with
 separate stacking settings after the primary fit has been reported. Intrinsic
 weights are applied to each source detector yield once. Numeric artifacts retain
 total flux and explicit full-sky-average intensity; stack plots use intensity and
-only diffuse references. See [stacking flux definitions](stacking_flux.md).
+only diffuse references. Upper-limit spectrum figures are generated and reported
+at every primary TS, including TS <= 9; only measurement products require TS > 9.
+See [stacking flux definitions](stacking_flux.md).
