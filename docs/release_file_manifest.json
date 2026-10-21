@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 28912,
-      "sha256": "a47625a62764d2adce59ee7ca953f4bba96f58ed780ccdc0c3a261d116f75a56"
+      "bytes": 29806,
+      "sha256": "84d5d119c9c26c0fe35b391de48901e69bc2fdb5501dba7f3e58cacf5cfefd89"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -18,8 +18,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
-      "bytes": 6131,
-      "sha256": "ee384ea33660523d2b60030de7c513ff0ce80e6f5ad9ace2a7d9ce4235ed1e10"
+      "bytes": 7025,
+      "sha256": "2d13fa15be749bae9988277cddc8bc71a611d11f2fec4c00d2c52b738401af49"
     },
     {
       "path": ".gitattributes",
@@ -43,8 +43,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 3232,
-      "sha256": "97a70dff97d53681fb69d89ee30a6d9ed9bdc36f221d7ddd201656914e609e41"
+      "bytes": 4013,
+      "sha256": "ff3f060d2a7e09021e0ca84b964e4d19d90681e648ba41898545fc196ac73b44"
     },
     {
       "path": "AGENT_VERSION.txt",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 19843,
-      "sha256": "c950190a437b3141fdb66b008f2c93b232888f78b97376b0185d3b664ecd3e21"
+      "bytes": 20266,
+      "sha256": "6536f821f0a923a334bead4918d318fd999d9b6084bfcabb7ca333bc63e70155"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -78,8 +78,8 @@
     },
     {
       "path": "agent_core/catalog_scan_outputs.py",
-      "bytes": 11957,
-      "sha256": "1f76e64cc14cc7218cb6e8ca78595d4f68b087b9db42a56ce63074c3ec821adb"
+      "bytes": 12101,
+      "sha256": "651881662d449c2800233ced53a7dded04d34f3f1b2f847934d4473d5240d369"
     },
     {
       "path": "agent_core/config_io.py",
@@ -138,8 +138,8 @@
     },
     {
       "path": "agent_core/p_value.py",
-      "bytes": 1304,
-      "sha256": "586e7a3192ea0c36273dfb366ca1ffee2ac92d44517a636b3300f1855343b54e"
+      "bytes": 1862,
+      "sha256": "cc5a570aec9fe8772a37250965778b6eeaf4fbeda4008fe398e89f164b3bd2b4"
     },
     {
       "path": "agent_core/planner.py",
@@ -158,8 +158,8 @@
     },
     {
       "path": "agent_core/report.py",
-      "bytes": 17326,
-      "sha256": "5aeb1d98e4763c102bfb52f75b21b8506493da922a228097272941f054221414"
+      "bytes": 17905,
+      "sha256": "98eb9f9e49292209bd0560e2139bf912af1fbb1570f5b36cfbe8f0b8b7ccffc7"
     },
     {
       "path": "agent_core/review.py",
@@ -178,8 +178,8 @@
     },
     {
       "path": "agent_core/single_source_stages.py",
-      "bytes": 15532,
-      "sha256": "8d9f7ed71a1a1a7835587485a660b9d0a1d9b5df048b2c39b06ced0fa862067d"
+      "bytes": 15699,
+      "sha256": "9225ee76e3d750a37eb399e5009361f0d2847b0ad0d6f2718115ccc64528e835"
     },
     {
       "path": "agent_core/stacking_progress.py",
@@ -188,8 +188,8 @@
     },
     {
       "path": "agent_core/stacking_stages.py",
-      "bytes": 12158,
-      "sha256": "aac966161cc9bb5e45e525f67c7f976733eedd07544cdfd9bd06ea5dbb39e463"
+      "bytes": 12388,
+      "sha256": "9848ab4d5787f50239898d3a3a7e02c678406b1daf626f87c87da07ae1491792"
     },
     {
       "path": "agent_core/stage_progress.py",
@@ -448,8 +448,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 11911,
-      "sha256": "d108230da471055b61cf9f0855821badea26bca9980eaba86860613ce06bd5ea"
+      "bytes": 12805,
+      "sha256": "afcefbe2a547fd3b199d13fc4046d55f55a068fe27c1380f76efb1442be9da6e"
     },
     {
       "path": "docs/single_source_linear_interpolation.md",

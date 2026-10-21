@@ -27,3 +27,13 @@ def local_p_value_estimate(ts: float, gamma_mode: str) -> dict[str, object]:
             "p_value_method": f"analytic_half_chi_square_df{dof}_estimate",
             "p_value_dof": dof, "p_value_is_estimate": True,
             "significance_convention": "one_sided_gaussian_sigma"}
+
+
+def background_trial_note(*significances: float | None) -> str:
+    """Reporting guidance for analytic estimates; never launches trials."""
+    note = ("A more precise significance requires background trials using the same "
+            "observed fit procedure and the full search/hypothesis family being calibrated.")
+    if any(value is not None and float(value) > 2.0 for value in significances):
+        note += (" The estimated significance exceeds 2 sigma; background trials "
+                 "are needed to calibrate this result.")
+    return note

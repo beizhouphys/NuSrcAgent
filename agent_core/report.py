@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from agent_core.p_value import local_p_value_estimate
+from agent_core.p_value import background_trial_note, local_p_value_estimate
 from agent_core.catalog_scan_outputs import (
     GLOBAL_COLUMNS, add_catalog_scan_estimates, compact_scan_table, write_catalog_scan_outputs,
 )
@@ -99,6 +99,11 @@ def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> d
             report_result["source_scan_post_trial_calibration"] = "analytic_approximation"
     if result.get("catalog_scan_summary"):
         report_result["source_scan_post_trial_calibration"] = "analytic_independent_source_catalog_correction_estimate"
+    fits = [result, *(item["fit"] for item in result.get("source_results", [])),
+            *result.get("_source_results", []), *result.get("_stacking_results", [])]
+    fits.extend(child for fit in list(fits) for child in fit.get("flux_upper_limit_fits", []))
+    report_result["background_trial_note"] = background_trial_note(
+        *(fit.get(key) for fit in fits for key in ("pre_trial_significance", "post_trial_significance")))
     return {"schema_version": normalized.schema_version, "run": {"status": "completed", "backend": backend}, "analysis": {"type": normalized.analysis_type, "time_mode": normalized.time_mode, "likelihood_mode": normalized.likelihood_mode, "sample": normalized.sample, "n_sources": len(normalized.sources), "catalog_operation": normalized.catalog_operation if normalized.analysis_type == "catalog_stacking" else None}, "result": report_result, "diagnostics": {"n_background_trials": 0, "requested_background_trials": normalized.n_trials, "source_weight_sum": sum(source.weight for source in normalized.sources)}, "warnings": list(dict.fromkeys(warnings))}
 
 
@@ -135,7 +140,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     lines.extend(f"- {key}: `{value}`" for key, value in report["analysis"].items() if value is not None)
     lines.extend(["", "## Result", ""])
     for key, value in report["result"].items():
-        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "fit_procedure", "signal_energy_gamma_interpolation"}:
+        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "background_trial_note", "fit_procedure", "signal_energy_gamma_interpolation"}:
             lines.append(f"- {key}: `{value}`")
     source_results = report["result"].get("source_results", [])
     if source_results:
@@ -145,6 +150,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             "```text", compact_scan_table(source_results), "```", "", summary["note"]])
         if summary.get("sqrt_ts_png"):
             lines.extend(["", "![Observed source sqrt(TS) distribution](" + summary["sqrt_ts_png"] + ")"])
+    lines.extend(["", report["result"].get("background_trial_note", background_trial_note())])
     flux_entries = [(report["result"], "Source")] if not source_results else [(item["fit"], item["source_name"]) for item in source_results]
     if report["result"].get("stacking_phase") == "flux":
         from agent_core.stacking_stages import stack_flux_markdown

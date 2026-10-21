@@ -14,6 +14,7 @@ from agent_core.cpu import execution_metadata, positive_worker_count
 from agent_core.config_io import load_config_file
 from agent_core.file_cache import sha256_file
 from agent_core.normalize import normalize_config
+from agent_core.p_value import background_trial_note
 from agent_core.report import write_run_artifacts
 from agent_core.review import review_run
 from agent_core.schemas import ConfigError
@@ -228,7 +229,9 @@ def _run_flux(request_path, primary, root, workers=1):
 def chat_stages(task):
     summary = dict(execution_flow=FLOW, single_source_stages=task.get("stages", {}))
     if task.get("single_source_llh_summary"):
-        summary["single_source_llh_summary"] = task["single_source_llh_summary"]
+        primary = task["single_source_llh_summary"]
+        summary["single_source_llh_summary"] = dict(primary,
+            background_trial_note=background_trial_note(primary["significance"]))
     if task.get("status") == "AWAITING_FLUX":
         summary["flux_user_reply_required"] = True
         summary["next_action"] = ("Report single_source_llh_summary in the final answer chat bubble, ask whether to continue "

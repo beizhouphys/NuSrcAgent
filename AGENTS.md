@@ -23,6 +23,10 @@
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
 
+## Significance 报告
+
+- 对所有 analyses，在给出估算 significance 后，说明“更精确的 significance 需要 background trials”；若任何已报告的估算 significance 严格大于 2σ，明确强调需要做 background trials。此规则适用于所有 data samples、likelihood modes、single-source analysis、catalog scan、stacking analysis，以及 local 和 catalog-corrected estimates；primary 或 flux 阶段只要报告估算 significance，也须遵守。Background trials 须重复相应 observed fit；校准 search significance 时须覆盖完整 search/hypothesis family。此提醒本身不启动 trials、不改变 review status；已有 empirical significance 保留其 Monte Carlo uncertainty 和 trial scope，不称其尚未做 trials。
+
 ## Progress update 与总耗时
 
 - 执行本项目的任何任务时，从本次用户请求开始记录 wall-clock time；每条 progress update 都说明预计还需多久，并优先根据当前配置下已完成的同类计算外推。重复计算采用 `已完成计算耗时 / 已完成数量 × 剩余数量`；例如 100/1000 个 sources 用时 1 分钟，则该阶段预计还需 9 分钟，总计约 10 分钟。

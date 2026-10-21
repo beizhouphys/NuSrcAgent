@@ -230,6 +230,12 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   dof=2 for free Gamma and dof=1 for fixed Gamma; empirical calibration is separate.
   Zero background trials alone do not create a warning: an otherwise passing
   ordinary fit returns **COMPLETED**.
+- Whenever an estimated significance is reported, a more precise significance
+  requires background trials. If the estimate exceeds 2 sigma, background
+  trials are needed to calibrate the result. This applies to every analysis,
+  including single sources, catalog scans and stacks. Trials must repeat the
+  corresponding fit and search/hypothesis family; this reminder does not
+  start trials or change the review status.
 - **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to
   be read in the report; results are preliminary. Failed reviews are not valid results.
   At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,

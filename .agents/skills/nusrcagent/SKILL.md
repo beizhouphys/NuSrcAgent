@@ -195,6 +195,19 @@ for free Gamma. Do not apply these formulas to empirical or catalog-corrected
 p-values or to a search across several fixed-Gamma hypotheses.
 Unavailable post-trial quantities must remain unavailable.
 
+For every analysis, immediately after reporting an estimated significance in
+chat or a readable report, state that a more precise significance requires
+background trials. If any reported estimated significance is strictly greater
+than 2 sigma, explicitly emphasize that background trials are needed to
+calibrate that result. This applies to all data samples, likelihood modes,
+single-source fits, catalog scans, joint stacks and estimated local or
+catalog-corrected values, including primary and flux-stage summaries when
+they quote significance. Trials must repeat the corresponding observed fit
+and the full search/hypothesis family for the significance being calibrated.
+This reporting reminder does not authorize launching trials, change the
+analytic estimate or review status, or describe an already empirical result
+as lacking trials; retain its Monte Carlo uncertainty and trial scope.
+
 Ordinary fits execute zero background trials. Record the requested and executed
 counts and the analytic method as information, without creating a warning solely
 for absent trials, analytic local calibration or unavailable empirical/post-trial
