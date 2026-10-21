@@ -39,6 +39,9 @@ class StageProgress:
     def __init__(self, root, settings, mode, started=None, clock=monotonic):
         self.command = progress_module._active
         self.root,self.clock=Path(root),clock
+        self.use_fit_eta=(mode=="primary" and isinstance(settings,dict)
+            and settings.get("analysis_type")=="catalog_stacking"
+            and settings.get("catalog_operation")=="stack")
         self.environment=environment_identity()
         inputs={}
         if isinstance(settings,dict) and settings.get('sample'):
@@ -82,9 +85,11 @@ class StageProgress:
         elapsed=max(0.,now-self.phase_started)
         history=[r['stage_seconds'] for r in self.references]
         stage_estimate=None
-        if history:stage_estimate=max(0.,median(r[stage] for r in history)-elapsed)
+        if history:
+            stage_estimate=median(r[stage] for r in history)-elapsed
+            if stage_estimate<=0:stage_estimate=None
         # The primary joint fit is the last numerical step in primary analysis.
-        if stage=='analysis' and row.get('phase')=='joint stacking fit' and row.get('remaining_seconds') is not None:
+        if stage=='analysis' and self.use_fit_eta and row.get('phase')=='joint stacking fit':
             stage_estimate=row['remaining_seconds']
         future=[n for n in self.names[self.names.index(stage)+1:]]
         total=None
@@ -92,7 +97,8 @@ class StageProgress:
             total=stage_estimate+sum(median(r[n] for r in history) for n in future)
         row.update(current_stage=stage,stage_elapsed_seconds=elapsed,
             stage_remaining_seconds=stage_estimate,request_remaining_seconds=total,
-            stage_history_count=len(history),request_estimate_status='same_input_environment_history' if total is not None else 'no_completed_comparable_phase_history',
+            stage_history_count=len(history),request_estimate_scope='analysis_wrapper_through_review',
+            request_estimate_status='same_input_environment_history' if total is not None else 'no_completed_comparable_phase_history',
             pending_stages=future)
         if row.get('phase') is None:
             row.update(phase=stage,estimate_scope='current_stage_only',remaining_seconds=stage_estimate,
