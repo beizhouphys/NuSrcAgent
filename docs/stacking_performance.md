@@ -121,7 +121,9 @@ recomputation and reuse of the existing PDF ratio, using unchanged cache keys.
 Only current-run measurements and an explicitly uncalibrated initial workload
 assumption predict remaining fit time; no old reports or historical matches
 are read. Preparation, analysis, files/figures and review are timed separately.
-After the first measured call, a new catalog gets a labelled rough ETA. No
+After the first measured call, a new catalog gets a labelled rough ETA. Its
+first-call cost excludes measured cache construction and includes a small
+current-payload read probe, so startup is not multiplied by remaining calls. No
 optimizer settings or scientific inputs change. See
 [progress and elapsed time](task_timing.md) for the assumptions and measured
 prediction errors.

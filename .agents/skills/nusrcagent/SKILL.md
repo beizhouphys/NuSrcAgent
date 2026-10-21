@@ -23,8 +23,13 @@ checkpoints as newly timed work. Read `NuSrcAgent progress:` stderr events and
 During a joint stacking fit, read `remaining_seconds`, `estimate_basis`,
 `cost_class_counts`, `uses_history` and `estimate_quality`. The observer separates
 the cold first call, PDF recomputation and cached-PDF calls from actual cache
-state. Only current measurements update cost; the assumed remaining call count
-is explicitly uncertain. Do not treat cheap calls as full likelihood timings.
+state. Read `cold_call_cost`: the first forecast subtracts measured one-time
+cache construction and adds a read-cost probe of this run's cached payloads.
+Never multiply the whole cold-call duration by future calls. Only retained
+geometry is subtracted; uncached work remains in recurring cost. The probe's
+own time is recorded separately. Later full-PDF samples replace the first
+estimate. Only current measurements update cost; the assumed remaining call
+count is explicitly uncertain. Do not treat cheap calls as full likelihood timings.
 Use `current_stage`, `stage_remaining_seconds`, `request_remaining_seconds` and
 `pending_stages` to distinguish preparation, numerical analysis, output/figures
 and scientific review. Named subphases identify input loading, saved-primary

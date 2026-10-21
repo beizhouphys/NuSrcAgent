@@ -48,9 +48,22 @@ is no history lookup or transfer of old call counts or speeds.
 The optimizer does not declare how many calls remain. A clearly labelled,
 uncalibrated reporting assumption starts at 24 calls for fitted Gamma or 12
 for fixed Gamma. After the first completed call, the observer multiplies its
-estimated remaining call count by a measured current-run call cost. The cold
-first duration supplies a temporary speed; later full-PDF calls replace it with
-the median of the last eight full-PDF durations. Cached calls never enter the
+estimated remaining call count by a measured current-run call cost. The first-call estimate removes measured one-time cache construction:
+
+`recurring call seconds = cold call seconds - retained geometry construction - compression - energy lookup construction + estimated cached-read seconds`
+
+Only geometry for blocks successfully retained in the cache is subtracted;
+uncached geometry remains recurring work when the cache budget is saturated.
+Compression and energy-lookup construction use counter deltas measured within
+that call. Read cost is estimated from the current compressed payloads: up to
+three blocks per dataset (first, middle, last) are decompressed once, and their
+median measured seconds per uncompressed byte is multiplied by cached bytes.
+The probe leaves cache payloads, hits/misses and numerical values unchanged.
+Its own elapsed time is recorded separately and is not charged to every future
+call. No extra objective-function calculation is performed.
+
+This corrected recurring cost supplies the first forecast. Later full-PDF calls
+replace it with the median of the last eight full-PDF durations. Cached calls never enter the
 full-PDF rate. Fixed-Gamma fits with only cached calls after setup use their
 own measured cached-call rate. Free-Gamma fits conservatively assume future
 calls can require PDF recomputation, even after a cheap cached burst.
@@ -64,7 +77,7 @@ the actual optimizer, its call limit, parameters or stopping conditions. They
 can be substantially wrong; a numerical estimate is not a completion guarantee.
 
 `fit_timing` in the result records cost classes, durations, completion times,
-reference reports and forecasts made while the fit was active. After completion,
+first-call cost components and forecasts made while the fit was active. After completion,
 each forecast is compared with the actual remaining fit time. Signed error is
 `predicted remaining seconds - actual remaining seconds`; positive means the
 prediction was too long. Summary fields include mean/median absolute error,

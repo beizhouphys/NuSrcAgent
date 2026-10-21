@@ -124,7 +124,8 @@ class _ExactSpatialBlockCache:
         self._full = self.nbytes >= self.max_bytes
         self._stats[namespace] = dict(hits=0, misses=0, cached_blocks=0,
             compressed_bytes=0, geometry_seconds=0.0, compression_seconds=0.0,
-            decompression_seconds=0.0)
+            decompression_seconds=0.0, cached_geometry_seconds=0.0,
+            cached_uncompressed_bytes=0)
 
     def get(self, namespace, block):
         record = self._blocks.get((namespace, *block))
@@ -154,11 +155,47 @@ class _ExactSpatialBlockCache:
         self.nbytes += len(payload)
         stats["compressed_bytes"] += len(payload)
         stats["cached_blocks"] += 1
+        stats["cached_geometry_seconds"] += geometry_seconds
+        stats["cached_uncompressed_bytes"] += values.nbytes
+
+    def estimate_read_seconds(self, namespace):
+        """Probe current payloads without changing cache hits or numerical state."""
+        records=[record for key,record in self._blocks.items() if key[0] is namespace]
+        if not records:
+            return 0.0
+        rates=[]
+        for index in sorted({0,len(records)//2,len(records)-1}):
+            payload,_=records[index]
+            started=perf_counter()
+            size=len(zlib.decompress(payload))
+            elapsed=perf_counter()-started
+            if size:rates.append(elapsed/size)
+        return float(np.median(rates))*self._stats[namespace]['cached_uncompressed_bytes']
 
     def provenance(self, namespace):
         return dict(enabled=True, storage="lossless_zlib_float64_blocks",
                     shared_payload_budget_bytes=self.max_bytes,
                     shared_compressed_bytes=self.nbytes, **self._stats[namespace])
+
+
+def current_stacking_cache_cost(ratios, sample_reads=False):
+    """Observe this fit's cache construction and sample its future read cost."""
+    started=perf_counter()
+    saved_geometry=compression=energy_build=read_seconds=0.0
+    for ratio in ratios:
+        cache=getattr(ratio,'_spatial_cache',None)
+        if cache is not None:
+            namespace=ratio._spatial_cache_namespace
+            stats=cache._stats[namespace]
+            # Geometry for blocks that could not be retained is recurring work.
+            saved_geometry+=stats['cached_geometry_seconds']
+            compression+=stats['compression_seconds']
+            if sample_reads:read_seconds+=cache.estimate_read_seconds(namespace)
+        energy=getattr(ratio,'_energy_cache',None)
+        if energy is not None:energy_build+=energy.interpolation_seconds
+    return dict(cached_geometry_seconds=saved_geometry,compression_seconds=compression,
+        energy_build_seconds=energy_build,estimated_cache_read_seconds=read_seconds,
+        probe_seconds=perf_counter()-started)
 
 
 def choose_chunk_shape(

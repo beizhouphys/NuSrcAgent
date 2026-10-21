@@ -22,7 +22,8 @@ and both real DR2 examples. See the [verification record](docs/input_installatio
 Progress updates include an estimate of time remaining, based on completed work
 when available. Final chat answers include total elapsed time for requests taking
 more than one minute. Joint stacking also estimates remaining fit time from
-separate PDF-recomputation and cached-call timings. New catalogs receive a
+separate PDF-recomputation and cached-call timings, with one-time cache
+construction removed from the initial recurring-cost estimate. New catalogs receive a
 labelled rough fit ETA after the first completed call, using only the current run
 and an explicit initial workload assumption; no historical records are consulted. Preparation, analysis,
 outputs and review have separate timing; predictions are checked against actual

@@ -53,6 +53,7 @@ from analysis_backend.skyllh_chunked import (
     ChunkedSourceWeightedPDFRatio,
     EventOnlyAllEventSelectionMethod,
     _ExactSpatialBlockCache,
+    current_stacking_cache_cost,
 )
 from analysis_backend.skyllh_dr2_pdfs import (
     BACKGROUND_ENERGY_FIELD,
@@ -486,7 +487,8 @@ def run_dr2_stacking(
             signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
         )
     progress = start_stacking_progress(source_specs, gamma_mode,
-        cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios))
+        cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios),
+        cache_cost=lambda **options: current_stacking_cache_cost(analysis.chunked_ratios,**options))
     minimizer_impl = analysis.llhratio.minimizer.minimizer_impl
     minimizer_impl.progress_observer = progress
     fit_timing = None
