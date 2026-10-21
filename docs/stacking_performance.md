@@ -118,8 +118,10 @@ at the original values, not an approximation to nearby energies.
 
 The timing observer distinguishes first-call setup, full source-weighted PDF
 recomputation and reuse of the existing PDF ratio, using unchanged cache keys.
-Comparable completed cost traces and current speeds predict remaining work.
-Preparation, analysis, files/figures and review are timed separately. Unknown
-stopping times or unsupported forecasts stay explicitly unknown; no optimizer
-settings or scientific inputs change. See [progress and elapsed time](task_timing.md)
-for matching rules and validation against actual remaining time.
+Only current-run measurements and an explicitly uncalibrated initial workload
+assumption predict remaining fit time; no old reports or historical matches
+are read. Preparation, analysis, files/figures and review are timed separately.
+After the first measured call, a new catalog gets a labelled rough ETA. No
+optimizer settings or scientific inputs change. See
+[progress and elapsed time](task_timing.md) for the assumptions and measured
+prediction errors.

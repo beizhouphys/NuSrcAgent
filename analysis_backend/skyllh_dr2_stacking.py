@@ -485,19 +485,7 @@ def run_dr2_stacking(
             source_dec_window_deg=source_dec_window_deg,
             signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
         )
-    progress = start_stacking_progress(repo_root, source_specs, dict(
-        likelihood_mode=likelihood_mode, gamma_mode=gamma_mode, gamma_seed=float(gamma),
-        ns_seed=float(ns_seed), gamma_bounds=[float(gamma_min), float(gamma_max)] if gamma_mode=='fitted' else None,
-        ns_bounds=[0., float(ns_max)], random_seed=int(random_seed), data_selection=str(data_selection),
-        background_pdf_version=analysis.background_pdf_version,
-        event_abs_dec_max_deg=analysis.event_abs_dec_max_deg,
-        event_dec_min_deg=analysis.event_dec_min_deg, event_dec_max_deg=analysis.event_dec_max_deg,
-        source_dec_window=analysis.source_dec_window,
-        signal_energy_declination_mode=analysis.signal_energy_declination_mode if likelihood_mode=='spatial_energy' else None,
-        signal_energy_gamma_interpolation=(signal_energy_gamma_interpolation or 'parabola_v1') if likelihood_mode=='spatial_energy' else None,
-        source_ra_scramble_seed=analysis.source_ra_scramble_seed,
-        event_ra_scramble_seed=analysis.event_ra_scramble_seed,
-        fit_procedure=fit_procedure, event_counts=dict(analysis.event_counts)),
+    progress = start_stacking_progress(source_specs, gamma_mode,
         cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios))
     minimizer_impl = analysis.llhratio.minimizer.minimizer_impl
     minimizer_impl.progress_observer = progress
