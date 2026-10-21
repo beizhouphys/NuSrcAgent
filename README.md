@@ -26,7 +26,8 @@ separate PDF-recomputation and cached-call timings. New catalogs receive a
 labelled rough fit ETA after the first completed call, using only the current run
 and an explicit initial workload assumption; no historical records are consulted. Preparation, analysis,
 outputs and review have separate timing; predictions are checked against actual
-remaining time. Estimates remain rough and can be unavailable without history.
+remaining time. Fit estimates remain rough; before any call finishes, the first
+timing sample is pending.
 See [progress and elapsed time](docs/task_timing.md).
 
 ## What analyses can I run?

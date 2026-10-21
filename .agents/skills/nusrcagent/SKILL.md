@@ -21,10 +21,10 @@ allow separately for later stacking, artifacts and review. Never count restored
 checkpoints as newly timed work. Read `NuSrcAgent progress:` stderr events and
 `execution_timing` in wrapper JSON; translate these into natural chat updates.
 During a joint stacking fit, read `remaining_seconds`, `estimate_basis`,
-`cost_class_counts`, and `matched_cost_templates`. The observer separates the
-cold first call, PDF recomputation and cached-PDF calls from actual cache state.
-Matched completed traces provide remaining work by cost class; current speeds
-rescale them. Do not treat the last few cheap calls as full likelihood timings.
+`cost_class_counts`, `uses_history` and `estimate_quality`. The observer separates
+the cold first call, PDF recomputation and cached-PDF calls from actual cache
+state. Only current measurements update cost; the assumed remaining call count
+is explicitly uncertain. Do not treat cheap calls as full likelihood timings.
 Use `current_stage`, `stage_remaining_seconds`, `request_remaining_seconds` and
 `pending_stages` to distinguish preparation, numerical analysis, output/figures
 and scientific review. Named subphases identify input loading, saved-primary
