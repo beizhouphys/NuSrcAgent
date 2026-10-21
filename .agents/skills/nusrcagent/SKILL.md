@@ -32,15 +32,22 @@ reconstruction and fixed-spectrum profiles. A fit-only ETA excludes later stages
 only quote a whole-request ETA when its field is available.
 That request field covers AnalysisAgent execution through review; initial chat
 setup and composing the final answer require additional time.
-Use the supplied numeric estimate with an explicit rough qualifier. Do not invent
-a 1–2 minute plotting/review allowance or an optimizer call budget. Without a
-matched history, explain which phase lacks a reference; completed work still
-supplies measured durations and counts. An overdue or mismatched forecast may
-become unknown rather than pretending work is almost finished.
-Do not invent an interval: `remaining_seconds_range` is absent until at least
-three independent prior error histories exist. It then describes past prediction
-errors, not a guaranteed completion window. Final timing records include forecasts
-made before completion and their actual errors; no current future data is used.
+ETA must use only the current invocation. Never load old run reports, matching
+catalog records, past timing files or reference speed/work counts to estimate it.
+After the first completed evaluation, always quote the supplied numerical ETA
+in chat as a rough fit-only estimate, even for a brand-new catalog. Do not
+replace it with repeated "unknown" because optimizer stopping time is uncertain.
+Explain that the workload begins with an uncalibrated reporting assumption:
+24 calls for fitted Gamma or 12 for fixed Gamma. This assumption expands when
+reached and never limits the optimizer. Current full-PDF and cached-call timings
+remain separate; a cached burst cannot replace the full-PDF rate. An overdue
+active call revises its assumed cost upward rather than suppressing ETA.
+Before the first completed call, explain that the initial timing sample is
+pending. Do not invent a historical reference, confidence interval, fixed review
+allowance or whole-request ETA when only fit timing is measured.
+Do not invent an interval: `remaining_seconds_range` remains absent. Completed
+fits record forecasts made before completion and their actual errors for audit;
+these errors never become reference inputs to later ETA forecasts.
 Before a usable sample exists, state that a reliable estimate is pending. For
 unbounded continuous scrambling, state that no end time is set; never add a
 trial target or stop condition for reporting. Other work, including inspection,

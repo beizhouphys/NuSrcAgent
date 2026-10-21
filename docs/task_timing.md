@@ -41,21 +41,27 @@ existing source-weighted PDF cache keys before and after each unchanged call:
 and `pdf_reused` identifies an unchanged key. It does not change caching,
 likelihood evaluation, optimizer settings, bounds, seeds or stopping conditions.
 
-Reviewed converged runs with matching ordered coordinates/weights, scientific
-settings, input hashes and package versions can supply call-count references.
-Version-2 traces additionally record each call's cost class and duration.
-Only traces from the same host, machine and thread environment supply speeds.
-Their already-recorded cost sequences forecast the remaining work; the median
-of current/reference duration ratios within each cost class rescales its speed.
-Cached calls therefore cannot reduce the estimated cost of future full-PDF calls.
-If the current class sequence diverges, its sequence template is rejected.
-Legacy count-only references use measured full-PDF speed as a coarse fallback.
+ETA uses **only the current invocation**, never old reports, matching catalogs,
+historical timing files, input-hash comparisons or stored cost sequences. There
+is no history lookup or transfer of old call counts or speeds.
 
-There are no arbitrary 32/12-call defaults or half-to-1.5-budget intervals.
-An unknown optimizer stopping count stays unknown without a comparable completed
-fit. If a forecast becomes overdue or reaches the reference endpoint while the
-optimizer is active, the ETA becomes unavailable with an explicit reason; it
-does not count down to an artificial positive floor or imply completion.
+The optimizer does not declare how many calls remain. A clearly labelled,
+uncalibrated reporting assumption starts at 24 calls for fitted Gamma or 12
+for fixed Gamma. After the first completed call, the observer multiplies its
+estimated remaining call count by a measured current-run call cost. The cold
+first duration supplies a temporary speed; later full-PDF calls replace it with
+the median of the last eight full-PDF durations. Cached calls never enter the
+full-PDF rate. Fixed-Gamma fits with only cached calls after setup use their
+own measured cached-call rate. Free-Gamma fits conservatively assume future
+calls can require PDF recomputation, even after a cheap cached burst.
+
+When the assumed workload is reached, it expands by one quarter of the initial
+assumption (at least three calls). An active call exceeding its predicted cost
+revises that cost upward using its elapsed time; ETA remains explicitly rough
+and does not count down to zero while optimization is active. Before any call
+finishes, the first timing sample is pending. These assumptions never change
+the actual optimizer, its call limit, parameters or stopping conditions. They
+can be substantially wrong; a numerical estimate is not a completion guarantee.
 
 `fit_timing` in the result records cost classes, durations, completion times,
 reference reports and forecasts made while the fit was active. After completion,
@@ -63,9 +69,9 @@ each forecast is compared with the actual remaining fit time. Signed error is
 `predicted remaining seconds - actual remaining seconds`; positive means the
 prediction was too long. Summary fields include mean/median absolute error,
 90th-percentile absolute error and signed bias. No current run's future is used
-for a live forecast. A displayed interval needs at least three independent prior
-error histories; it uses their 90th-percentile absolute errors and is an empirical
-error band, not a confidence interval or guaranteed bound.
+for a live forecast. No history-based error interval is calculated;
+`remaining_seconds_range` stays null. Error summaries describe the completed
+run and do not calibrate a confidence interval for the next run.
 
 ## Named stages and total remaining time
 
@@ -76,12 +82,11 @@ fixed-spectrum likelihood profiling. The existing per-spectrum completion counts
 remain available. Primary and flux stages are separate user-authorized turns.
 
 Events include `current_stage`, `stage_elapsed_seconds`, `stage_remaining_seconds`,
-`pending_stages` and `request_remaining_seconds`. Exact normalized settings, input
-hashes, host/thread environment and primary/flux mode must match for stage timing
-history. A request ETA sums the current-stage forecast and the measured histories
-of pending stages. It remains unavailable if later stages lack references; do not
-add an invented review allowance. Stages and subphases still report their names
-and actual durations during a first run without history.
+`pending_stages` and `request_remaining_seconds`. Stage timing also uses only this invocation. There is no matching of prior
+settings, inputs or environments. A fit-only forecast is not a whole-request
+forecast: when later output/review stages have no current measurement, report
+the fit ETA explicitly and identify the unestimated later stages. Do not invent
+a fixed review allowance. Stages and subphases retain actual elapsed times.
 
 The run's `timing.json` records stage durations, reference runs and whole-request
 forecasts/errors through numerical execution, files and review. It does not include
@@ -90,8 +95,10 @@ the chat must separately report the whole current user turn's elapsed time.
 
 ## Validation
 
-Check prediction error on a later run whose measurements were unavailable to the
-reference fit. Compare old and new forecasts at identical timestamps and report
-absolute error, signed bias, coverage and numerical invariance. A successful
-presence/format check alone does not validate ETA accuracy. A single held-out run
-can reveal a regression but cannot establish general predictive coverage.
+Run a fresh catalog through the real wrapper without a reference run. Verify
+numerical rough ETA coverage after the first completed call, then compare each
+prediction with actual remaining time. Report mean/median absolute error,
+90th-percentile absolute error and signed bias. Verify observer and stage
+construction cannot read historical run directories. Check scientific-call
+invariance separately. Presence of a numerical ETA does not establish accuracy,
+and one catalog does not establish general predictive coverage.

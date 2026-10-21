@@ -1,6 +1,5 @@
 """Named execution phases and auditable, out-of-sample wall-time forecasts."""
 from contextlib import contextmanager
-import hashlib
 from importlib.metadata import version, PackageNotFoundError
 import json
 import os
@@ -33,33 +32,16 @@ def error_summary(rows):
 
 
 class StageProgress:
-    """A same-input/environment history; each prediction is recorded before completion."""
+    """Record stages and expose only estimates measured in the current invocation."""
     names = ('request preparation','analysis','output generation','scientific review')
 
     def __init__(self, root, settings, mode, started=None, clock=monotonic):
         self.command = progress_module._active
-        self.root,self.clock=Path(root),clock
+        self.clock=clock
         self.use_fit_eta=(mode=="primary" and isinstance(settings,dict)
             and settings.get("analysis_type")=="catalog_stacking"
             and settings.get("catalog_operation")=="stack")
         self.environment=environment_identity()
-        inputs={}
-        if isinstance(settings,dict) and settings.get('sample'):
-            from agent_core.environment import _required_paths
-            from agent_core.file_cache import sha256_file
-            inputs={str(p):(sha256_file(self.root/p) if (self.root/p).is_file() else None)
-                    for p in _required_paths(settings['sample'],settings.get('likelihood_mode'))}
-        payload=dict(settings=settings,mode=mode,inputs=inputs,environment=self.environment,model='phase_eta_v2')
-        self.key=hashlib.sha256(json.dumps(payload,sort_keys=True,default=str).encode()).hexdigest()
-        self.references=[]
-        for path in sorted((self.root/'data_output/runs').glob('run*/timing.json'),reverse=True)[:64]:
-            try:
-                data=json.loads(path.read_text())
-                review=json.loads((path.parent/'review.json').read_text())
-                if data['key']==self.key and all(k in data['stage_seconds'] for k in self.names) and review.get('status') in ('pass','warning'):
-                    self.references.append(data)
-            except (OSError,ValueError,KeyError,TypeError):continue
-            if len(self.references)==5:break
         self.started=clock() if started is None else started
         self.current=None;self.phase_started=None;self.durations={}
         self.subphases=list(getattr(self.command,'subphase_records',[]));self.predictions=[]
@@ -83,26 +65,22 @@ class StageProgress:
         stage=self.current
         if stage is None:return row
         elapsed=max(0.,now-self.phase_started)
-        history=[r['stage_seconds'] for r in self.references]
         stage_estimate=None
-        if history:
-            stage_estimate=median(r[stage] for r in history)-elapsed
-            if stage_estimate<=0:stage_estimate=None
         # The primary joint fit is the last numerical step in primary analysis.
         if stage=='analysis' and self.use_fit_eta and row.get('phase')=='joint stacking fit':
             stage_estimate=row['remaining_seconds']
         future=[n for n in self.names[self.names.index(stage)+1:]]
         total=None
-        if stage_estimate is not None and all(all(n in r for n in future) for r in history) and history:
-            total=stage_estimate+sum(median(r[n] for r in history) for n in future)
+        if stage_estimate is not None and not future:
+            total=stage_estimate
         row.update(current_stage=stage,stage_elapsed_seconds=elapsed,
             stage_remaining_seconds=stage_estimate,request_remaining_seconds=total,
-            stage_history_count=len(history),request_estimate_scope='analysis_wrapper_through_review',
-            request_estimate_status='same_input_environment_history' if total is not None else 'no_completed_comparable_phase_history',
+            uses_history=False,request_estimate_scope='analysis_wrapper_through_review',
+            request_estimate_status='current_run_only' if total is not None else 'pending_stages_have_no_current_measurement',
             pending_stages=future)
         if row.get('phase') is None:
             row.update(phase=stage,estimate_scope='current_stage_only',remaining_seconds=stage_estimate,
-                estimate_status='historical_stage_time' if stage_estimate is not None else 'no_completed_comparable_phase_history')
+                estimate_status='current_run_only' if stage_estimate is not None else 'no_current_stage_rate_sample')
         if total is not None and now-self.last_prediction>=5:
             self.predictions.append(dict(elapsed_seconds=now-self.started,current_stage=stage,remaining_seconds=total))
             self.last_prediction=now
@@ -112,9 +90,9 @@ class StageProgress:
         elapsed=self.clock()-self.started
         rows=[dict(p,actual_remaining_seconds=max(0.,elapsed-p['elapsed_seconds']),
               signed_error_seconds=p['remaining_seconds']-max(0.,elapsed-p['elapsed_seconds'])) for p in self.predictions]
-        record=dict(version=2,key=self.key,environment=self.environment,stage_seconds=self.durations,
+        record=dict(version=3,uses_history=False,environment=self.environment,stage_seconds=self.durations,
             subphases=self.subphases,wall_seconds=elapsed,prediction_errors=rows,prediction_error_summary=error_summary(rows),
-            reference_runs=[r.get('run_directory') for r in self.references],run_directory=str(run_dir))
+            run_directory=str(run_dir))
         (Path(run_dir)/'timing.json').write_text(json.dumps(record,indent=2)+'\n')
         if self.command:self.command.stage_plan=self.previous_plan
 
@@ -132,7 +110,7 @@ def subphase(name):
     with command.lock:
         previous=command.phase
         command.phase=dict(phase=name,remaining_seconds=None,estimate_scope='current_subphase_only',
-            estimate_status='subphase_without_completed_reference',measured_at=started)
+            estimate_status='subphase_without_current_rate_sample',measured_at=started)
     command.emit('subphase_started')
     try:yield
     finally:
