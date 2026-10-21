@@ -183,8 +183,8 @@
     },
     {
       "path": "agent_core/stage_progress.py",
-      "bytes": 7132,
-      "sha256": "db216858a70ca6aeac34fbcf23763472de9b444ac283eb45ce0aaf8942a958f5"
+      "bytes": 7434,
+      "sha256": "b68b45b727e8394cbff2832c95a7dc4263056c71421bd789042d9e366a9f0960"
     },
     {
       "path": "agent_core/task_state.py",
