@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from agent_core.file_cache import sha256_file
+from agent_core.p_value import background_trial_note
 from agent_core.cpu import positive_worker_count
 from agent_core.stage_progress import subphase
 from agent_core.simple_yaml import load_simple_yaml
@@ -159,6 +160,9 @@ def chat_stages(task):
         if stage.get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
             output[name] = dict(stage["chat_summary"], status=stage["status"],
                                 review_status=stage["review_status"], warnings=stage.get("warnings", []))
+            if name == "primary":
+                output[name]["background_trial_note"] = background_trial_note(
+                    output[name].get("pre_trial_significance"))
     if task.get("status") == "AWAITING_FLUX":
         output["flux_user_reply_required"] = True
         output["next_action"] = ("Report the primary result in the final answer chat bubble, ask whether to continue "

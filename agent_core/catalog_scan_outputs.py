@@ -9,7 +9,7 @@ from scipy.special import log_ndtr, ndtri_exp
 
 from agent_core.analysis_outputs import write_csv
 from agent_core.file_cache import sha256_file
-from agent_core.p_value import local_p_value_estimate
+from agent_core.p_value import background_trial_note, local_p_value_estimate
 
 
 METHOD = "analytic_independent_source_catalog_correction_estimate"
@@ -91,6 +91,7 @@ def add_catalog_scan_estimates(result):
     result.setdefault("catalog_scan_summary", {}).update({
         "schema_version": 1, "n_sources": len(records), "method": METHOD,
         "scope": "selected_catalog_individual_source_scan", "note": NOTE,
+        "background_trial_note": background_trial_note(best["pre_trial_significance"], best["post_trial_significance"]),
         "top_five_source_numbers": [item["source_number"] for item in ranked_sources(records)[:5]]})
     result["catalog_post_trial_note"] = NOTE
 
