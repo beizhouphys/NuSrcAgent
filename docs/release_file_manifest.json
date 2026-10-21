@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 26508,
-      "sha256": "d16a214717b50f665d5dc38cef6b325194f7ceb5fa433933a1d379878627b163"
+      "bytes": 26509,
+      "sha256": "abe529b54daec2322735cd89db579a8b2bab6808f9e8fa534812e9db17a47568"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 19062,
-      "sha256": "257369777ad723fa0444bd67a8cfbeba805db97edd6482c4dadc11e37f4a2ed7"
+      "bytes": 19089,
+      "sha256": "79404d9f5bc4e4dec5a168111265716eadada785c2a547621fa7f25fd7f27065"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
