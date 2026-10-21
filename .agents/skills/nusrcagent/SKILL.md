@@ -168,14 +168,17 @@ arbitrary user catalogs or individual-source scans. Agree the trial family,
 count, seeds and stopping strategy before any background trials. Negative-TS
 discarding requires scientific review. Time-dependent trials are unsupported.
 
-Honor a requested CPU budget with `--cpus N` (positive integer; default 1),
+Honor a requested CPU budget with `--workers N` (positive integer; default 1),
 including user-authorized flux commands. Single-source and joint stacking fits
-set numerical-library thread limits before analysis imports. DR2 scans use N
+set numerical-library thread limits before analysis imports. DR1 and DR2 scans use N
 spawned workers with one numerical thread and a separate input/PDF cache each;
 `scan_and_stack` applies these rules to its respective phases. Preserve current-run
 ETA observers and keep CPU settings in execution provenance, outside the scientific
-request hash. See `docs/cpu_execution.md`; empirical scrambling retains its
-separate `--workers` setting.
+request hash. Dominance accepts `--workers N` for independent delete-one refits;
+its cumulative refits retain their previous-result seeds and sequential order.
+RA-scramble diagnostics accept the same option for independent seeds. Checkpoints
+are written by the parent only. See `docs/cpu_execution.md`; empirical scrambling
+retains its recorded `--workers` scheduler setting and default.
 
 ## Reporting
 

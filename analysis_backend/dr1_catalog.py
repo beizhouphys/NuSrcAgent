@@ -7,6 +7,7 @@ from agent_core.progress import track_progress
 # blocks in legacy_codex_revised/likelihood_v4.py.  Agent-facing task and result handling
 # that does not exist in the legacy script remains local to this module.
 
+from agent_core.cpu import ordered_worker_map, positive_worker_count
 import builtins
 import math
 from statistics import NormalDist
@@ -22,8 +23,8 @@ FIG4_ASTRO_NS_REFERENCES = {-2.00: 3217.3, -2.53: 8845.7, -3.00: 49282.2}
 REFERENCE_DIFFUSE_ALL_FLAVOR_FLUX100 = {-2.00: 5e-8, -2.53: 4.98e-8, -3.00: 5e-8}
 
 
-def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -> dict[str, object]:
-    source_results, source_warnings = run_source_scan(normalized, repo_root)
+def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', workers=1) -> dict[str, object]:
+    source_results, source_warnings = run_source_scan(normalized, repo_root, workers=workers)
     stacking_results: list[dict[str, object]] = []
     stacking_curves: list[dict[str, object]] = []
     stacking_warnings: list[str] = []
@@ -54,12 +55,19 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.') -
     }
 
 
-def run_source_scan(normalized: NormalizedAnalysis, repo_root='.') -> tuple[list[dict[str, object]], list[str]]:
+def _fit_source_job(job):
+    source, repo_root, gamma = job
+    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=gamma)
+
+
+def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) -> tuple[list[dict[str, object]], list[str]]:
+    workers = positive_worker_count(workers)
     rows: list[dict[str, object]] = []
     warnings: list[str] = []
     n_tests = len(normalized.sources)
-    for source in track_progress(normalized.sources, "DR1 catalog source fits"):
-        result = run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=normalized.spectral_indices[0])
+    jobs = [(source, repo_root, normalized.spectral_indices[0]) for source in normalized.sources]
+    results = ordered_worker_map(_fit_source_job, jobs, workers)
+    for source, result in track_progress(zip(normalized.sources, results), "DR1 catalog source fits", total=n_tests):
         pre_trial_p = float(result["pre_trial_p"])
         post_trial_p = 1.-(1.-pre_trial_p)**n_tests
         ts = builtins.max(float(result["ts"]), 0.)

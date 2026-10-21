@@ -3,10 +3,10 @@
 A fitted-Gamma stack evaluates all selected sources against every selected
 event at each new spectral hypothesis. A source scan instead fits one source
 at a time, defaults to its recorded adaptive declination window and can run
-two independent single-thread workers with `run --task <id> --cpus 2`.
+two independent single-thread workers with `run --task <id> --workers 2`.
 These workloads are different even when they contain the same catalog.
 
-The same `--cpus N` option sets numerical-library thread limits for single-source
+The same `--workers N` option sets numerical-library thread limits for single-source
 and joint stacking fits, including their user-authorized flux stages. It is a
 thread budget, not a promise of N-fold acceleration. In `scan_and_stack`, the
 joint fit uses the thread budget and the scan uses N single-thread processes.

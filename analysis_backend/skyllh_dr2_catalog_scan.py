@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 from agent_core.progress import track_progress
-from agent_core.cpu import THREAD_VARIABLES, positive_cpu_count, single_thread_workers
+from agent_core.cpu import THREAD_VARIABLES, positive_worker_count, ordered_worker_map
 
 import os
-import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from time import perf_counter
 
@@ -38,16 +36,12 @@ def _fit_source(job):
 
 def run_individual_source_scan(source_specs, workers=1, **fit_options):
     """Keep the original source fits, seeds, ordering and per-process caches."""
-    workers = positive_cpu_count(workers)
+    workers = positive_worker_count(workers)
     _WORKER_RUNTIME_CACHE.clear()
     jobs = [(number, spec, fit_options) for number, spec in enumerate(source_specs, start=1)]
     try:
-        if workers == 1:
-            return [_fit_source(job) for job in track_progress(jobs, "catalog source fits")]
-        with single_thread_workers():
-            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-                records = pool.map(_fit_source, jobs, chunksize=1)
-                # Progress uses current scheduler wall time, not summed worker time.
-                return list(track_progress(records, "catalog source fits", total=len(jobs)))
+        records = ordered_worker_map(_fit_source, jobs, workers)
+        # Progress uses current scheduler wall time, not summed worker time.
+        return list(track_progress(records, "catalog source fits", total=len(jobs)))
     finally:
         _WORKER_RUNTIME_CACHE.clear()

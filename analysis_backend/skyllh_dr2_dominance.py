@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agent_core.progress import track_progress
+from agent_core.cpu import ordered_worker_map, positive_worker_count
 
 import csv
 import hashlib
@@ -227,7 +228,12 @@ def _run_reduced(specs, removed_numbers, repo_root, normalized, gamma_seed, ns_s
     return result, _source_hash(selected)
 
 
-def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, request, candidate_count=15, top_n=10):
+def _reduced_fit_job(job):
+    return _run_reduced(*job)
+
+
+def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, request, candidate_count=15, top_n=10, workers=1):
+    workers = positive_worker_count(workers)
     root = Path(repo_root).resolve()
     baseline_dir = Path(baseline_run_directory).expanduser().resolve()
     out = Path(output_directory)
@@ -258,6 +264,9 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
     }
     state["candidate_count"] = int(candidate_count)
     state["top_n"] = int(top_n)
+    state["execution"] = dict(worker_budget=workers, individual_refit_workers=workers,
+                              numerical_threads_per_worker=1,
+                              sequential_stage_thread_budget=workers)
     _write_json(state_path, state)
     screening_path = out / "delete_one_screening.json"
     if screening_path.exists():
@@ -271,11 +280,13 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
         raise ValueError("Fixed-fit screening does not reproduce the baseline TS within tolerance")
     completed_individual = {int(item["removed_source_numbers"][0]): item for item in state["individual_refits"]}
     candidates = screening["rows"][: int(candidate_count)]
-    for candidate in track_progress([row for row in candidates if int(row["source_number"]) not in completed_individual], "dominance individual refits"):
+    pending = [row for row in candidates if int(row["source_number"]) not in completed_individual]
+    jobs = [(specs, [int(row["source_number"])], root, normalized, baseline["gamma"], baseline["ns"]) for row in pending]
+    results = ordered_worker_map(_reduced_fit_job, jobs, workers)
+    for candidate, (result, source_hash) in track_progress(zip(pending, results), "dominance individual refits", total=len(jobs)):
         number = int(candidate["source_number"])
         if number in completed_individual:
             continue
-        result, source_hash = _run_reduced(specs, [number], root, normalized, baseline["gamma"], baseline["ns"])
         summary = _fit_summary(result, [number], "delete_one")
         summary["source_hash"] = source_hash
         summary.update({"source_name": candidate["source_name"], "ra_deg": candidate["ra_deg"], "dec_deg": candidate["dec_deg"], "delta_ts": float(baseline["TS"]) - summary["TS"], "delta_ts_fixed": candidate["delta_ts_fixed"], "screening_rank": candidate["screening_rank"]})

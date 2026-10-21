@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 from agent_core.file_cache import sha256_file
-from agent_core.cpu import positive_cpu_count
+from agent_core.cpu import positive_worker_count
 from agent_core.stage_progress import subphase
 from agent_core.simple_yaml import load_simple_yaml
 from agent_core.task_state import save_task, stable_payload_hash, utc_now
@@ -61,13 +61,13 @@ def load_primary(task, root, payload):
     return result
 
 
-def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_retries=1, cpus=1, user_reply=None):
+def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_retries=1, workers=1, user_reply=None):
     from agent_core.agent_orchestrator import (
         build_analysis_payload, classify_error, evaluate_completion, write_agent_review,
         SAFE_ERROR_TYPES,
     )
     from agent_core.analysis_agent import AnalysisAgent
-    cpus = positive_cpu_count(cpus)
+    workers = positive_worker_count(workers)
     if max_safe_retries not in (0, 1):
         raise ValueError("CPU budget must be positive and at most one safe retry is allowed")
     if task.get("status") != "AWAITING_FLUX" or not task["parameters"].get("stacking_flux", {}).get("value"):
@@ -81,7 +81,7 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
     for retry in range(1 + max_safe_retries):
         number = len(task["attempts"]) + 1
         attempt = dict(attempt=number, stage="flux", request_sha256=request_hash,
-                       started_at_utc=utc_now(), status="RUNNING", cpu_budget=cpus)
+                       started_at_utc=utc_now(), status="RUNNING", cpu_budget=workers)
         attempt["flux_user_reply"] = user_reply
         task["attempts"].append(attempt)
         task["status"] = "RUNNING"
@@ -94,8 +94,8 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
             request = task_path.parent / ("analysis_request_attempt_%d.yaml" % number)
             agent.prepare_request(payload, request)
             options = dict(backend=backend, prepare_only=False, stacking_primary=copy.deepcopy(primary))
-            if "cpus" in inspect.signature(agent.run).parameters:
-                options["cpus"] = cpus
+            if "workers" in inspect.signature(agent.run).parameters:
+                options["workers"] = workers
             run = agent.run(request, **options)
             completion = evaluate_completion(dict(task, artifacts={"run_directory": str(run.run_dir)}), run.review or {})
             attempt.update(ended_at_utc=utc_now(), status=completion["status"],

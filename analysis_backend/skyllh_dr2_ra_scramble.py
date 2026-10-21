@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agent_core.progress import track_progress
+from agent_core.cpu import ordered_worker_map, positive_worker_count
 
 import json
 from pathlib import Path
@@ -117,7 +118,16 @@ def _write_markdown(path, state):
     Path(path).write_text("\n".join(lines), encoding="utf-8")
 
 
-def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_directory, seeds):
+def _scramble_fit_job(job):
+    specs, mode, seed, common = job
+    source_seed, event_seed = _mode_seeds(mode, seed)
+    result = run_dr2_stacking(specs, source_ra_scramble_seed=source_seed,
+                             event_ra_scramble_seed=event_seed, random_seed=seed, **common)
+    return f"{mode}_seed_{seed}", _summary(result, mode, seed, source_seed, event_seed)
+
+
+def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_directory, seeds, workers=1):
+    workers = positive_worker_count(workers)
     root = Path(repo_root).resolve()
     baseline_dir = Path(baseline_run_directory).expanduser().resolve()
     out = Path(output_directory)
@@ -161,6 +171,8 @@ def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_dir
     }
     if state["trial_definition"]["seeds"] != seeds:
         raise ValueError("Existing checkpoint uses different RA-scramble seeds")
+    state["execution"] = dict(worker_budget=workers, parallel_workers=workers,
+                              numerical_threads_per_worker=1)
 
     common = {
         "repo_root": root,
@@ -175,19 +187,10 @@ def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_dir
         "signal_energy_declination_mode": baseline_report.get("signal_energy_declination_mode", "source"),
     }
     for mode in SCRAMBLE_MODES:
-        for seed in track_progress([seed for seed in seeds if f"{mode}_seed_{seed}" not in state["trials"]], f"RA scrambling: {mode}"):
-            label = f"{mode}_seed_{seed}"
-            if label in state["trials"]:
-                continue
-            source_seed, event_seed = _mode_seeds(mode, seed)
-            result = run_dr2_stacking(
-                specs,
-                source_ra_scramble_seed=source_seed,
-                event_ra_scramble_seed=event_seed,
-                random_seed=seed,
-                **common,
-            )
-            state["trials"][label] = _summary(result, mode, seed, source_seed, event_seed)
+        jobs = [(specs, mode, seed, common) for seed in seeds if f"{mode}_seed_{seed}" not in state["trials"]]
+        results = ordered_worker_map(_scramble_fit_job, jobs, workers)
+        for label, summary in track_progress(results, f"RA scrambling: {mode}", total=len(jobs)):
+            state["trials"][label] = summary
             _write_json(state_path, state)
 
     by_mode = {mode: [row for row in state["trials"].values() if row["mode"] == mode] for mode in SCRAMBLE_MODES}

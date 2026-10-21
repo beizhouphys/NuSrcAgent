@@ -3,10 +3,10 @@
 Use the same execution option for single-source, catalog scan and joint stacking:
 
 ```bash
-.venv/bin/python run_agent_wrap.py run --task <task_id> --cpus 2
+.venv/bin/python run_agent_wrap.py run --task <task_id> --workers 2
 ```
 
-`--cpus` must be a positive integer and defaults to 1. It controls computing
+`--workers` must be a positive integer and defaults to 1. It controls computing
 resources; it does not change the catalog, event selection, weights, likelihood,
 Gamma convention, optimizer, bounds, seeds or scientific request hash.
 
@@ -15,24 +15,24 @@ limits before importing NumPy, SciPy or the analysis modules. This includes
 spatial-only fits and the retained DR1 path. The limit is a budget: a calculation
 that does not use threaded library operations may use fewer CPU cores.
 
-For a DR2 individual-source scan, N spawned processes run the existing independent
+For a DR1 or DR2 individual-source scan, N spawned processes run the existing independent
 source fits. Each process inherits one numerical thread, so N workers do not each
 start N threads. Source results retain input order and the same fit seeds; each
 process keeps its own complete input/PDF cache. Memory use can grow with N.
 `scan_and_stack` performs the joint fit with N numerical threads, then uses N
-single-thread workers for its individual-source fits. The DR1 scan retains its
-existing sequential source loop and uses the numerical thread limit.
+single-thread workers for its individual-source fits. The DR1 source scan also uses N single-thread processes, with the same input order
+and per-process data cache; its joint stacking stage uses numerical thread limits.
 
 Primary/flux reporting still takes two user turns. If flux continuation is
 authorized, pass the CPU option again:
 
 ```bash
 .venv/bin/python run_agent_wrap.py run --task <task_id> --stage flux \
-  --flux-user-reply "<actual user reply>" --cpus 2
+  --flux-user-reply "<actual user reply>" --workers 2
 ```
 
 Each attempt records `cpu_budget`; each report records `execution`, including the
-requested budget, scan-worker count and numerical-library environment. Per-source
+requested budget, scan-worker count and numerical-library environment. DR2 per-source
 execution records contain the worker PID and inherited thread limits. Historical
 records remain unchanged. CPU selection is implemented at the public CLI; callers
 embedding Python must establish numerical-library limits before numerical imports.
@@ -44,3 +44,29 @@ stacking retains separate full-PDF and cached-call timings, the cold-call cache
 cost adjustment and current-invocation-only estimates. No ETA changes optimizer
 stopping conditions. Empirical scrambling retains its separate `--workers`
 scheduler and one numerical thread per worker.
+
+## Dominance and RA-scramble diagnostics
+
+```bash
+.venv/bin/python run_agent_wrap.py dominance --request "<request>" \
+  --baseline-run-directory <run_directory> --output-directory <output_directory> \
+  --candidate-count 15 --top-n 10 --workers 2
+.venv/bin/python run_agent_wrap.py dr2-ra-scramble \
+  --baseline-run-directory <run_directory> --output-directory <output_directory> \
+  --seeds 104729,130363,155921 --workers 2
+```
+
+Dominance runs independent delete-one refits in N single-thread processes.
+Screening and cumulative removals retain their original sequence and use the
+numerical-library thread budget. Each cumulative fit keeps the preceding fit's
+Gamma and ns seeds; parallelizing that sequence would change the fit procedure.
+RA-scramble diagnostics run independent seeds in N single-thread processes within
+each original mode. Source/event random streams, seed order and Gamma settings
+remain unchanged. Only the parent writes checkpoints, after each returned fit;
+resumption skips completed jobs, and changing the worker budget does not change
+the scientific trial definition. Diagnostic checkpoints record the worker budget.
+
+The same option name is used for empirical scrambling: `--workers N` at task
+preparation records its scheduler size; execution/resumption uses that recorded
+value. Its existing default of 2 is retained; `run`, `dominance` and
+`dr2-ra-scramble` default to 1. No deprecated CPU-option alias is provided.
