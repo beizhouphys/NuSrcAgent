@@ -101,7 +101,7 @@ forecast: when later output/review stages have no current measurement, report
 the fit ETA explicitly and identify the unestimated later stages. Do not invent
 a fixed review allowance. Stages and subphases retain actual elapsed times.
 
-The run's `timing.json` records stage durations, reference runs and whole-request
+The run's `timing.json` records stage durations and whole-request
 forecasts/errors through numerical execution, files and review. It does not include
 initial chat latency, preflight outside AnalysisAgent or final answer composition;
 the chat must separately report the whole current user turn's elapsed time.
@@ -115,3 +115,40 @@ prediction with actual remaining time. Report mean/median absolute error,
 construction cannot read historical run directories. Check scientific-call
 invariance separately. Presence of a numerical ETA does not establish accuracy,
 and one catalog does not establish general predictive coverage.
+
+## Single-source primary and flux ETA
+
+Standalone single-source fits now use the same current-invocation evaluation
+observer as joint fits, labelled `single-source fit` / `single_source_fit_only`.
+The initial 24/12-call reporting assumption and cost separation apply; the
+actual optimizer and stopping conditions remain unchanged. Initial data loading
+has no completed comparable sample and therefore no reliable numerical ETA.
+
+Flux execution now records preparation, numerical analysis, output generation
+and scientific review in its own timing file. Primary checkpoint validation
+precedes this record; wrapper wall time includes that validation. Primary
+reconstruction is measured separately and is never multiplied by later work.
+
+Measurement profiling reports normalization crossings, Gamma crossings, each
+contour's Gamma bounds, and each confidence contour as separate work groups.
+Normalization and Gamma intervals each have four endpoint crossings; each
+contour has two Gamma-bound crossings and its actual Gamma-grid length.
+Only completed units in the same group provide the group's median unit cost
+(last eight samples). A new group starts fresh, even within the same request.
+Before its first unit completes, likelihood evaluations provide a rough
+first-unit cost, distinguishing changed Gamma from reused Gamma. The initial
+reporting assumptions are 96 evaluations for a free-Gamma normalization crossing
+(roughly four scans of 13 grid points plus refinement), 12 for scalar crossings,
+and 32 for a contour slice. These are explicitly uncalibrated estimates; they
+expand if reached and never alter root finding, grid points or optimization.
+The currently active unit's cost is revised upward if overdue. Once a whole
+unit completes, its measured duration replaces the call-count assumption.
+
+Each ETA covers only its named profile group; it excludes later unmeasured
+groups, fixed-spectrum fits, output and review. Do not label it a whole-flux
+ETA. The fixed-spectrum loop reports completed spectra; each individual fit
+also has an evaluation ETA. `flux_measurement.profile_timing` saves group
+forecasts and their actual errors. `timing.json` additionally saves
+`work_records` and `fit_records`, including upper-limit inversion. Error
+records are produced after each measured endpoint; they are never read by
+another forecast. Validate every group against its own actual completion time.

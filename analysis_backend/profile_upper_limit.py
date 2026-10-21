@@ -9,9 +9,18 @@ import math
 from statistics import NormalDist
 
 from scipy.optimize import brentq
+from agent_core.profile_progress import ProfileProgress
 
 
 def invert_upper_profile(log_likelihood_ratio, ns_hat, ns_max, confidence):
+    progress=ProfileProgress()
+    with progress.work('fixed-spectrum upper-limit inversion',1):
+        with progress.unit():
+            return _invert_upper_profile(lambda ns: progress.evaluate(
+                lambda n,g: log_likelihood_ratio(n),ns,0.), ns_hat,ns_max,confidence)
+
+
+def _invert_upper_profile(log_likelihood_ratio, ns_hat, ns_max, confidence):
     """Find the upper crossing above the constrained scalar maximum.
 
     ``log_likelihood_ratio`` returns ln(L(ns)/L(0)). The fixed-spectrum

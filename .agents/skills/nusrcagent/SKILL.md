@@ -63,6 +63,24 @@ exceeds 60 seconds, including unsuccessful requests. Measure the whole current
 request, not just its last command; exclude waiting for a later user reply.
 The primary and user-authorized flux turns each report their own duration.
 
+
+Single-source primary fits now expose the same evaluation ETA, labelled
+`single-source fit` / `single_source_fit_only`. Flux measurement ETA is split
+into normalization intervals, Gamma intervals, contour Gamma bounds and each
+confidence contour. Read `completed_units`, `total_units` and
+`estimate_scope=current_profile_group_only`: quote the numerical ETA for that
+group, and identify later groups/fits/output/review as unestimated. Do not
+keep saying unknown once an evaluation sample supplies a rough estimate.
+Before the first completed endpoint, the estimate uses current evaluation
+costs with an explicit uncalibrated call assumption (96 for free-Gamma
+normalization crossings, 12 for scalar crossings, 32 for contour slices).
+After a unit completes, the same group's measured unit durations replace
+that assumption. Never combine different group costs. Initial loading and
+saved-primary reconstruction have no comparable completed sample; say why
+those ETAs are pending. Read profile timing and the stage timing file for
+actual forecast errors; never use those completed-run errors as future ETA
+inputs. See `docs/task_timing.md`.
+
 ## Required first-turn result boundary
 
 For single-source and joint stacking analyses with supported/requested flux

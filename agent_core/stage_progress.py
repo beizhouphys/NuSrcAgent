@@ -39,8 +39,8 @@ class StageProgress:
         self.command = progress_module._active
         self.clock=clock
         self.use_fit_eta=(mode=="primary" and isinstance(settings,dict)
-            and settings.get("analysis_type")=="catalog_stacking"
-            and settings.get("catalog_operation")=="stack")
+            and (settings.get("analysis_type")=="single_source" or
+                 (settings.get("analysis_type")=="catalog_stacking" and settings.get("catalog_operation")=="stack")))
         self.environment=environment_identity()
         self.started=clock() if started is None else started
         self.current=None;self.phase_started=None;self.durations={}
@@ -67,7 +67,7 @@ class StageProgress:
         elapsed=max(0.,now-self.phase_started)
         stage_estimate=None
         # The primary joint fit is the last numerical step in primary analysis.
-        if stage=='analysis' and self.use_fit_eta and row.get('phase')=='joint stacking fit':
+        if stage=='analysis' and self.use_fit_eta and row.get('phase') in ('joint stacking fit','single-source fit'):
             stage_estimate=row['remaining_seconds']
         future=[n for n in self.names[self.names.index(stage)+1:]]
         total=None
@@ -91,7 +91,8 @@ class StageProgress:
         rows=[dict(p,actual_remaining_seconds=max(0.,elapsed-p['elapsed_seconds']),
               signed_error_seconds=p['remaining_seconds']-max(0.,elapsed-p['elapsed_seconds'])) for p in self.predictions]
         record=dict(version=3,uses_history=False,environment=self.environment,stage_seconds=self.durations,
-            subphases=self.subphases,wall_seconds=elapsed,prediction_errors=rows,prediction_error_summary=error_summary(rows),
+            subphases=self.subphases,work_records=getattr(self.command,'work_records',[]),
+            fit_records=getattr(self.command,'fit_records',[]),wall_seconds=elapsed,prediction_errors=rows,prediction_error_summary=error_summary(rows),
             run_directory=str(run_dir))
         (Path(run_dir)/'timing.json').write_text(json.dumps(record,indent=2)+'\n')
         if self.command:self.command.stage_plan=self.previous_plan

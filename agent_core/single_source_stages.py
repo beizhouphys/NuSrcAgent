@@ -5,6 +5,8 @@ import copy
 import fcntl
 import json
 import traceback
+from time import monotonic
+from agent_core.stage_progress import StageProgress
 from pathlib import Path
 
 from agent_core.analysis_agent import AnalysisAgent, AgentRun
@@ -184,31 +186,42 @@ def _load_primary(task, payload, root):
 
 
 def _run_flux(request_path, primary, root, cpus=1):
+    started = monotonic()
     config = load_config_file(request_path)
     validation = validate_config(config, root)
     if not validation.ok:
         raise ConfigError("; ".join(validation.errors))
     normalized = normalize_config(config, root, validation.warnings)
-    from analysis_backend.skyllh_dr2_stacking import run_dr2_single_source
-    specs = [dict(name=s.name, ra_rad=s.ra_rad, dec_rad=s.dec_rad, w_model=s.weight)
-             for s in normalized.sources]
-    result = run_dr2_single_source(specs, primary_result=primary,
-        repo_root=root, gamma_mode=normalized.gamma_mode, gamma=abs(normalized.spectral_indices[0]),
-        random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode,
-        event_abs_dec_max_deg=normalized.event_abs_dec_max_deg,
-        event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg,
-        source_dec_window_deg=normalized.source_dec_window_deg, fit_procedure=normalized.fit_procedure,
-        signal_energy_gamma_interpolation=normalized.signal_energy_gamma_interpolation,
-        flux_upper_limit_cl=normalized.flux_upper_limit_cl,
-        flux_upper_limit_gammas=normalized.flux_upper_limit_gammas,
-        flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold)
-    for key in ("TS", "ns", "gamma", "gamma_legacy", "minimizer_status", "fit_bounds", "fit_procedure"):
-        if result[key] != primary[key]:
-            raise ValueError("flux stage changed the recorded primary fit: " + key)
-    result["single_source_stage"] = "flux"
-    result["execution"] = execution_metadata(cpus, normalized)
-    run_dir = write_run_artifacts(request_path, config, normalized, result, root)
-    review = review_run(str(run_dir), str(root), write_artifacts=True)
+    plan = StageProgress(root, {}, 'flux', started=started)
+    try:
+        with plan.phase('request preparation'):
+            pass
+        with plan.phase('analysis'):
+            from analysis_backend.skyllh_dr2_stacking import run_dr2_single_source
+            specs = [dict(name=s.name, ra_rad=s.ra_rad, dec_rad=s.dec_rad, w_model=s.weight)
+                     for s in normalized.sources]
+            result = run_dr2_single_source(specs, primary_result=primary,
+                repo_root=root, gamma_mode=normalized.gamma_mode, gamma=abs(normalized.spectral_indices[0]),
+                random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode,
+                event_abs_dec_max_deg=normalized.event_abs_dec_max_deg,
+                event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg,
+                source_dec_window_deg=normalized.source_dec_window_deg, fit_procedure=normalized.fit_procedure,
+                signal_energy_gamma_interpolation=normalized.signal_energy_gamma_interpolation,
+                flux_upper_limit_cl=normalized.flux_upper_limit_cl,
+                flux_upper_limit_gammas=normalized.flux_upper_limit_gammas,
+                flux_measurement_ts_threshold=normalized.flux_measurement_ts_threshold)
+            for key in ("TS", "ns", "gamma", "gamma_legacy", "minimizer_status", "fit_bounds", "fit_procedure"):
+                if result[key] != primary[key]:
+                    raise ValueError("flux stage changed the recorded primary fit: " + key)
+            result["single_source_stage"] = "flux"
+            result["execution"] = execution_metadata(cpus, normalized)
+        with plan.phase('output generation'):
+            run_dir = write_run_artifacts(request_path, config, normalized, result, root)
+        with plan.phase('scientific review'):
+            review = review_run(str(run_dir), str(root), write_artifacts=True)
+        plan.finish(run_dir)
+    finally:
+        plan.abort()
     return AgentRun(request_path, normalized, result, run_dir, review)
 
 

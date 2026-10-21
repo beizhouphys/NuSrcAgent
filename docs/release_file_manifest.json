@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 27478,
-      "sha256": "a7d6896aafc4b77cff9e7faf35fd759ffb2bf374d9ce9b4a26858dc3303f1ade"
+      "bytes": 28619,
+      "sha256": "316c475e027f10acba3d4048c5df8ebcb847c1de5842c8105ed459fbde06e929"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -147,6 +147,11 @@
       "sha256": "85acac92e5822fa43d9d34cd3a1ef923eac2f9418962b7ba629dfaffeb7d3e57"
     },
     {
+      "path": "agent_core/profile_progress.py",
+      "bytes": 5401,
+      "sha256": "2b128be83a5c012fdfc616e12e7a4c35bae1f5dbb6fec67a339e045ba0bf47ad"
+    },
+    {
       "path": "agent_core/progress.py",
       "bytes": 4995,
       "sha256": "1795cfe770179c5f6175edd1f798f638a6672832cb6ecce8e2b95c3e18ecb863"
@@ -173,13 +178,13 @@
     },
     {
       "path": "agent_core/single_source_stages.py",
-      "bytes": 14905,
-      "sha256": "3332119bf24956edef81c7eed216052498732dd1863f9efc2dbabedcf0d1b985"
+      "bytes": 15496,
+      "sha256": "e7cd1cd8d0e69889b67a8743960596d889e61f34a145afeff6596a13306129dd"
     },
     {
       "path": "agent_core/stacking_progress.py",
-      "bytes": 7412,
-      "sha256": "ff023803a3ed0d784206b2ca67f9dced7bcd6f7167b4bace6f78feaff56d55bf"
+      "bytes": 7967,
+      "sha256": "1a1728b921f3f011ebae0a27db8ca7e45b0f615cb5bcff4dc989eafee92aca71"
     },
     {
       "path": "agent_core/stacking_stages.py",
@@ -188,8 +193,8 @@
     },
     {
       "path": "agent_core/stage_progress.py",
-      "bytes": 5804,
-      "sha256": "ffdba635b5a3f15b59ff129bfc0a2d54582b0c225de7fe18b5ef3efa276535a6"
+      "bytes": 6004,
+      "sha256": "ccb9db2e54f0c68d9162d5de359a172ac6d929a6b740117caf48309073279c5a"
     },
     {
       "path": "agent_core/task_state.py",
@@ -228,13 +233,13 @@
     },
     {
       "path": "analysis_backend/profile_flux.py",
-      "bytes": 12541,
-      "sha256": "5d93a05ab7f7f44eb655ffe45181778165c101f24c2fe5dfa27f26a5219ba3ba"
+      "bytes": 13455,
+      "sha256": "a55cf001ab767741be108856770658d845a16f7c881a20231bafe7e14245c0c8"
     },
     {
       "path": "analysis_backend/profile_upper_limit.py",
-      "bytes": 6205,
-      "sha256": "3a47506c0bcc57c84795a4547a037c4f6bf9e355f70a5f50ec9af59471f41061"
+      "bytes": 6624,
+      "sha256": "184c70e5ffe9ac57c767ab55c2d21f8ceea7829a040b6daec5641d1f881419d5"
     },
     {
       "path": "analysis_backend/skyllh_chunked.py",
@@ -473,8 +478,8 @@
     },
     {
       "path": "docs/task_timing.md",
-      "bytes": 7604,
-      "sha256": "55926067f5defb18fe1e3531cd401e78e425e48fdc21f73c40f199a616462bc7"
+      "bytes": 9991,
+      "sha256": "94c21704418963c0ba99721c5fef767af7011f2aca9d6a3484959b174c1d1118"
     },
     {
       "path": "docs/testing_and_release.md",

@@ -11,7 +11,8 @@ from agent_core.stage_progress import environment_identity, error_summary
 
 class StackingFitProgress:
     """Measure cold, full-PDF and cached calls separately, without reading history."""
-    def __init__(self, command, fitted_gamma=True, clock=monotonic, cost_state=None, cache_cost=None):
+    def __init__(self, command, fitted_gamma=True, clock=monotonic, cost_state=None, cache_cost=None, phase="joint stacking fit", scope="stacking_fit_only", initial_budget=None, emit_initial=True):
+        self.phase,self.scope=phase,scope
         self.command,self.clock,self.cost_state=command,clock,cost_state
         self.fitted_gamma=fitted_gamma
         self.cache_cost=cache_cost
@@ -22,11 +23,11 @@ class StackingFitProgress:
         self.last_emitted=self.last_prediction=-math.inf
         self.environment=environment_identity()
         # Explicit, uncalibrated reporting assumptions, never optimizer limits.
-        self.initial_budget=24. if fitted_gamma else 12.
+        self.initial_budget=float(initial_budget if initial_budget is not None else (24 if fitted_gamma else 12))
         self.budget=self.initial_budget
         self.previous_provider,self.previous_phase=command.phase_provider,command.phase
         command.phase,command.phase_provider=None,self.snapshot
-        command.emit()
+        if emit_initial:command.emit()
 
     def _forecast(self,now):
         if not self.durations:
@@ -57,7 +58,7 @@ class StackingFitProgress:
 
     def snapshot(self,now):
         estimate,basis=self._forecast(now)
-        row=dict(phase='joint stacking fit',estimate_scope='stacking_fit_only',
+        row=dict(phase=self.phase,estimate_scope=self.scope,
             completed_evaluations=len(self.durations),estimated_total_evaluations=self.budget,
             evaluation_budget_is_estimated=True,estimate_is_heuristic=True,
             uses_history=False,workload_basis='uncalibrated_initial_call_assumption',
@@ -114,17 +115,23 @@ class StackingFitProgress:
         errors=[dict(p,actual_remaining_seconds=max(0.,elapsed-p['elapsed_seconds']),
                      signed_error_seconds=p['remaining_seconds']-max(0.,elapsed-p['elapsed_seconds']))
                 for p in self.predictions]
-        return dict(version=4,completed_evaluations=len(self.durations),fit_wall_seconds=elapsed,
+        record = dict(phase=self.phase,estimate_scope=self.scope,version=5,completed_evaluations=len(self.durations),fit_wall_seconds=elapsed,
             evaluation_seconds=self.durations,evaluation_completed_seconds=self.completed_at,
             cost_classes=self.kinds,environment=self.environment,uses_history=False,
             cold_call_cost=self.cold_cost,
             initial_evaluation_budget=self.initial_budget,final_evaluation_budget=self.budget,
             prediction_errors=errors,prediction_error_summary=error_summary(errors),
             strategy='current_run_cost_classes_with_expanding_work_assumption',scientific_behavior_changed=False)
+        if not hasattr(self.command,'fit_records'):self.command.fit_records=[]
+        self.command.fit_records.append(record)
+        return record
 
 
 def start_stacking_progress(sources,gamma_mode,cost_state=None,cache_cost=None):
     command=progress_module._active
-    if command is None or len(sources)<2:
+    if command is None or not sources:
         return None
-    return StackingFitProgress(command,gamma_mode=='fitted',cost_state=cost_state,cache_cost=cache_cost)
+    single=len(sources)==1
+    return StackingFitProgress(command,gamma_mode=='fitted',cost_state=cost_state,cache_cost=cache_cost,
+        phase='single-source fit' if single else 'joint stacking fit',
+        scope='single_source_fit_only' if single else 'stacking_fit_only')
