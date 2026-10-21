@@ -19,17 +19,42 @@ tables are provided automatically. Time-dependent analysis is not available yet.
 Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
 and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
 
-Progress updates include an estimate of time remaining, based on completed work
-when available. Final chat answers include total elapsed time for requests taking
-more than one minute. Joint stacking also estimates remaining fit time from
-separate PDF-recomputation and cached-call timings, with one-time cache
-construction removed from the initial recurring-cost estimate. New catalogs receive a
-labelled rough fit ETA after the first completed call, using only the current run
-and an explicit initial workload assumption; no historical records are consulted. Preparation, analysis,
-outputs and review have separate timing; predictions are checked against actual
-remaining time. Fit estimates remain rough; before any call finishes, the first
-timing sample is pending.
-See [progress and elapsed time](docs/task_timing.md).
+## Analysis interface
+
+The analysis interface connects your requests to the likelihood calculation and
+its reviewed results. Three features help you manage calculations that can take
+substantial time, especially large catalog searches and repeated background fits:
+
+1. **Estimated time remaining during calculation.** Progress updates report a
+   rough estimate of time remaining (ETA) from work completed in the current run.
+   Single-source fits, joint stacks, catalog scans and flux calculations report
+   the relevant fit or stage; an estimate for one stage excludes later stages
+   that have not been timed. Before a usable timing sample, the estimate is
+   pending. Optimizer call counts are uncertain, so the ETA is approximate and
+   never changes the fit's stopping conditions. Continuous background trials
+   without a target count have no scheduled end time. Final chat answers include
+   total elapsed time when a request takes more than one minute.
+   See [progress and elapsed time](docs/task_timing.md).
+2. **Number of workers and CPU budget.** Add `--workers N` to
+   `run --task <task_id>` to select computing resources (default 1). Independent
+   catalog fits use N worker processes with one numerical-library thread each.
+   For one single-source or joint stacking fit, the same option sets the
+   numerical-library thread budget. More workers can require more memory;
+   speedup depends on the calculation. The choice is recorded with the run and
+   preserves the scientific settings. Pass it again for a user-authorized flux
+   stage. Background-trial tasks use their separately recorded scheduler size.
+   See [CPU selection](docs/cpu_execution.md).
+3. **Background-trial guidance and empirical significance.** Every reported
+   analytic significance estimate is followed by a reminder that a more precise
+   significance requires background trials; an estimate strictly above 2 sigma
+   receives an explicit reminder that trials are needed. Ordinary fits do not
+   start trials automatically. A separate, checkpointed event-right-ascension
+   trial workflow supports progress snapshots and stopping/resumption for its
+   documented, prespecified random-catalog stack. It repeats the observed fit,
+   reports an empirical p-value and significance with Monte Carlo uncertainty,
+   and retains the same catalog, weights, PDFs and fit procedure. It does not
+   currently provide general calibration for arbitrary sources, user catalogs
+   or source-scan maxima. See [background trials](docs/dr2_empirical_scrambling.md).
 
 ## What analyses can I run?
 
@@ -308,15 +333,3 @@ interpolation for the signal energy PDF in both the primary fit and flux
 calculation. Catalog scan and joint stacking defaults retain their original
 quadratic interpolation. Optimizer, tolerances and the flux-profile consistency
 guard remain unchanged. See [single-source interpolation](docs/single_source_linear_interpolation.md).
-
-## CPU budget
-
-Use `run --task <id> --workers N` (default 1) to select computing resources.
-Single-source and joint stacking fits set numerical-library thread limits;
-DR1 and DR2 catalog scans use N single-thread worker processes with separate input/PDF
-caches and input-ordered results. Pass the option again for a user-authorized
-flux stage. Scientific settings and current-run ETA observers are retained.
-Dominance uses workers for independent delete-one refits and keeps cumulative
-refits sequential with their original initial values. RA-scramble diagnostics
-use workers for independent seeds; both accept `--workers N`.
-See [CPU selection](docs/cpu_execution.md).
