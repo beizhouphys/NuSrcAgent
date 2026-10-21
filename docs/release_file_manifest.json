@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 25016,
-      "sha256": "95ecdf243736275bc9592019dbbcce5bdfb457b534f13de9e9fe7cec611f5201"
+      "bytes": 25983,
+      "sha256": "935fc8766f61aaadc44f2b7dcbaae2832cd84e7e8d8bfdadadcadb3cc0ccd044"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 18717,
-      "sha256": "46c610e4ecea57f66c3eee8d5a9a5e7eee7e9b8ac5e83b3ff3680bf83a4273a7"
+      "bytes": 18875,
+      "sha256": "b87ec976425ecc7166b5fbf320a259e1435c6f188e3a93b419e5c88b7b2b80c8"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -63,8 +63,8 @@
     },
     {
       "path": "agent_core/analysis_agent.py",
-      "bytes": 5945,
-      "sha256": "cb915aff44e06722399e41f05797d7b6630b41949593f19965f39d2976d627b5"
+      "bytes": 6663,
+      "sha256": "ab17693cc60451290be4c8defa31df8ec0aff0ddcd4be44c180fc3df431ba642"
     },
     {
       "path": "agent_core/analysis_outputs.py",
@@ -143,8 +143,8 @@
     },
     {
       "path": "agent_core/progress.py",
-      "bytes": 4859,
-      "sha256": "d25cb5ab4f39284261aefb809ae97e397b2156077c5909ff362e38973a37e721"
+      "bytes": 4995,
+      "sha256": "1795cfe770179c5f6175edd1f798f638a6672832cb6ecce8e2b95c3e18ecb863"
     },
     {
       "path": "agent_core/report.py",
@@ -173,13 +173,18 @@
     },
     {
       "path": "agent_core/stacking_progress.py",
-      "bytes": 8934,
-      "sha256": "839ccd39ce5c3d645613596bf62ece8cab4718758223f9fb6b376a99fc5081e7"
+      "bytes": 12273,
+      "sha256": "8405933c1bd9915d9a8ed0aaf4550af37abf33530eac8c5f796fafc6ae95d258"
     },
     {
       "path": "agent_core/stacking_stages.py",
-      "bytes": 11841,
-      "sha256": "db2369c54631885ca1b9a7c30b2e644b91916c9776f6a7f7a6af183f1863a91a"
+      "bytes": 12044,
+      "sha256": "3c5dae6b3188f7c9c3acf4e9142486683aea052ead3e8030e8bd3cf155127386"
+    },
+    {
+      "path": "agent_core/stage_progress.py",
+      "bytes": 7132,
+      "sha256": "db216858a70ca6aeac34fbcf23763472de9b444ac283eb45ce0aaf8942a958f5"
     },
     {
       "path": "agent_core/task_state.py",
@@ -253,8 +258,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_stacking.py",
-      "bytes": 34518,
-      "sha256": "669473b9af410649ddf1597ff072802105826c1aba610e2ef4a200bde695e502"
+      "bytes": 34980,
+      "sha256": "39d7b82c45706cbe516c899c422005b0b9f4aafc11e3a1596ccf28cf91711a06"
     },
     {
       "path": "analysis_backend/sources.py",
@@ -453,13 +458,13 @@
     },
     {
       "path": "docs/stacking_performance.md",
-      "bytes": 7290,
-      "sha256": "a05ddea0fa9864832fa57250f572dce1f7dc3090b0c3f54e4124bfc0d94a3d27"
+      "bytes": 7296,
+      "sha256": "81f3587238b083a76402e2028e4d98954916ee1116e6f93a3f1be454543bf58e"
     },
     {
       "path": "docs/task_timing.md",
-      "bytes": 4024,
-      "sha256": "1b696a4503505db30db66b1724667a8549e23e650fba7ec29f8085cf7549ade8"
+      "bytes": 6225,
+      "sha256": "768fb3bbb08e7205e8a8d9169aff2362438986ec0a645f373885ba1da2be1fe3"
     },
     {
       "path": "docs/testing_and_release.md",

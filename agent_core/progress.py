@@ -20,6 +20,7 @@ class CommandProgress:
         self.started = clock()
         self.phase = None
         self.phase_provider = None
+        self.stage_plan = None
         self.lock = RLock()
         self.stop = Event()
 
@@ -35,6 +36,8 @@ class CommandProgress:
                 result.pop("measured_at")
             if self.phase_provider is not None:
                 result.update(self.phase_provider(now))
+            if self.stage_plan is not None:
+                result = self.stage_plan.enrich(result, now)
             return result
 
     def emit(self, event="progress"):

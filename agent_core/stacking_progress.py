@@ -6,7 +6,8 @@ from importlib.metadata import version
 import json
 import math
 from pathlib import Path
-from statistics import mean, median
+from statistics import median
+from agent_core.stage_progress import environment_identity, error_summary
 from time import monotonic
 
 from agent_core import progress as progress_module
@@ -74,7 +75,7 @@ def matching_history(root, key, input_hashes, packages, n_sources):
             count = int(status['n_llhratio_func_calls'])
             if count < 1 or int(status['warnflag']) != 0:
                 continue
-            references.append(dict(report=str(path), evaluations=count))
+            references.append(dict(report=str(path), evaluations=count, timing=result.get('fit_timing', {})))
             if len(references) == 5:
                 break
         except (OSError, ValueError, KeyError, TypeError):
@@ -83,82 +84,123 @@ def matching_history(root, key, input_hashes, packages, n_sources):
 
 
 class StackingFitProgress:
-    """A revisable call-count prior times measured current evaluation durations.
+    """Observe PDF recomputation separately from inexpensive cached evaluations.
 
-    Unknown optimizer stopping time prevents a completion percentage. The range
-    is heuristic, not a confidence interval or an optimizer limit. A first cold
-    evaluation is excluded from the rolling speed once warm samples exist.
+    Matched completed traces provide a remaining-work template. Current cost-class
+    speeds rescale that template. Unknown stopping times remain explicitly uncertain.
     """
-    def __init__(self, command, references=(), fitted_gamma=True, clock=monotonic):
-        self.command, self.clock = command, clock
+    def __init__(self, command, references=(), fitted_gamma=True, clock=monotonic, cost_state=None):
+        self.command, self.clock, self.cost_state = command, clock, cost_state
         self.references = list(references)
         self.started = clock()
-        self.durations = []
+        self.durations, self.kinds, self.predictions = [], [], []
+        self.completed_at = []
         self.last_completed = self.started
-        self.last_emitted = -math.inf
-        self.initial_budget = (float(median(r['evaluations'] for r in references)) if references
-                               else (32. if fitted_gamma else 12.))
+        self.last_emitted = self.last_prediction = -math.inf
+        self.environment = environment_identity()
+        self.templates = [r['timing'] for r in references
+                          if r.get('timing', {}).get('version') == 2
+                          and r['timing'].get('environment') == self.environment]
+        self.initial_budget = float(median(r['evaluations'] for r in references)) if references else None
         self.budget = self.initial_budget
-        self.previous_provider = command.phase_provider
-        self.previous_phase = command.phase
-        command.phase = None
-        command.phase_provider = self.snapshot
+        self.previous_provider, self.previous_phase = command.phase_provider, command.phase
+        command.phase, command.phase_provider = None, self.snapshot
         command.emit()
+
+    def _forecast(self, now):
+        n = len(self.durations)
+        forecasts = []
+        for template in self.templates:
+            durations, kinds = template['evaluation_seconds'], template['cost_classes']
+            if n >= len(durations) or kinds[:n] != self.kinds:
+                continue
+            scales = {}
+            for kind in set(kinds):
+                ratios = [self.durations[i]/durations[i] for i in range(n)
+                          if kinds[i] == kind and durations[i] > 0]
+                # Warm full-PDF calls estimate machine speed for the first/cold call.
+                scales[kind] = median(ratios[-8:]) if ratios else 1.
+            forecasts.append(sum(durations[i]*scales[kinds[i]] for i in range(n,len(durations))))
+        age = max(0., now-self.last_completed)
+        if forecasts:
+            estimate = max(0., median(forecasts)-age)
+            return estimate, 'matched_cost_sequence_rescaled_by_class', len(forecasts)
+        if self.budget is not None and n == self.budget:
+            return None, 'reference_endpoint_reached_waiting_for_optimizer', 0
+        full = [d for d,k in zip(self.durations,self.kinds) if k == 'pdf_recomputed']
+        if not full or self.budget is None:
+            return None, 'no_comparable_stopping_history', 0
+        # Legacy history supplies only call counts. Cheap calls never reduce this rate.
+        rate = median(full[-8:])
+        return max(0., rate*max(1.,self.budget-n)-age), 'cost_class_speed_and_legacy_call_count', 0
 
     def snapshot(self, now):
         count = len(self.durations)
+        estimate, basis, matched = self._forecast(now)
+        age = max(0., now-self.last_completed)
+        if estimate is not None and estimate <= 0:
+            estimate = None  # An overdue forecast is not evidence that work is finished.
+            basis = 'forecast_overdue_waiting_for_completion'
         row = dict(phase='joint stacking fit', estimate_scope='stacking_fit_only',
             completed_evaluations=count, estimated_total_evaluations=self.budget,
             evaluation_budget_is_estimated=True, estimate_is_heuristic=True,
-            historical_reference_count=len(self.references), historical_speed_used=False,
-            estimate_basis=('matched_reviewed_fit_call_count_and_current_evaluation_times' if self.references
-                            else 'heuristic_call_budget_and_current_evaluation_times'),
-            phase_elapsed_seconds=max(0., now-self.started), remaining_seconds=None,
-            remaining_seconds_range=None, estimate_status='awaiting_first_evaluation',
-            estimate_note='Revisable optimizer ETA; no fixed iteration count or completion percentage. Excludes artifacts and review.')
-        if not count:
-            return row
-        warm = self.durations[1:] or self.durations
-        rate = mean(warm[-5:])
-        age = max(0., now-self.last_completed)
-        # A slow in-flight evaluation revises the speed instead of yielding zero
-        # while the optimizer is still running. Exceeded budgets are extended.
-        rate = max(rate, age)
-        horizon = max(1., self.budget-count)
-        remaining = max(rate*horizon-age, rate*.1)
-        low = max(0., rate*max(1., self.budget*.5-count)-age)
-        high = max(remaining, rate*max(horizon, self.budget*1.5-count)-age)
-        row.update(remaining_seconds=remaining, remaining_seconds_range=[low, high],
-            estimate_status='estimated_from_evaluations', seconds_per_evaluation=rate,
-            estimate_age_seconds=age, evaluation_budget_extended=self.budget>self.initial_budget)
+            historical_reference_count=len(self.references), matched_cost_templates=matched,
+            historical_speed_used=bool(matched), estimate_basis=basis,
+            phase_elapsed_seconds=max(0., now-self.started), remaining_seconds=estimate,
+            remaining_seconds_range=None, estimate_age_seconds=age,
+            estimate_status='estimated_from_cost_classes' if estimate is not None else basis,
+            cost_class_counts={kind:self.kinds.count(kind) for kind in set(self.kinds)},
+            evaluation_budget_extended=self.budget is not None and self.budget>self.initial_budget,
+            estimate_note='Fit-only forecast; matched cost sequence, not a fixed stopping count. No calibrated interval with fewer than three independent error histories.')
+        # Historical held-out errors, never errors from this unfinished fit.
+        errors = [abs(p['signed_error_seconds']) for t in self.templates
+                  for p in t.get('prediction_errors', []) if p.get('remaining_seconds') is not None]
+        histories = sum(bool(t.get('prediction_errors')) for t in self.templates)
+        if estimate is not None and histories >= 3 and errors:
+            margin = sorted(errors)[math.ceil(.9*len(errors))-1]
+            row['remaining_seconds_range'] = [max(0.,estimate-margin),estimate+margin]
+            row['interval_basis'] = 'past_independent_absolute_prediction_errors_90th_percentile'
+        if estimate is not None and now-self.last_prediction >= 5.:
+            self.predictions.append(dict(elapsed_seconds=now-self.started,
+                completed_evaluations=count, remaining_seconds=estimate, estimate_basis=basis))
+            self.last_prediction = now
         return row
 
     def evaluate(self, function, *args, **kwargs):
+        before = self.cost_state() if self.cost_state is not None else None
         started = self.clock()
         result = function(*args, **kwargs)
         ended = self.clock()
+        after = self.cost_state() if self.cost_state is not None else None
+        kind = ('cold_start' if not self.durations else
+                'pdf_recomputed' if self.cost_state is None or before != after else 'pdf_reused')
         with self.command.lock:
-            self.durations.append(max(1e-9, ended-started))
+            self.durations.append(max(1e-9,ended-started));self.kinds.append(kind)
             self.last_completed = ended
-            if len(self.durations) > self.budget:
-                self.budget = len(self.durations)+max(3., math.ceil(self.initial_budget*.25))
-        if ended-self.last_emitted >= 1.:
-            self.command.emit()
-            self.last_emitted = ended
+            self.completed_at.append(ended-self.started)
+            if self.budget is not None and len(self.durations)>self.budget:
+                self.budget=len(self.durations)+max(3.,math.ceil(self.initial_budget*.25))
+        if ended-self.last_emitted>=1.:
+            self.command.emit();self.last_emitted=ended
         return result
 
     def close(self):
-        elapsed = max(0., self.clock()-self.started)
+        elapsed=max(0.,self.clock()-self.started)
         with self.command.lock:
-            self.command.phase_provider = self.previous_provider
-            self.command.phase = self.previous_phase
-        return dict(completed_evaluations=len(self.durations), fit_wall_seconds=elapsed,
-            evaluation_seconds=self.durations, initial_evaluation_budget=self.initial_budget,
-            final_evaluation_budget=self.budget, references=self.references,
-            strategy='current_evaluation_speed_with_revisable_call_count_prior', scientific_behavior_changed=False)
+            self.command.phase_provider,self.command.phase=self.previous_provider,self.previous_phase
+        errors=[dict(p,actual_remaining_seconds=max(0.,elapsed-p['elapsed_seconds']),
+                     signed_error_seconds=p['remaining_seconds']-max(0.,elapsed-p['elapsed_seconds']))
+                for p in self.predictions]
+        return dict(version=2,completed_evaluations=len(self.durations),fit_wall_seconds=elapsed,
+            evaluation_seconds=self.durations,evaluation_completed_seconds=self.completed_at,
+            cost_classes=self.kinds,environment=self.environment,
+            initial_evaluation_budget=self.initial_budget,final_evaluation_budget=self.budget,
+            references=[dict(report=r.get('report'),evaluations=r['evaluations']) for r in self.references],
+            prediction_errors=errors,prediction_error_summary=error_summary(errors),
+            strategy='matched_cost_sequence_with_current_class_speed',scientific_behavior_changed=False)
 
 
-def start_stacking_progress(root, sources, settings):
+def start_stacking_progress(root, sources, settings, cost_state=None):
     command = progress_module._active
     if command is None or len(sources) < 2:
         return None
@@ -173,4 +215,4 @@ def start_stacking_progress(root, sources, settings):
         references = matching_history(root, key, inputs, packages, len(sources))
     except (OSError, ValueError, KeyError):
         pass
-    return StackingFitProgress(command, references, settings['gamma_mode']=='fitted')
+    return StackingFitProgress(command, references, settings['gamma_mode']=='fitted', cost_state=cost_state)

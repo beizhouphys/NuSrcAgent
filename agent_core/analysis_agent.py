@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from time import monotonic
+from agent_core.stage_progress import StageProgress
+from agent_core.schemas import to_clean_dict
 
 from agent_core.config_io import load_config_file
 from agent_core.likelihood_backend import run_likelihood_backend
@@ -41,6 +44,7 @@ class AnalysisAgent:
         path = Path(config_path)
         if not path.is_absolute():
             path = self.repo_root / path
+        started = monotonic()
         config = load_config_file(path)
         validation = validate_config(config, self.repo_root)
         if not validation.ok:
@@ -50,10 +54,21 @@ class AnalysisAgent:
             return AgentRun(config_path=path, normalized=normalized, result={}, run_dir=None)
         if backend != "likelihood":
             raise ConfigError("unsupported analysis backend: %s" % backend)
-        result = (run_likelihood_backend(normalized, self.repo_root) if stacking_primary is None
-                  else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary))
-        run_dir = write_run_artifacts(path, config, normalized, result, self.repo_root)
-        review = review_run(str(run_dir), str(self.repo_root), write_artifacts=True)
+        plan = StageProgress(self.repo_root, to_clean_dict(normalized),
+                             'flux' if stacking_primary is not None else 'primary', started=started)
+        try:
+            with plan.phase('request preparation'):
+                pass  # Includes validation/normalization since method entry.
+            with plan.phase('analysis'):
+                result = (run_likelihood_backend(normalized, self.repo_root) if stacking_primary is None
+                          else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary))
+            with plan.phase('output generation'):
+                run_dir = write_run_artifacts(path, config, normalized, result, self.repo_root)
+            with plan.phase('scientific review'):
+                review = review_run(str(run_dir), str(self.repo_root), write_artifacts=True)
+            plan.finish(run_dir)
+        finally:
+            plan.abort()
         return AgentRun(config_path=path, normalized=normalized, result=result, run_dir=run_dir, review=review)
 
 

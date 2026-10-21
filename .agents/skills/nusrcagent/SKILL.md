@@ -20,14 +20,27 @@ Update the estimate as work completes and label a phase-only estimate as such;
 allow separately for later stacking, artifacts and review. Never count restored
 checkpoints as newly timed work. Read `NuSrcAgent progress:` stderr events and
 `execution_timing` in wrapper JSON; translate these into natural chat updates.
-During a joint stacking fit, use its `completed_evaluations`, `remaining_seconds`
-and `remaining_seconds_range` as soon as a sample exists. Give a numeric, explicitly
-rough fit-only ETA in chat and refresh it during the fit. The revisable evaluation
-budget is a stopping-time heuristic, not a fixed total or completion percentage.
-A matched reviewed fit supplies only its evaluation count; speed comes from the
-current fit. Without history, a heuristic call budget still permits a labelled
-rough range; do not keep saying ETA is unavailable after evaluations finish.
-These estimates exclude later artifacts/review and never change fit settings.
+During a joint stacking fit, read `remaining_seconds`, `estimate_basis`,
+`cost_class_counts`, and `matched_cost_templates`. The observer separates the
+cold first call, PDF recomputation and cached-PDF calls from actual cache state.
+Matched completed traces provide remaining work by cost class; current speeds
+rescale them. Do not treat the last few cheap calls as full likelihood timings.
+Use `current_stage`, `stage_remaining_seconds`, `request_remaining_seconds` and
+`pending_stages` to distinguish preparation, numerical analysis, output/figures
+and scientific review. Named subphases identify input loading, saved-primary
+reconstruction and fixed-spectrum profiles. A fit-only ETA excludes later stages;
+only quote a whole-request ETA when its field is available.
+That request field covers AnalysisAgent execution through review; initial chat
+setup and composing the final answer require additional time.
+Use the supplied numeric estimate with an explicit rough qualifier. Do not invent
+a 1–2 minute plotting/review allowance or an optimizer call budget. Without a
+matched history, explain which phase lacks a reference; completed work still
+supplies measured durations and counts. An overdue or mismatched forecast may
+become unknown rather than pretending work is almost finished.
+Do not invent an interval: `remaining_seconds_range` is absent until at least
+three independent prior error histories exist. It then describes past prediction
+errors, not a guaranteed completion window. Final timing records include forecasts
+made before completion and their actual errors; no current future data is used.
 Before a usable sample exists, state that a reliable estimate is pending. For
 unbounded continuous scrambling, state that no end time is set; never add a
 trial target or stop condition for reporting. Other work, including inspection,

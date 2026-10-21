@@ -116,10 +116,10 @@ at the original values, not an approximation to nearby energies.
 
 ## Fit-time progress
 
-Joint stacking reports a revisable remaining-time estimate during optimization,
-using completed objective evaluations from the current fit. A compatible reviewed
-fit can supply an evaluation-count prior; its speed is never reused. Without a
-match, a labelled heuristic range is still available after the first evaluation.
-The estimate covers the fit only and does not control optimizer stopping or any
-scientific setting. See [progress and elapsed time](task_timing.md) for the
-matching rules, fallback budgets and telemetry fields.
+The timing observer distinguishes first-call setup, full source-weighted PDF
+recomputation and reuse of the existing PDF ratio, using unchanged cache keys.
+Comparable completed cost traces and current speeds predict remaining work.
+Preparation, analysis, files/figures and review are timed separately. Unknown
+stopping times or unsupported forecasts stay explicitly unknown; no optimizer
+settings or scientific inputs change. See [progress and elapsed time](task_timing.md)
+for matching rules and validation against actual remaining time.

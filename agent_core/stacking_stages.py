@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from agent_core.file_cache import sha256_file
+from agent_core.stage_progress import subphase
 from agent_core.simple_yaml import load_simple_yaml
 from agent_core.task_state import save_task, stable_payload_hash, utc_now
 
@@ -72,7 +73,8 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
     if (not isinstance(user_reply, str) or not user_reply.strip()):
         raise ValueError("Flux stage requires the user continuation reply after the primary final answer; use --flux-user-reply")
     payload = build_analysis_payload(task, root)
-    primary = load_primary(task, root, payload)
+    with subphase('saved primary checkpoint integrity verification'):
+        primary = load_primary(task, root, payload)
     request_hash = stable_payload_hash(payload)
     for retry in range(1 + max_safe_retries):
         number = len(task["attempts"]) + 1
@@ -84,7 +86,8 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
         task["active_stage"] = "flux"
         save_task(task, root, task_path)
         try:
-            load_primary(task, root, payload)
+            with subphase('saved primary checkpoint integrity verification'):
+                load_primary(task, root, payload)
             agent = AnalysisAgent(root)
             request = task_path.parent / ("analysis_request_attempt_%d.yaml" % number)
             agent.prepare_request(payload, request)
