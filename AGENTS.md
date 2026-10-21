@@ -23,13 +23,65 @@
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
 
-## Significance 报告
+## Communication and notation
 
-- 对所有 analyses，在给出估算 significance 后，说明“更精确的 significance 需要 background trials”；若任何已报告的估算 significance 严格大于 2σ，明确强调需要做 background trials。此规则适用于所有 data samples、likelihood modes、single-source analysis、catalog scan、stacking analysis，以及 local 和 catalog-corrected estimates；primary 或 flux 阶段只要报告估算 significance，也须遵守。Background trials 须重复相应 observed fit；校准 search significance 时须覆盖完整 search/hypothesis family。此提醒本身不启动 trials、不改变 review status；已有 empirical significance 保留其 Monte Carlo uncertainty 和 trial scope，不称其尚未做 trials。
+- Use terminology natural to particle physicists and astrophysicists. Prefer
+  concrete physical meanings, such as detector response, point-spread function,
+  angular-uncertainty distribution, energy response or effective-area convolution.
+  Use `kernel` only when discussing the mathematical kernel itself or preserving
+  a code/API name; explain its physical role when needed.
+- Avoid business language such as "product form." Use physicists' natural wording
+  and state the concrete meaning, such as how to use the Agent, its interface or
+  its deployment.
+- Communicate naturally and directly, as research collaborators: lead with the
+  conclusion, then provide the necessary evidence. Avoid repeating background
+  or conclusions and avoid unnecessary headings or lists, while retaining
+  conditions that affect understanding or judgment.
+- In equations in responses, preserve complete physical quantities and their
+  dependencies whenever possible; do not introduce shorthand merely for brevity.
+  If a derivation needs auxiliary symbols or variable substitutions, define them
+  explicitly and substitute the full expressions back into the final result
+  whenever possible. This rule does not require changing notation in existing
+  code, notebooks or historical documents.
 
-## Progress update 与总耗时
+## Significance reporting
 
-- 执行本项目的任何任务时，从本次用户请求开始记录 wall-clock time；每条 progress update 都说明预计还需多久，并优先根据当前配置下已完成的同类计算外推。重复计算采用 `已完成计算耗时 / 已完成数量 × 剩余数量`；例如 100/1000 个 sources 用时 1 分钟，则该阶段预计还需 9 分钟，总计约 10 分钟。
-- 区分当前阶段与整个请求的剩余时间，随新完成的计算更新估算；不得将不同 fit procedures、worker configurations 或已恢复的 checkpoints 混为本次测速样本。缺少可用样本时说明“暂无法可靠估算，等待首个计算完成”；continuous scrambling 没有目标 trial count 时说明“持续运行，未设结束时间”，不得编造 ETA 或自行添加停止条件。
-- Wrapper 的 `NuSrcAgent progress:` stderr events 和 stdout JSON 的 `execution_timing` 提供实测时间与当前阶段 ETA；读取这些信息组织面向用户的 progress update，不直接粘贴内部 JSON。准备、绘图、verification 和 review 等阶段也遵守本规则；没有可量化进度时，根据已完成工作给出明确标注依据的粗略范围，确实无法估算则说明原因。
-- 每次 final answer 在本次请求实际总耗时严格超过 60 秒时给出总耗时；不超过 60 秒时省略。包括失败或中断后的答复；分两阶段的 analysis 各按本轮实际处理时间记录，不计入等待用户回复的时间，不以最后一条 wrapper command 的耗时代替整个请求耗时。
+- For every analysis, after reporting an estimated significance, state that a
+  more precise significance requires background trials. If any reported estimate
+  is strictly greater than 2 sigma, explicitly emphasize that background trials
+  are needed. This applies to all data samples, likelihood modes, single-source
+  analyses, catalog scans, stacking analyses, and local or catalog-corrected
+  estimates, including primary or flux stages whenever they quote an estimated
+  significance. Background trials must repeat the corresponding observed fit;
+  calibrating a search significance requires the full search/hypothesis family.
+  This reminder does not itself launch trials or change the review status.
+  For an already empirical significance, retain its Monte Carlo uncertainty and
+  trial scope; do not describe it as lacking trials.
+
+## Progress updates and total elapsed time
+
+- For every project task, measure wall-clock time from the current user request.
+  Include a remaining-time estimate in every progress update, preferably using
+  completed comparable calculations under the current configuration, and update
+  it as work proceeds:
+  `remaining = completed_calculation_time / completed_units * remaining_units`.
+  For example, 100 of 1000 sources completed in 1 minute predicts another
+  9 minutes, or about 10 minutes in total.
+- Distinguish the current stage's remaining time from the whole request's
+  remaining time. Do not mix different fit procedures, worker configurations or
+  restored checkpoints as timing samples from this invocation. Before a usable
+  sample exists, say that a reliable estimate is pending the first completed
+  calculation. For continuous scrambling without a target trial count, state
+  that it runs continuously with no end time set; never invent an ETA or add a
+  stopping condition.
+- Wrapper `NuSrcAgent progress:` events on stderr and `execution_timing` in stdout
+  JSON provide measured times and current-stage ETAs. Translate these into
+  natural progress updates rather than pasting internal JSON. Preparation,
+  plotting, verification and review follow the same rule. Without measurable
+  progress, give a clearly labelled rough range based on completed work; if no
+  estimate is possible, explain why.
+- Include total elapsed wall-clock time in the final answer only when the
+  current request strictly exceeds 60 seconds, including failures or interrupted
+  work. Measure the whole request, not just its final wrapper command. Each turn
+  of a two-stage analysis reports its own processing time, excluding the wait
+  for the user's reply.
