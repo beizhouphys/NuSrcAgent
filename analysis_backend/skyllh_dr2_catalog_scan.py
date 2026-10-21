@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 from agent_core.progress import track_progress
+from agent_core.cpu import THREAD_VARIABLES, positive_cpu_count, single_thread_workers
 
 import os
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from time import perf_counter
 
@@ -29,14 +32,22 @@ def _fit_source(job):
             "ra_deg": float(np.rad2deg(spec["ra_rad"])),
             "dec_deg": float(np.rad2deg(spec["dec_rad"])), "fit": fit,
             "execution": {"pid": os.getpid(), "wall_seconds": perf_counter() - started,
-                "worker_cache_enabled": use_cache, "cache_stats": cache_stats}}
+                "worker_cache_enabled": use_cache, "cache_stats": cache_stats,
+                "numerical_thread_limits": {name: os.environ.get(name) for name in THREAD_VARIABLES}}}
 
 
-def run_individual_source_scan(source_specs, **fit_options):
-    """Input-ordered individual fits with a fresh cache for each scan."""
+def run_individual_source_scan(source_specs, workers=1, **fit_options):
+    """Keep the original source fits, seeds, ordering and per-process caches."""
+    workers = positive_cpu_count(workers)
     _WORKER_RUNTIME_CACHE.clear()
+    jobs = [(number, spec, fit_options) for number, spec in enumerate(source_specs, start=1)]
     try:
-        return [_fit_source((number, spec, fit_options))
-                for number, spec in enumerate(track_progress(source_specs, "catalog source fits"), start=1)]
+        if workers == 1:
+            return [_fit_source(job) for job in track_progress(jobs, "catalog source fits")]
+        with single_thread_workers():
+            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:
+                records = pool.map(_fit_source, jobs, chunksize=1)
+                # Progress uses current scheduler wall time, not summed worker time.
+                return list(track_progress(records, "catalog source fits", total=len(jobs)))
     finally:
         _WORKER_RUNTIME_CACHE.clear()

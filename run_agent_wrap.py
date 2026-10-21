@@ -6,6 +6,16 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from agent_core.cpu import configure_threads, positive_cpu_count
+
+# Set numerical-library limits before importing analysis modules. Spawned scan
+# workers keep the single-thread environment inherited from their parent.
+if __name__ == "__main__" and "run" in sys.argv[1:]:
+    _cpu_parser = argparse.ArgumentParser(add_help=False)
+    _cpu_parser.add_argument("--cpus", type=positive_cpu_count, default=1)
+    _cpu_options, _ = _cpu_parser.parse_known_args()
+    configure_threads(_cpu_options.cpus)
+
 from agent_core.progress import timed_command, print_result
 from analysis_backend.sources import BUILTIN_CATALOG_NAMES
 from agent_core.agent_orchestrator import execute_task, resume_interrupted_task
@@ -156,12 +166,12 @@ def main(argv=None) -> int:
                 if args.flux_user_reply is not None and args.stage != "flux":
                     raise ValueError("--flux-user-reply is only valid with --stage flux after the primary final answer")
                 if args.stage == "flux" and task.get("execution_flow") == "single_source_two_stage_v1":
-                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries, user_reply=args.flux_user_reply)
+                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries, user_reply=args.flux_user_reply, cpus=args.cpus)
                 elif args.stage == "flux":
                     from agent_core.stacking_stages import execute_flux_stage
-                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, user_reply=args.flux_user_reply)
+                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, user_reply=args.flux_user_reply, cpus=args.cpus)
                 else:
-                    task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries)
+                    task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, cpus=args.cpus)
             elif args.command == "resume":
                 resume_interrupted_task(task)
                 save_task(task, repo_root, path)
@@ -372,6 +382,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--flux-user-reply", help="Actual user reply authorizing flux continuation after the primary final answer; required for --stage flux.")
     run.add_argument("--backend", choices=["likelihood"], default="likelihood")
     run.add_argument("--max-safe-retries", type=int, choices=[0, 1], default=1)
+    run.add_argument("--cpus", type=positive_cpu_count, default=1,
+                     help="CPU budget: DR2 source scans use single-thread workers; single-source and joint stacking fits use numerical thread limits. Default: 1.")
 
     show = subparsers.add_parser("show", help="Show the persisted task state.")
     show.add_argument("--task", required=True)

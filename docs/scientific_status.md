@@ -169,3 +169,12 @@ for the primary fit and all flux calculations. Catalog scans, joint stacks and
 historical requests retain their recorded definitions. Frozen tables, optimizer,
 tolerances and the profile maximum-consistency guard are unchanged. See
 [single-source interpolation](single_source_linear_interpolation.md).
+
+## CPU budget
+
+Use `run --task <id> --cpus N` (default 1) to select computing resources.
+Single-source and joint stacking fits set numerical-library thread limits;
+DR2 catalog scans use N single-thread worker processes with separate input/PDF
+caches and input-ordered results. Pass the option again for a user-authorized
+flux stage. Scientific settings and current-run ETA observers are retained.
+See [CPU selection](cpu_execution.md).
