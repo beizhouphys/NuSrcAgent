@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 26892,
-      "sha256": "a4a6e8c3e597a5ec514c73333995f996c9fcfed259c05b1b9ac80d59b0349eec"
+      "bytes": 27478,
+      "sha256": "a7d6896aafc4b77cff9e7faf35fd759ffb2bf374d9ce9b4a26858dc3303f1ade"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -53,18 +53,18 @@
     },
     {
       "path": "README.md",
-      "bytes": 19172,
-      "sha256": "fdc53a1e0d05168ba040ee6dda15d98e140b9e92e4ecb7a7c8a40563e20fff1c"
+      "bytes": 19614,
+      "sha256": "f74ec18f80bb358622fdc970b661368566670fbe01ceeb4b8a1e84531a076dc0"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
-      "bytes": 11101,
-      "sha256": "131cf12224c1e3b8950701e5ef7055408218d2973f591ecae73aa0faef90472b"
+      "bytes": 11240,
+      "sha256": "ec2783d0349126fda45cbd8ba945f827d8457260b09fb369c28723f378dbc446"
     },
     {
       "path": "agent_core/analysis_agent.py",
-      "bytes": 6663,
-      "sha256": "ab17693cc60451290be4c8defa31df8ec0aff0ddcd4be44c180fc3df431ba642"
+      "bytes": 6881,
+      "sha256": "2208902848e3dfc37ac99bfd0880f417a213794230c4618d12492bc5220d2382"
     },
     {
       "path": "agent_core/analysis_outputs.py",
@@ -85,6 +85,11 @@
       "path": "agent_core/config_io.py",
       "bytes": 1212,
       "sha256": "1dbf0754fb38b87d0a5777373d5f006428c55bfbd72235d55beb1a929c805391"
+    },
+    {
+      "path": "agent_core/cpu.py",
+      "bytes": 1576,
+      "sha256": "6e54a589f039700949889ca41575bab1b6b8d5018ffeaeff0ce2e4fa8b9ced2f"
     },
     {
       "path": "agent_core/dr2_empirical_scramble.py",
@@ -123,8 +128,8 @@
     },
     {
       "path": "agent_core/likelihood_backend.py",
-      "bytes": 5220,
-      "sha256": "c34702917961882d34e7b59d7701baa31b795fa9646c5fbcc2a09cfb7089c954"
+      "bytes": 5249,
+      "sha256": "fc99d9829d8af63bc872b80cc0946a4640b06a42baa88ebe418838e0f157ca8f"
     },
     {
       "path": "agent_core/normalize.py",
@@ -168,8 +173,8 @@
     },
     {
       "path": "agent_core/single_source_stages.py",
-      "bytes": 14685,
-      "sha256": "f1d50382f1a205d7761016c7e980d2651756784fd3c3c39f63143b3a8e67fa64"
+      "bytes": 14905,
+      "sha256": "3332119bf24956edef81c7eed216052498732dd1863f9efc2dbabedcf0d1b985"
     },
     {
       "path": "agent_core/stacking_progress.py",
@@ -178,8 +183,8 @@
     },
     {
       "path": "agent_core/stacking_stages.py",
-      "bytes": 12044,
-      "sha256": "3c5dae6b3188f7c9c3acf4e9142486683aea052ead3e8030e8bd3cf155127386"
+      "bytes": 12131,
+      "sha256": "12606ea5bb33ea882706cbc782221156962c521c4c2815a4a267c8e0276536e6"
     },
     {
       "path": "agent_core/stage_progress.py",
@@ -238,8 +243,8 @@
     },
     {
       "path": "analysis_backend/skyllh_dr2_catalog_scan.py",
-      "bytes": 1808,
-      "sha256": "643632bb0598d7a7ca15c32e25def566ced7b944ebe8d71b3cd897b10ac51762"
+      "bytes": 2576,
+      "sha256": "b03b4f37a406a2df9ceb72de30e7eaa38f3c3a8e7f74121327dcf2ad33c8eeec"
     },
     {
       "path": "analysis_backend/skyllh_dr2_dominance.py",
@@ -342,6 +347,11 @@
       "sha256": "af9ff9b9a186e6171ba967f30b696d69522e3f7815822477f4ed8850a3a6df7d"
     },
     {
+      "path": "docs/cpu_execution.md",
+      "bytes": 2459,
+      "sha256": "9768518457b8a059dff54b1237db573d3ba1ec588b60cdbf77cb6fe3cc99e4e4"
+    },
+    {
       "path": "docs/data_and_environment.md",
       "bytes": 5082,
       "sha256": "2eb650d47d702749e9c7115b6ace31a72bb1e76ac67bab2f29e25a621a0241fe"
@@ -433,8 +443,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 11245,
-      "sha256": "5eb804c6e4dc018c4b7d42bc5b71014870d07ba7efbc84088640e0a69fd708af"
+      "bytes": 11682,
+      "sha256": "a3964e1143b84c730aa1619d5fca030796f9d23b40ae1844eec363a989cd70ba"
     },
     {
       "path": "docs/single_source_linear_interpolation.md",
@@ -443,8 +453,8 @@
     },
     {
       "path": "docs/single_source_performance.md",
-      "bytes": 2999,
-      "sha256": "edc395bc290bef809d501a6a956b322f2a0e56f593876e418269e0064cc8ce82"
+      "bytes": 3266,
+      "sha256": "3c4dbab06cc375c26da7a5dd2d3663fac441ebe2b63c4141b6ee0e43452431bc"
     },
     {
       "path": "docs/single_source_stages.md",
@@ -458,8 +468,8 @@
     },
     {
       "path": "docs/stacking_performance.md",
-      "bytes": 7525,
-      "sha256": "0f992591453b520a701e8e1ee68fe3df5965b76845717b61e775848d791d397c"
+      "bytes": 7918,
+      "sha256": "19d0d5878370e6bbbe58bd4a7a084e570bfced8bb2251a36d297f6fd7ac7c2b5"
     },
     {
       "path": "docs/task_timing.md",
@@ -488,8 +498,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 33786,
-      "sha256": "679281d695dce40eabde8dd98fdc146ed90a43e6e514e1a7febd08b6934f4855"
+      "bytes": 34565,
+      "sha256": "5d1a709bb216b1dacf6758f1b1a3bfc40c43c77a6a0b1dc14e50f98d51c6c75b"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

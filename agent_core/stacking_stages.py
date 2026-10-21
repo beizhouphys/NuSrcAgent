@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from agent_core.file_cache import sha256_file
+from agent_core.cpu import positive_cpu_count
 from agent_core.stage_progress import subphase
 from agent_core.simple_yaml import load_simple_yaml
 from agent_core.task_state import save_task, stable_payload_hash, utc_now
@@ -66,7 +67,8 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
         SAFE_ERROR_TYPES,
     )
     from agent_core.analysis_agent import AnalysisAgent
-    if cpus < 1 or max_safe_retries not in (0, 1):
+    cpus = positive_cpu_count(cpus)
+    if max_safe_retries not in (0, 1):
         raise ValueError("CPU budget must be positive and at most one safe retry is allowed")
     if task.get("status") != "AWAITING_FLUX" or not task["parameters"].get("stacking_flux", {}).get("value"):
         raise ValueError("Flux stage requires AWAITING_FLUX; run the primary stage first")
@@ -79,7 +81,7 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
     for retry in range(1 + max_safe_retries):
         number = len(task["attempts"]) + 1
         attempt = dict(attempt=number, stage="flux", request_sha256=request_hash,
-                       started_at_utc=utc_now(), status="RUNNING")
+                       started_at_utc=utc_now(), status="RUNNING", cpu_budget=cpus)
         attempt["flux_user_reply"] = user_reply
         task["attempts"].append(attempt)
         task["status"] = "RUNNING"

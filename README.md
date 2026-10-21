@@ -302,3 +302,12 @@ interpolation for the signal energy PDF in both the primary fit and flux
 calculation. Catalog scan and joint stacking defaults retain their original
 quadratic interpolation. Optimizer, tolerances and the flux-profile consistency
 guard remain unchanged. See [single-source interpolation](docs/single_source_linear_interpolation.md).
+
+## CPU budget
+
+Use `run --task <id> --cpus N` (default 1) to select computing resources.
+Single-source and joint stacking fits set numerical-library thread limits;
+DR2 catalog scans use N single-thread worker processes with separate input/PDF
+caches and input-ordered results. Pass the option again for a user-authorized
+flux stage. Scientific settings and current-run ETA observers are retained.
+See [CPU selection](docs/cpu_execution.md).

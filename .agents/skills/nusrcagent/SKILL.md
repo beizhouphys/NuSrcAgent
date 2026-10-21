@@ -150,6 +150,15 @@ arbitrary user catalogs or individual-source scans. Agree the trial family,
 count, seeds and stopping strategy before any background trials. Negative-TS
 discarding requires scientific review. Time-dependent trials are unsupported.
 
+Honor a requested CPU budget with `--cpus N` (positive integer; default 1),
+including user-authorized flux commands. Single-source and joint stacking fits
+set numerical-library thread limits before analysis imports. DR2 scans use N
+spawned workers with one numerical thread and a separate input/PDF cache each;
+`scan_and_stack` applies these rules to its respective phases. Preserve current-run
+ETA observers and keep CPU settings in execution provenance, outside the scientific
+request hash. See `docs/cpu_execution.md`; empirical scrambling retains its
+separate `--workers` setting.
+
 ## Reporting
 
 Report fitted quantities, TS, p-value and the corresponding significance together.

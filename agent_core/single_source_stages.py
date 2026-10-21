@@ -8,6 +8,7 @@ import traceback
 from pathlib import Path
 
 from agent_core.analysis_agent import AnalysisAgent, AgentRun
+from agent_core.cpu import execution_metadata, positive_cpu_count
 from agent_core.config_io import load_config_file
 from agent_core.file_cache import sha256_file
 from agent_core.normalize import normalize_config
@@ -31,10 +32,11 @@ def configure_single_source_stages(task):
                              "run_agent_wrap.py review-run"]
 
 
-def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_safe_retries=1, user_reply=None):
+def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_safe_retries=1, user_reply=None, cpus=1):
     """Return after one reviewed stage so the Agent can report it in chat."""
     from agent_core.agent_orchestrator import (
         SAFE_ERROR_TYPES, build_analysis_payload, classify_error, evaluate_completion, write_agent_review)
+    cpus = positive_cpu_count(cpus)
     root, task_path = Path(repo_root).resolve(), Path(task_path).resolve()
     if task.get("execution_flow") != FLOW or task.get("workflow") != "single_source":
         raise ValueError("separate stages require a new two-stage single-source task")
@@ -67,7 +69,7 @@ def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_saf
         for retry in range(1 + max_safe_retries):
             attempt_number = len(task.get("attempts", [])) + 1
             attempt = dict(attempt=attempt_number, stage=stage, started_at_utc=utc_now(),
-                           request_sha256=stage_hash, full_request_sha256=full_hash, status="RUNNING")
+                           request_sha256=stage_hash, full_request_sha256=full_hash, status="RUNNING", cpu_budget=cpus)
             if stage == "flux":
                 attempt["flux_user_reply"] = user_reply
             task.setdefault("attempts", []).append(attempt)
@@ -79,8 +81,8 @@ def execute_single_source_stage(task, task_path, repo_root, stage="llh", max_saf
                 request_path = task_path.parent / f"analysis_request_{stage}_attempt_{attempt_number}.yaml"
                 agent = AnalysisAgent(root)
                 agent.prepare_request(stage_payload, request_path)
-                run = (agent.run(request_path) if stage == "llh"
-                       else _run_flux(request_path, primary, root))
+                run = (agent.run(request_path, cpus=cpus) if stage == "llh"
+                       else _run_flux(request_path, primary, root, cpus=cpus))
                 attempt.update(ended_at_utc=utc_now(), run_directory=str(run.run_dir),
                                review_status=run.review.get("status"))
                 task["artifacts"].update(request=str(request_path), run_directory=str(run.run_dir),
@@ -181,7 +183,7 @@ def _load_primary(task, payload, root):
     return result
 
 
-def _run_flux(request_path, primary, root):
+def _run_flux(request_path, primary, root, cpus=1):
     config = load_config_file(request_path)
     validation = validate_config(config, root)
     if not validation.ok:
@@ -204,6 +206,7 @@ def _run_flux(request_path, primary, root):
         if result[key] != primary[key]:
             raise ValueError("flux stage changed the recorded primary fit: " + key)
     result["single_source_stage"] = "flux"
+    result["execution"] = execution_metadata(cpus, normalized)
     run_dir = write_run_artifacts(request_path, config, normalized, result, root)
     review = review_run(str(run_dir), str(root), write_artifacts=True)
     return AgentRun(request_path, normalized, result, run_dir, review)

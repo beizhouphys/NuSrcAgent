@@ -8,7 +8,7 @@ from analysis_backend.dr1_catalog import run_catalog_time_integrated
 from analysis_backend.dr1_single_source import run_single_source_time_integrated
 
 DR2_SAMPLE = "icecube_public_ps_14yr_dr2"
-def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None, stacking_primary=None) -> dict[str, object]:
+def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None, stacking_primary=None, cpus: int = 1) -> dict[str, object]:
     if normalized.time_mode != "time_integrated":
         raise ConfigError("likelihood backend Phase 1.1 only supports time_integrated")
     if normalized.sample == DR2_SAMPLE:
@@ -48,7 +48,7 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
         if operation in {"scan", "scan_and_stack"} and stacking_primary is None:
             from analysis_backend.skyllh_dr2_catalog_scan import run_individual_source_scan
             scan_options = dict(options, fit_procedure=normalized.scan_fit_procedure or getattr(normalized, "fit_procedure", "skyllh_lbfgs_v1"))
-            result["source_results"] = run_individual_source_scan(specs, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **scan_options)
+            result["source_results"] = run_individual_source_scan(specs, workers=cpus, source_dec_window_deg=normalized.source_dec_window_deg, **limit_options, **scan_options)
             result["scan_fit_procedure"] = scan_options["fit_procedure"]
             result["catalog_post_trial_p"] = None
             result["catalog_post_trial_note"] = "Local estimates use the declared Gamma-mode half-chi-square approximation; reporting adds the analytic independent-source catalog correction. Empirical calibration is unavailable."

@@ -43,5 +43,8 @@ bytes are unchanged. The first load still performs the complete required PDF
 verification. Per-source `execution.cache_stats` records data loads, cache hits,
 PDF table loads and signal-file verifications.
 
-CPU selection is deferred to a separate change covering all analysis modes.
-This update introduces no new public CPU setting.
+Use `run --task <id> --cpus N` to select a positive CPU budget (default 1).
+Single-source and joint stacking fits set numerical-library thread limits before
+loading the analysis modules. DR2 catalog scans use N independent processes,
+each limited to one numerical thread and keeping its own complete input cache.
+See [CPU selection](cpu_execution.md) for primary/flux commands and provenance.
