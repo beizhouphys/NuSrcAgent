@@ -6,15 +6,16 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from agent_core.cpu import configure_threads, positive_cpu_count
+from agent_core.cpu import configure_threads, positive_worker_count
 
 # Set numerical-library limits before importing analysis modules. Spawned scan
 # workers keep the single-thread environment inherited from their parent.
-if __name__ == "__main__" and "run" in sys.argv[1:]:
+if __name__ == "__main__" and any(command in sys.argv[1:] for command in
+                                  ("run", "dominance", "dr2-ra-scramble")):
     _cpu_parser = argparse.ArgumentParser(add_help=False)
-    _cpu_parser.add_argument("--cpus", type=positive_cpu_count, default=1)
+    _cpu_parser.add_argument("--workers", type=positive_worker_count, default=1)
     _cpu_options, _ = _cpu_parser.parse_known_args()
-    configure_threads(_cpu_options.cpus)
+    configure_threads(1 if "dr2-empirical-scramble" in sys.argv[1:] else _cpu_options.workers)
 
 from agent_core.progress import timed_command, print_result
 from analysis_backend.sources import BUILTIN_CATALOG_NAMES
@@ -108,7 +109,7 @@ def main(argv=None) -> int:
             return 2 if result.get("status") == "fail" else 0
         if args.command == "dominance":
             from analysis_backend.skyllh_dr2_dominance import run_dominance_analysis
-            result = run_dominance_analysis(repo_root, args.baseline_run_directory, args.output_directory, args.request, args.candidate_count, args.top_n)
+            result = run_dominance_analysis(repo_root, args.baseline_run_directory, args.output_directory, args.request, args.candidate_count, args.top_n, workers=args.workers)
             print_result(result)
             return 0 if result.get("status") == "COMPLETED" else 2
         if args.command == "review-dominance":
@@ -119,7 +120,7 @@ def main(argv=None) -> int:
         if args.command == "dr2-ra-scramble":
             from analysis_backend.skyllh_dr2_ra_scramble import run_dr2_ra_scramble_diagnostic
             seeds = [int(value.strip()) for value in args.seeds.split(",") if value.strip()]
-            result = run_dr2_ra_scramble_diagnostic(repo_root, args.baseline_run_directory, args.output_directory, seeds)
+            result = run_dr2_ra_scramble_diagnostic(repo_root, args.baseline_run_directory, args.output_directory, seeds, workers=args.workers)
             print_result(result)
             return 0 if result.get("status") == "COMPLETED_WITH_WARNINGS" else 2
         if args.command == "create-single":
@@ -166,12 +167,12 @@ def main(argv=None) -> int:
                 if args.flux_user_reply is not None and args.stage != "flux":
                     raise ValueError("--flux-user-reply is only valid with --stage flux after the primary final answer")
                 if args.stage == "flux" and task.get("execution_flow") == "single_source_two_stage_v1":
-                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries, user_reply=args.flux_user_reply, cpus=args.cpus)
+                    task = execute_single_source_stage(task, path, repo_root, "flux", args.max_safe_retries, user_reply=args.flux_user_reply, workers=args.workers)
                 elif args.stage == "flux":
                     from agent_core.stacking_stages import execute_flux_stage
-                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, user_reply=args.flux_user_reply, cpus=args.cpus)
+                    task = execute_flux_stage(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, user_reply=args.flux_user_reply, workers=args.workers)
                 else:
-                    task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, cpus=args.cpus)
+                    task = execute_task(task, path, repo_root, backend=args.backend, max_safe_retries=args.max_safe_retries, workers=args.workers)
             elif args.command == "resume":
                 resume_interrupted_task(task)
                 save_task(task, repo_root, path)
@@ -295,7 +296,7 @@ def build_parser() -> argparse.ArgumentParser:
     empirical.add_argument("--n-trials", type=int, default=100)
     empirical.add_argument("--n-sources", type=int, default=1000)
     empirical.add_argument("--seed", type=int, default=2026091501)
-    empirical.add_argument("--workers", type=int, default=2)
+    empirical.add_argument("--workers", type=positive_worker_count, default=2)
     empirical.add_argument("--max-hours", type=float, default=2.)
     empirical.add_argument("--max-fits", type=int, help="Operational fit limit for timing pilot; no partial-ensemble p-value is reported.")
 
@@ -382,8 +383,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--flux-user-reply", help="Actual user reply authorizing flux continuation after the primary final answer; required for --stage flux.")
     run.add_argument("--backend", choices=["likelihood"], default="likelihood")
     run.add_argument("--max-safe-retries", type=int, choices=[0, 1], default=1)
-    run.add_argument("--cpus", type=positive_cpu_count, default=1,
-                     help="CPU budget: DR2 source scans use single-thread workers; single-source and joint stacking fits use numerical thread limits. Default: 1.")
+    run.add_argument("--workers", type=positive_worker_count, default=1,
+                     help="Positive CPU budget: DR1/DR2 source scans use single-thread worker processes; single-source and joint fits use numerical-library thread limits. Default: 1.")
 
     show = subparsers.add_parser("show", help="Show the persisted task state.")
     show.add_argument("--task", required=True)
@@ -406,12 +407,16 @@ def build_parser() -> argparse.ArgumentParser:
     dominance.add_argument("--output-directory", required=True)
     dominance.add_argument("--candidate-count", type=int, default=15)
     dominance.add_argument("--top-n", type=int, default=10)
+    dominance.add_argument("--workers", type=positive_worker_count, default=1,
+                           help="Parallel individual refits; sequential screening/cumulative stages use numerical-library thread limits. Default: 1.")
     dominance_review = subparsers.add_parser("review-dominance", help="Review a completed DR2 source-dominance analysis.")
     dominance_review.add_argument("--output-directory", required=True)
     ra_scramble = subparsers.add_parser("dr2-ra-scramble", help="Run checkpointed source/event RA-scramble diagnostics for a completed fitted-Gamma DR2 stack.")
     ra_scramble.add_argument("--baseline-run-directory", required=True)
     ra_scramble.add_argument("--output-directory", required=True)
     ra_scramble.add_argument("--seeds", default="104729,130363,155921", help="Comma-separated unique non-negative integer trial seeds.")
+    ra_scramble.add_argument("--workers", type=positive_worker_count, default=1,
+                            help="Single-thread worker processes for independent seeds. Default: 1.")
     return parser
 
 

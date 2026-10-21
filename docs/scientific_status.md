@@ -172,9 +172,12 @@ tolerances and the profile maximum-consistency guard are unchanged. See
 
 ## CPU budget
 
-Use `run --task <id> --cpus N` (default 1) to select computing resources.
+Use `run --task <id> --workers N` (default 1) to select computing resources.
 Single-source and joint stacking fits set numerical-library thread limits;
-DR2 catalog scans use N single-thread worker processes with separate input/PDF
+DR1 and DR2 catalog scans use N single-thread worker processes with separate input/PDF
 caches and input-ordered results. Pass the option again for a user-authorized
 flux stage. Scientific settings and current-run ETA observers are retained.
+Dominance uses workers for independent delete-one refits and keeps cumulative
+refits sequential with their original initial values. RA-scramble diagnostics
+use workers for independent seeds; both accept `--workers N`.
 See [CPU selection](cpu_execution.md).

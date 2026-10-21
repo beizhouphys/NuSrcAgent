@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from time import monotonic
-from agent_core.cpu import execution_metadata, positive_cpu_count
+from agent_core.cpu import execution_metadata, positive_worker_count
 from agent_core.stage_progress import StageProgress
 from agent_core.schemas import to_clean_dict
 
@@ -41,8 +41,8 @@ class AnalysisAgent:
         with path.open("w", encoding="utf-8") as handle:
             handle.write(dump_simple_yaml(payload))
         return path
-    def run(self, config_path: str | Path, backend: str = "likelihood", prepare_only: bool = False, stacking_primary=None, cpus: int = 1) -> AgentRun:
-        cpus = positive_cpu_count(cpus)
+    def run(self, config_path: str | Path, backend: str = "likelihood", prepare_only: bool = False, stacking_primary=None, workers: int = 1) -> AgentRun:
+        workers = positive_worker_count(workers)
         path = Path(config_path)
         if not path.is_absolute():
             path = self.repo_root / path
@@ -62,9 +62,9 @@ class AnalysisAgent:
             with plan.phase('request preparation'):
                 pass  # Includes validation/normalization since method entry.
             with plan.phase('analysis'):
-                result = (run_likelihood_backend(normalized, self.repo_root, cpus=cpus) if stacking_primary is None
-                          else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary, cpus=cpus))
-                result["execution"] = execution_metadata(cpus, normalized)
+                result = (run_likelihood_backend(normalized, self.repo_root, workers=workers) if stacking_primary is None
+                          else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary, workers=workers))
+                result["execution"] = execution_metadata(workers, normalized)
             with plan.phase('output generation'):
                 run_dir = write_run_artifacts(path, config, normalized, result, self.repo_root)
             with plan.phase('scientific review'):

@@ -4,7 +4,7 @@ import json
 import traceback
 from pathlib import Path
 from typing import Any, Dict
-from agent_core.cpu import positive_cpu_count
+from agent_core.cpu import positive_worker_count
 
 from agent_core.analysis_agent import AnalysisAgent, build_catalog_request, build_single_source_request
 from agent_core.planner import source_from_single_row_catalog
@@ -14,13 +14,13 @@ from agent_core.task_state import RUNNABLE_STATE, refresh_readiness, save_task, 
 SAFE_ERROR_TYPES = {"OUTPUT_GENERATION_ERROR", "DEPENDENCY_ERROR", "TRANSIENT_IO_ERROR"}
 
 
-def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend: str = "likelihood", max_safe_retries: int = 1, cpus: int = 1) -> Dict[str, Any]:
-    cpus = positive_cpu_count(cpus)
+def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend: str = "likelihood", max_safe_retries: int = 1, workers: int = 1) -> Dict[str, Any]:
+    workers = positive_worker_count(workers)
     if task.get("execution_flow") == "single_source_two_stage_v1":
         from agent_core.single_source_stages import execute_single_source_stage
         if backend != "likelihood":
             raise ValueError("two-stage single-source analysis requires the likelihood backend")
-        return execute_single_source_stage(task, task_path, repo_root, "llh", max_safe_retries, cpus=cpus)
+        return execute_single_source_stage(task, task_path, repo_root, "llh", max_safe_retries, workers=workers)
     refresh_readiness(task)
     if task.get("status") != RUNNABLE_STATE:
         raise ValueError("task is not ready to run; status=%s; missing=%s" % (task.get("status"), task.get("missing_parameters", [])))
@@ -29,7 +29,7 @@ def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend
     attempts_allowed = 1 + max(0, int(max_safe_retries))
     for _ in range(attempts_allowed):
         attempt_number = len(task.get("attempts", [])) + 1
-        attempt = {"attempt": attempt_number, "started_at_utc": utc_now(), "request_sha256": payload_hash, "status": "RUNNING", "cpu_budget": cpus}
+        attempt = {"attempt": attempt_number, "started_at_utc": utc_now(), "request_sha256": payload_hash, "status": "RUNNING", "cpu_budget": workers}
         task.setdefault("attempts", []).append(attempt)
         task["status"] = "RUNNING"
         save_task(task, repo_root, task_path)
@@ -37,7 +37,7 @@ def execute_task(task: Dict[str, Any], task_path: Path, repo_root: Path, backend
             agent = AnalysisAgent(repo_root)
             request_path = task_path.parent / ("analysis_request_attempt_%d.yaml" % attempt_number)
             agent.prepare_request(payload, request_path)
-            run = agent.run(request_path, backend=backend, prepare_only=False, cpus=cpus)
+            run = agent.run(request_path, backend=backend, prepare_only=False, workers=workers)
             attempt.update({"ended_at_utc": utc_now(), "run_directory": str(run.run_dir), "review_status": run.review.get("status") if run.review else "fail"})
             task["artifacts"] = {"request": str(request_path), "run_directory": str(run.run_dir), "review": str(run.run_dir / "review.json") if run.run_dir else None}
             task["status"] = "REVIEWING"
