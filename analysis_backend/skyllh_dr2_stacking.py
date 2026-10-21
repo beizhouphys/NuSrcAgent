@@ -8,6 +8,7 @@ dataset signal-weight service supplies ``f_k``.
 from __future__ import annotations
 
 from agent_core.progress import track_progress
+from agent_core.stage_progress import subphase
 from agent_core.stacking_progress import start_stacking_progress
 
 from copy import copy, deepcopy
@@ -461,28 +462,29 @@ def run_dr2_stacking(
     """Run an unblinded catalog stack and return serializable results."""
     if fit_procedure != "skyllh_lbfgs_v1":
         raise ValueError("Unsupported DR2 fit procedure; this runtime uses skyllh_lbfgs_v1")
-    analysis = create_dr2_stacking_analysis(
-        repo_root=repo_root,
-        source_specs=source_specs,
-        likelihood_mode=likelihood_mode,
-        gamma_mode=gamma_mode,
-        gamma=gamma,
-        gamma_min=gamma_min,
-        gamma_max=gamma_max,
-        ns_seed=ns_seed,
-        ns_max=ns_max,
-        event_abs_dec_max_deg=event_abs_dec_max_deg,
-        event_dec_min_deg=event_dec_min_deg,
-        event_dec_max_deg=event_dec_max_deg,
-        data_selection=data_selection,
-        signal_energy_declination_mode=signal_energy_declination_mode,
-        source_ra_scramble_seed=source_ra_scramble_seed,
-        event_ra_scramble_seed=event_ra_scramble_seed,
-        background_pdf_version=background_pdf_version,
-        runtime_cache=runtime_cache,
-        source_dec_window_deg=source_dec_window_deg,
-        signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
-    )
+    with subphase('input loading and analysis setup'):
+        analysis = create_dr2_stacking_analysis(
+            repo_root=repo_root,
+            source_specs=source_specs,
+            likelihood_mode=likelihood_mode,
+            gamma_mode=gamma_mode,
+            gamma=gamma,
+            gamma_min=gamma_min,
+            gamma_max=gamma_max,
+            ns_seed=ns_seed,
+            ns_max=ns_max,
+            event_abs_dec_max_deg=event_abs_dec_max_deg,
+            event_dec_min_deg=event_dec_min_deg,
+            event_dec_max_deg=event_dec_max_deg,
+            data_selection=data_selection,
+            signal_energy_declination_mode=signal_energy_declination_mode,
+            source_ra_scramble_seed=source_ra_scramble_seed,
+            event_ra_scramble_seed=event_ra_scramble_seed,
+            background_pdf_version=background_pdf_version,
+            runtime_cache=runtime_cache,
+            source_dec_window_deg=source_dec_window_deg,
+            signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
+        )
     progress = start_stacking_progress(repo_root, source_specs, dict(
         likelihood_mode=likelihood_mode, gamma_mode=gamma_mode, gamma_seed=float(gamma),
         ns_seed=float(ns_seed), gamma_bounds=[float(gamma_min), float(gamma_max)] if gamma_mode=='fitted' else None,
@@ -495,7 +497,8 @@ def run_dr2_stacking(
         signal_energy_gamma_interpolation=(signal_energy_gamma_interpolation or 'parabola_v1') if likelihood_mode=='spatial_energy' else None,
         source_ra_scramble_seed=analysis.source_ra_scramble_seed,
         event_ra_scramble_seed=analysis.event_ra_scramble_seed,
-        fit_procedure=fit_procedure, event_counts=dict(analysis.event_counts)))
+        fit_procedure=fit_procedure, event_counts=dict(analysis.event_counts)),
+        cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios))
     minimizer_impl = analysis.llhratio.minimizer.minimizer_impl
     minimizer_impl.progress_observer = progress
     fit_timing = None
@@ -593,7 +596,8 @@ def run_dr2_stacking(
         result['fit_timing'] = fit_timing
     if flux_upper_limit_cl is not None:
         from analysis_backend.profile_upper_limit import fixed_gamma_flux_upper_limit
-        result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
+        with subphase('fixed-spectrum likelihood profile'):
+            result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
     if flux_measurement_ts_threshold is not None:
         from analysis_backend.profile_flux import source_flux_measurement
         result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold)
@@ -630,14 +634,15 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
             result.pop("generated_files", None)
             analysis_options = {key: value for key, value in fit_options.items()
                                 if key not in {"random_seed", "fit_procedure"}}
-            analysis = create_dr2_stacking_analysis(source_specs=source_specs,
-                runtime_cache=cache, **analysis_options)
-            analysis.initialize_trial([data.exp for data in analysis._data_list])
-            fitted = result["gamma_mode"] == "fitted"
-            values = np.asarray([result["ns"], result["gamma"]] if fitted else [result["ns"]])
-            value, _ = analysis.llhratio.evaluate(values)
-            if not np.isclose(2*value, result["TS"], rtol=1e-7, atol=1e-6):
-                raise ValueError("Saved primary fit does not match the reconstructed likelihood")
+            with subphase('saved primary likelihood reconstruction and verification'):
+                analysis = create_dr2_stacking_analysis(source_specs=source_specs,
+                    runtime_cache=cache, **analysis_options)
+                analysis.initialize_trial([data.exp for data in analysis._data_list])
+                fitted = result["gamma_mode"] == "fitted"
+                values = np.asarray([result["ns"], result["gamma"]] if fitted else [result["ns"]])
+                value, _ = analysis.llhratio.evaluate(values)
+                if not np.isclose(2*value, result["TS"], rtol=1e-7, atol=1e-6):
+                    raise ValueError("Saved primary fit does not match the reconstructed likelihood")
             if flux_measurement_ts_threshold is not None:
                 from analysis_backend.profile_flux import source_flux_measurement
                 result["flux_measurement"] = source_flux_measurement(analysis, result, flux_measurement_ts_threshold)

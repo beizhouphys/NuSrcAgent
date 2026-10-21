@@ -33,30 +33,65 @@ This includes unsuccessful work. Time waiting for a later user reply is excluded
 primary and authorized flux stages report the duration of their respective turns.
 The last command's duration must not substitute for the whole request's duration.
 
-## Remaining time during a joint stacking fit
+## Cost-aware remaining time during a joint stacking fit
 
-After its first completed objective evaluation, a multi-source DR2 stacking fit
-reports a numeric, explicitly rough ETA while the optimizer is running. The
-current rolling evaluation duration is multiplied by the estimated number of
-remaining evaluations. The first cold-cache evaluation is excluded once warm
-samples exist; a long in-flight evaluation also revises the speed estimate.
+An optimizer call is not a uniform amount of work. The observer compares the
+existing source-weighted PDF cache keys before and after each unchanged call:
+`cold_start` identifies the first call, `pdf_recomputed` identifies a changed key,
+and `pdf_reused` identifies an unchanged key. It does not change caching,
+likelihood evaluation, optimizer settings, bounds, seeds or stopping conditions.
 
-The evaluation-count prior is the median of up to five reviewed converged local
-fits with the same ordered coordinates/weights, fit seeds/bounds, random seed,
-event selection/counts, PDF settings, input hashes and NumPy/SciPy/SkyLLH versions.
-Only historical evaluation counts are used, never historical speed. Without a
-match, the initial heuristic budget is 32 evaluations for fitted Gamma or 12 for
-fixed Gamma. An exceeded budget is extended; it is never an optimizer limit.
+Reviewed converged runs with matching ordered coordinates/weights, scientific
+settings, input hashes and package versions can supply call-count references.
+Version-2 traces additionally record each call's cost class and duration.
+Only traces from the same host, machine and thread environment supply speeds.
+Their already-recorded cost sequences forecast the remaining work; the median
+of current/reference duration ratios within each cost class rescales its speed.
+Cached calls therefore cannot reduce the estimated cost of future full-PDF calls.
+If the current class sequence diverges, its sequence template is rejected.
+Legacy count-only references use measured full-PDF speed as a coarse fallback.
 
-Events have `phase=joint stacking fit`, `estimate_scope=stacking_fit_only`,
-`completed_evaluations`, `estimated_total_evaluations`, `remaining_seconds` and
-`remaining_seconds_range`. The range uses half to 1.5 times the revisable call
-budget and current speed; it is a heuristic range, not a statistical confidence
-interval. Do not describe the budget as a known endpoint or convert it into a
-completion percentage. Artifacts and review require additional time. The final
-report's `fit_timing` records evaluation durations and reference reports.
+There are no arbitrary 32/12-call defaults or half-to-1.5-budget intervals.
+An unknown optimizer stopping count stays unknown without a comparable completed
+fit. If a forecast becomes overdue or reaches the reference endpoint while the
+optimizer is active, the ETA becomes unavailable with an explicit reason; it
+does not count down to an artificial positive floor or imply completion.
 
-Timing wraps each unchanged objective call once and forwards its return value
-without modification. SkyLLH retains its own optimizer defaults, bounds, stopping
-conditions, trial procedure and numerical results. A failed evaluation propagates
-its original exception and is not counted as completed work.
+`fit_timing` in the result records cost classes, durations, completion times,
+reference reports and forecasts made while the fit was active. After completion,
+each forecast is compared with the actual remaining fit time. Signed error is
+`predicted remaining seconds - actual remaining seconds`; positive means the
+prediction was too long. Summary fields include mean/median absolute error,
+90th-percentile absolute error and signed bias. No current run's future is used
+for a live forecast. A displayed interval needs at least three independent prior
+error histories; it uses their 90th-percentile absolute errors and is an empirical
+error band, not a confidence interval or guaranteed bound.
+
+## Named stages and total remaining time
+
+AnalysisAgent records request preparation, numerical analysis, output generation
+(including figures) and scientific review separately. Subphases identify input
+loading/analysis setup, saved-primary likelihood reconstruction/verification and
+fixed-spectrum likelihood profiling. The existing per-spectrum completion counts
+remain available. Primary and flux stages are separate user-authorized turns.
+
+Events include `current_stage`, `stage_elapsed_seconds`, `stage_remaining_seconds`,
+`pending_stages` and `request_remaining_seconds`. Exact normalized settings, input
+hashes, host/thread environment and primary/flux mode must match for stage timing
+history. A request ETA sums the current-stage forecast and the measured histories
+of pending stages. It remains unavailable if later stages lack references; do not
+add an invented review allowance. Stages and subphases still report their names
+and actual durations during a first run without history.
+
+The run's `timing.json` records stage durations, reference runs and whole-request
+forecasts/errors through numerical execution, files and review. It does not include
+initial chat latency, preflight outside AnalysisAgent or final answer composition;
+the chat must separately report the whole current user turn's elapsed time.
+
+## Validation
+
+Check prediction error on a later run whose measurements were unavailable to the
+reference fit. Compare old and new forecasts at identical timestamps and report
+absolute error, signed bias, coverage and numerical invariance. A successful
+presence/format check alone does not validate ETA accuracy. A single held-out run
+can reveal a regression but cannot establish general predictive coverage.
