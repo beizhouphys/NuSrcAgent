@@ -10,6 +10,9 @@ from agent_core.schemas import AnalysisConfig, AnalysisType, ValidationResult, W
 def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None) -> ValidationResult:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     result = ValidationResult()
+    from agent_core.spectrum import validate_spectrum
+    result.errors.extend(validate_spectrum(config.analysis.spectrum, config.stacking.spectral_indices[0],
+        config.stacking.gamma_mode, config.analysis.gamma_bounds, root))
     if config.analysis.fit_procedure != "skyllh_lbfgs_v1":
         result.errors.append("analysis.fit_procedure must be skyllh_lbfgs_v1 in this runtime")
     interpolation = config.analysis.signal_energy_gamma_interpolation
@@ -34,6 +37,8 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
                         measurement_ts_threshold=9., reporting="two_stage",
                         display_quantity="full_sky_average_intensity")
         omitted = dict(approved, upper_limit_cl=None, upper_limit_gammas=[])
+        if config.analysis.spectrum:
+            approved["measurement_ts_threshold"] = omitted["measurement_ts_threshold"] = None
         if stack_flux not in (approved, omitted):
             result.errors.append("Stacking flux settings must retain the approved hypotheses, TS gate, intensity units and two-stage reporting")
         if (config.data.sample != "icecube_public_ps_14yr_dr2"
@@ -81,10 +86,9 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
     if config.data.sample == "icecube_public_ps_14yr_dr2":
         if len(config.stacking.spectral_indices) != 1:
             result.errors.append("the DR2 backend requires exactly one Gamma seed or fixed value")
-        elif config.analysis.likelihood_mode == "spatial_energy" and config.stacking.gamma_mode == "fitted" and not -4.0 <= config.stacking.spectral_indices[0] <= -1.0:
+        elif config.analysis.likelihood_mode == "spatial_energy" and config.stacking.gamma_mode == "fitted" and config.analysis.gamma_bounds is None and not -4.0 <= config.stacking.spectral_indices[0] <= -1.0:
             result.errors.append("the default DR2 fitted-Gamma range requires a seed in [-4, -1]")
-        elif config.stacking.gamma_mode == "fixed" and not -6.1 <= config.stacking.spectral_indices[0] <= -0.9:
-            result.errors.append("fixed DR2 Gamma must be within the pre-calculated range [-6.1, -0.9]")
+
     if config.analysis.time_mode != "time_integrated":
         result.errors.append("only time_integrated analysis is supported in this Phase 0 scaffold")
     if config.background.method != "ra_scramble":
@@ -115,8 +119,8 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
             result.errors.append("Adaptive source windows cannot be combined with explicit event cuts")
         if config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation == "stack":
             result.errors.append("Adaptive source windows apply to individual fits, not catalog stacking")
-    if any(gamma >= 0.0 for gamma in config.stacking.spectral_indices):
-        result.errors.append("stacking.spectral_indices must use the negative power-law convention, for example -2.53")
+    if any(not math.isfinite(gamma) for gamma in config.stacking.spectral_indices):
+        result.errors.append("stacking.spectral_indices must contain finite signed power-law exponents")
     if config.analysis.type == AnalysisType.SINGLE_SOURCE:
         validate_single_source(config, result)
     if config.analysis.type == AnalysisType.CATALOG_STACKING:

@@ -9,8 +9,10 @@
   figures in `figures/`; never overwrite frozen inputs during an analysis.
 - The production DR2 background package is frozen v3. Verify its mapped
   numerical hashes; do not rebuild, retune or silently fall back to another version.
-- Keep PDF construction, owner tests, specific-source comparisons, transcripts
-  and local configuration out of this checkout.
+- Keep offline PDF construction, owner tests, specific-source comparisons,
+  transcripts and local configuration out of this checkout. Runtime preparation
+  of a requested spectrum's signal-energy PDFs and detector acceptance is an
+  owner-authorized exception (2026-10-22); include it, preserving frozen PDFs.
 - Keep module imports, CLI examples, artifact paths and manifest references
   consistent when renaming files; do not leave compatibility entry points.
 - Preserve substantive comments when removing generation markers.

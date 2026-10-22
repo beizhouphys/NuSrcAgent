@@ -17,7 +17,8 @@ retains substantive explanations, and introduces no old-name import adapters.
 | Marker-suffixed public wrapper | `run_agent_wrap.py` |
 | Mixed general scan and 3386-source benchmark | General input-ordered scan only |
 | DR1 original analysis plus controlled all-sky comparison | Original supported DR1 path only |
-| PDF construction/validation tools and rebuild CLI | Excluded; frozen loading/interpolation retained |
+| Offline PDF construction/validation tools and background rebuild CLI | Excluded; frozen loading/interpolation retained |
+| Runtime response preparation for a requested spectrum | Included: SEpdfs and detector acceptance; frozen conventional PDFs unchanged |
 | Background v1/v2/v3 selection | Production v3 only; unavailable versions rejected |
 | Development production PDF paths with owner markers | Formal release v3 paths with unchanged numerical hashes |
 | Selected radio-bright AGN CSV in `data_input/sources_cdx/` | Versioned under `data_input/sources/`, unchanged numerical bytes |

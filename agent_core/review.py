@@ -79,7 +79,31 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     ts = finite_float(result.get("TS"))
     ns_hat = finite_float(result.get("ns"))
     gamma = finite_float(result.get("gamma"))
-    valid = ts is not None and ts >= 0.0 and ns_hat is not None and ns_hat >= 0.0 and gamma is not None and 0.9 <= gamma <= 6.1
+    tabulated = bool(normalized.get("spectrum"))
+    spectrum_ok = result.get("spectrum", {}) == normalized.get("spectrum", {})
+    valid = (ts is not None and ts >= 0.0 and ns_hat is not None and ns_hat >= 0.0
+             and (result.get("gamma") is None if tabulated else gamma is not None) and spectrum_ok)
+    from agent_core.spectrum import response_required
+    requested_gamma = normalized.get("spectral_indices", [None])[0]
+    needs_response = response_required(requested_gamma, normalized.get("spectrum"), normalized.get("gamma_bounds"))
+    if needs_response:
+        try:
+            from analysis_backend.spectrum_response import verify_response, interpolation_grid
+            response = verify_response(result["spectrum_response"]["manifest"])
+            identity = response["identity"]
+            requested_bounds = normalized.get("gamma_bounds") or [-6., -1.]
+            grid = interpolation_grid(0. if tabulated else -requested_gamma, normalized["gamma_mode"],
+                                      -requested_bounds[1], -requested_bounds[0])
+            response_ok = (identity["spectrum"] == (normalized.get("spectrum") or {"kind": "power_law"})
+                           and identity["gamma_grid"] == grid.grid.tolist()
+                           and identity["likelihood_mode"] == likelihood_mode)
+        except (OSError, ValueError, KeyError, TypeError):
+            response_ok = False
+        add_check(review, "requested_spectrum_response", "pass" if response_ok else "fail",
+                  "spectrum response and detector-input hashes match the request" if response_ok else "spectrum response is absent, changed or inconsistent", False)
+        valid = valid and response_ok
+    elif not tabulated:
+        valid = valid and 0.9 <= gamma <= 6.1
     bounds = result.get("fit_bounds", {})
     ns_bounds = bounds.get("ns")
     gamma_bounds = bounds.get("gamma_skyllh")
@@ -105,7 +129,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     mode_matches = result.get("gamma_mode") == normalized.get("gamma_mode")
     if result.get("gamma_mode") == "fixed":
         requested_gamma = finite_float(normalized.get("spectral_indices", [None])[0])
-        mode_matches = mode_matches and gamma is not None and requested_gamma is not None and abs(gamma + requested_gamma) < 1e-12
+        mode_matches = mode_matches and (spectrum_ok if tabulated else gamma is not None and requested_gamma is not None and abs(gamma + requested_gamma) < 1e-12)
     add_check(review, "dr2_gamma_request", "pass" if mode_matches else "fail", "Gamma mode and fixed value match the request" if mode_matches else "Gamma mode or fixed value differs from the request", False)
     if result.get("gamma_mode") == "fitted" and gamma is not None and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
         if any(abs(gamma - float(bound)) < 1e-5 for bound in gamma_bounds):
@@ -173,7 +197,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     if likelihood_mode == "spatial_only":
         normalized_gamma = normalized.get("spectral_indices", [None])[0]
         acceptance_gamma = finite_float(result.get("acceptance_gamma_legacy"))
-        fixed_acceptance = result.get("gamma_mode") == "fixed" and result.get("gamma_role") == "acceptance_only" and acceptance_gamma is not None and finite_float(normalized_gamma) is not None and abs(acceptance_gamma - float(normalized_gamma)) < 1e-12
+        fixed_acceptance = result.get("gamma_mode") == "fixed" and (spectrum_ok and result.get("gamma_role") == "fixed_spectrum_shape" if tabulated else result.get("gamma_role") == "acceptance_only" and acceptance_gamma is not None and finite_float(normalized_gamma) is not None and abs(acceptance_gamma - float(normalized_gamma)) < 1e-12)
         add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance Gamma matches the normalized request" if fixed_acceptance else "spatial-only acceptance Gamma is not fixed or does not match the request", False)
         no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False
         add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False)
@@ -191,10 +215,14 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         table_ok = len(table) == 1
         if table_ok:
             for key in (("TS", "ns", "gamma", "pre_trial_p", "pre_trial_significance") if result.get("p_value_is_estimate") else ("TS", "ns", "gamma")):
+                if key == "gamma" and tabulated:
+                    table_ok = table_ok and table[0].get(key) in ("", None)
+                    continue
                 value = finite_float(table[0].get(key))
                 reference = finite_float(result.get(key))
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
         add_check(review, "dr2_fit_table", "pass" if table_ok else "fail", "fit CSV matches the numeric report" if table_ok else "fit CSV is missing or inconsistent", False)
+
     if normalized.get("stacking_flux") and not normalized.get("_flux_suite_member") and result.get("n_sources", 0) > 1:
         stage = result.get("stacking_phase")
         add_check(review, "stacking_reporting_stage", "pass" if stage in {"primary", "flux"} else "fail",
@@ -319,6 +347,9 @@ def review_dr2_source_scan(review, run_dir, report, normalized, root):
             if fit.get("p_value_is_estimate"):
                 columns.extend([("pre_trial_p_approx", "pre_trial_p"), ("pre_trial_significance", "pre_trial_significance")])
             for column, key in columns:
+                if key == "gamma" and fit.get("spectrum"):
+                    table_ok = table_ok and row.get(column) in ("", None)
+                    continue
                 value = finite_float(row.get(column))
                 reference = finite_float(fit.get(key)) if isinstance(fit, dict) else None
                 table_ok = table_ok and value is not None and reference is not None and math.isclose(value, reference, rel_tol=1e-12, abs_tol=1e-12)
@@ -535,7 +566,7 @@ def review_flux_suite(review, report, normalized, root):
     for fit, gamma in zip(fits, expected):
         child_normalized = dict(normalized, gamma_mode="fixed", spectral_indices=[-gamma],
                                 flux_upper_limit_gammas=[], flux_measurement_ts_threshold=None,
-                                fit_procedure="skyllh_lbfgs_v1", stacking_flux={}, _flux_suite_member=True)
+                                fit_procedure="skyllh_lbfgs_v1", stacking_flux={}, spectrum={}, gamma_bounds=None, _flux_suite_member=True)
         child = {"checks": [], "metrics": {}}
         review_dr2_run(child, dict(report, result=fit), child_normalized, root)
         for check in child["checks"]:

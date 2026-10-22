@@ -253,3 +253,59 @@ class TableBackgroundEnergyPDF(PDDataBackgroundI3EnergyPDF):
 
     def get_pd(self, tdm, params_recarray=None, tl=None):
         return self._pd, {}
+
+
+class DR2RequestedSpectrumPDFStore(DR2PrecalculatedPDFStore):
+    """Keep frozen background PDFs and load separately prepared signal PDFs."""
+    def __init__(self, root, manifest_path, background_version='v3'):
+        super().__init__(root, background_version)
+        from analysis_backend.spectrum_response import verify_response
+        manifest = verify_response(manifest_path)
+        self.signal_provenance = str(manifest_path)
+        self.response_files = {row['dataset']: Path(row['file']) for row in manifest['datasets']}
+        from agent_core.file_cache import file_signature
+        from analysis_backend.spectrum_response import _artifact_sha256
+        self._response_artifact_hashes = {Path(manifest_path): _artifact_sha256(manifest_path),
+            **{Path(row['file']): row['sha256'] for row in manifest['datasets']}}
+        self._response_signatures = {path: file_signature(path) for path in self._response_artifact_hashes}
+        for name in manifest['identity']['irf_sha256']:
+            self._record_verified_file(Path(name))
+        spectrum = manifest['identity']['spectrum']
+        if spectrum.get('file'):
+            self._record_verified_file(Path(spectrum['file']))
+
+    def assert_files_unchanged(self):
+        super().assert_files_unchanged()
+        from agent_core.file_cache import file_signature
+        from analysis_backend.spectrum_response import _artifact_sha256
+        for path, digest in getattr(self, '_response_artifact_hashes', {}).items():
+            signature = file_signature(path)
+            if signature != self._response_signatures[path]:
+                if _artifact_sha256(path) != digest:
+                    raise ValueError('A prepared spectrum-response artifact changed during execution')
+                # A metadata-only indexing change is harmless after an actual
+                # byte-hash check. Frozen inputs retain their strict guards.
+                self._response_signatures[path] = signature
+
+    def compact_signal_grid(self, dataset_name, gamma_values):
+        self.assert_files_unchanged()
+        gamma_values = np.asarray(gamma_values, dtype=float)
+        key = (dataset_name, gamma_values.tobytes())
+        if key in self._compact_signal:
+            self.cache_stats['compact_signal_hits'] += 1
+            return self._compact_signal[key]
+        with np.load(self.response_files[dataset_name], allow_pickle=False) as table:
+            axis = table['gamma']
+            indices = []
+            for value in gamma_values:
+                matches = np.flatnonzero(np.isclose(axis, value, rtol=0., atol=1e-10))
+                if len(matches) != 1:
+                    raise ValueError('Gamma is outside the prepared spectrum-response grid')
+                indices.append(int(matches[0]))
+            result = dict(dec_edges=table['dec_edges'], energy=table['energy'],
+                          gamma=gamma_values.copy(), values=table['values'][:, :, indices])
+        for value in result.values():
+            value.setflags(write=False)
+        self._compact_signal[key] = result
+        self.cache_stats['compact_signal_loads'] += 1
+        return result

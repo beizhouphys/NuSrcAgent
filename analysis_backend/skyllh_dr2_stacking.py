@@ -17,6 +17,8 @@ from pathlib import Path
 import numpy as np
 import skyllh
 from skyllh.analyses.i3.publicdata_ps.detsigyield import PDSingleParamFluxPointLikeSourceI3DetSigYieldBuilder
+from analysis_backend.spectrum_response import energy_profile, prepare_response
+from agent_core.spectrum import response_required
 from skyllh.core.config import Config
 from skyllh.core.flux_model import PowerLawEnergyFluxProfile, SteadyPointlikeFFM
 from skyllh.core.minimizer import LBFGSMinimizerImpl, Minimizer
@@ -201,6 +203,7 @@ def create_dr2_stacking_analysis(
     runtime_cache=None,
     source_dec_window_deg=None,
     signal_energy_gamma_interpolation=None,
+    spectrum=None,
 ):
     """Construct the exact, memory-bounded all-event SkyLLH analysis."""
     interpolation = signal_energy_gamma_interpolation or "parabola_v1"
@@ -208,6 +211,8 @@ def create_dr2_stacking_analysis(
         raise ValueError("Unsupported signal-energy Gamma interpolation")
     if likelihood_mode not in {"spatial_energy", "spatial_only"}:
         raise ValueError("likelihood_mode must be 'spatial_energy' or 'spatial_only'")
+    if spectrum and gamma_mode != "fixed":
+        raise ValueError("A supplied non-PL spectrum has a fixed shape; do not fit a fictitious Gamma")
     if gamma_mode not in {"fitted", "fixed"}:
         raise ValueError("gamma_mode must be 'fitted' or 'fixed'")
     if likelihood_mode == "spatial_only" and gamma_mode != "fixed":
@@ -236,7 +241,7 @@ def create_dr2_stacking_analysis(
 
     fluxmodel = SteadyPointlikeFFM(
         Phi0=1.0,
-        energy_profile=PowerLawEnergyFluxProfile(E0=1e3, gamma=float(gamma), cfg=cfg),
+        energy_profile=energy_profile(cfg, gamma, spectrum),
         cfg=cfg,
     )
     param_ns = Parameter(name="ns", initial=float(ns_seed), valmin=0.0, valmax=float(ns_max))
@@ -280,6 +285,18 @@ def create_dr2_stacking_analysis(
         store.assert_files_unchanged()
     else:
         store = DR2PrecalculatedPDFStore(root, background_version=background_pdf_version) if pdf_store is None else pdf_store
+    requested_bounds = [-float(gamma_max), -float(gamma_min)] if gamma_mode == "fitted" else None
+    prepared_response = None
+    if response_required(-float(gamma), spectrum, requested_bounds):
+        prepared_response = prepare_response(root, datasets, cfg, gamma, gamma_mode, gamma_min, gamma_max,
+                                             spectrum, likelihood_mode)
+        from analysis_backend.skyllh_dr2_pdfs import DR2RequestedSpectrumPDFStore
+        stores = {} if runtime_cache is None else runtime_cache.setdefault("requested_spectrum_stores", {})
+        manifest = prepared_response["manifest"]
+        if manifest not in stores:
+            stores[manifest] = DR2RequestedSpectrumPDFStore(root, manifest, background_pdf_version)
+        store = stores[manifest]
+    analysis.spectrum_response = prepared_response
     loaded_data = []
     for dataset_idx, dataset in enumerate(datasets):
         cached = runtime_cache["data"].get(dataset_idx) if runtime_cache is not None else None
@@ -456,6 +473,7 @@ def run_dr2_stacking(
     runtime_cache=None,
     source_dec_window_deg=None,
     signal_energy_gamma_interpolation=None,
+    spectrum=None,
     flux_upper_limit_cl=None,
     flux_measurement_ts_threshold=None,
     fit_procedure="skyllh_lbfgs_v1",
@@ -485,6 +503,7 @@ def run_dr2_stacking(
             runtime_cache=runtime_cache,
             source_dec_window_deg=source_dec_window_deg,
             signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
+            spectrum=spectrum,
         )
     progress = start_stacking_progress(source_specs, gamma_mode,
         cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios),
@@ -582,6 +601,14 @@ def run_dr2_stacking(
         "fit_procedure": fit_procedure,
     }
 
+    if spectrum:
+        result.update(spectrum=spectrum, gamma=None, gamma_legacy=None,
+                      gamma_convention="fixed tabulated shape; no power-law index",
+                      gamma_role="fixed_spectrum_shape", acceptance_gamma_skyllh=None, acceptance_gamma_legacy=None)
+    if analysis.spectrum_response:
+        result["spectrum_response"] = analysis.spectrum_response
+        result["pdf_provenance"]["signal_energy" if likelihood_mode == "spatial_energy" else "background_spatial"] = (
+            analysis.spectrum_response["manifest"] if likelihood_mode == "spatial_energy" else background_provenance)
     if fit_timing is not None:
         result['fit_timing'] = fit_timing
     if flux_upper_limit_cl is not None:
@@ -641,10 +668,10 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
                 result["flux_upper_limit"] = fixed_gamma_flux_upper_limit(analysis, result, flux_upper_limit_cl)
             result["primary_maximization_repeated"] = False
         if gammas:
-            fixed_options = dict(fit_options, gamma_mode="fixed", fit_procedure="skyllh_lbfgs_v1")
+            fixed_options = dict(fit_options, gamma_mode="fixed", fit_procedure="skyllh_lbfgs_v1", spectrum=None)
             result["flux_upper_limit_fits"] = []
             for exponent in track_progress(gammas, "fixed-spectrum flux upper limits"):
-                fixed_options["gamma"] = abs(float(exponent))
+                fixed_options["gamma"] = -float(exponent)
                 fit = run_dr2_stacking(source_specs, runtime_cache=cache,
                     flux_upper_limit_cl=flux_upper_limit_cl, **fixed_options)
                 result["flux_upper_limit_fits"].append(fit)

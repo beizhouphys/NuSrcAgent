@@ -58,7 +58,7 @@ def compact_scan_table(records):
     """Separate p value/significance columns, with grouped local/global headings."""
     headers = ["Source", "ns", "Γ", "TS", "p value", "significance", "p value", "significance"]
     rows = [[str(item["source_name"]).replace("\n", " ").replace("\r", " ").replace("\t", " "),
-             f"{item['fit']['ns']:.2f}", f"{item['fit']['gamma']:.3f}", f"{item['fit']['TS']:.3f}",
+             f"{item['fit']['ns']:.2f}", ("model" if item["fit"].get("spectrum") else f"{item['fit']['gamma']:.3f}"), f"{item['fit']['TS']:.3f}",
              f"{item['fit']['pre_trial_p']:.4g}", f"{item['fit']['pre_trial_significance']:.3f}σ",
              f"{item['fit']['post_trial_p_approx']:.4g}",
              (f"{item['fit']['post_trial_excess_significance']:.3f}σ"

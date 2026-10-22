@@ -95,6 +95,12 @@ def main(argv=None) -> int:
                 result = report(args.output_directory)
             print_result(result)
             return 2 if result.get("status") == "FAILED" else 0
+        if args.command == "prepare-spectrum":
+            from agent_core.spectrum_preparation import prepare_task_spectrum
+            task, path = load_task(args.task, repo_root)
+            result = prepare_task_spectrum(task, repo_root, estimate_only=args.estimate_only)
+            print_result(result)
+            return 0
         if args.command == "environment-check":
             result = check_environment(repo_root, args.data_sample, args.likelihood_mode)
             print_result(result)
@@ -125,7 +131,7 @@ def main(argv=None) -> int:
             return 0 if result.get("status") == "COMPLETED_WITH_WARNINGS" else 2
         if args.command == "create-single":
             likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
-            gamma_mode = args.gamma_mode or ("fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
+            gamma_mode = args.gamma_mode or ("fixed" if args.gamma is not None or args.spectrum_file else "fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
             gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
             task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, gamma, args.data_sample, gamma_mode, likelihood_mode, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg)
             if args.gamma_mode is not None:
@@ -134,6 +140,7 @@ def main(argv=None) -> int:
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
+            configure_spectrum(task, args, repo_root)
             configure_single_source_stages(task)
 
             path = save_task(task, repo_root)
@@ -141,7 +148,7 @@ def main(argv=None) -> int:
             sources = None if args.source is None else [parse_source(value) for value in args.source]
             manual_weights = parse_weights(args.weights)
             likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
-            gamma_mode = args.gamma_mode or ("fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
+            gamma_mode = args.gamma_mode or ("fixed" if args.gamma is not None or args.spectrum_file else "fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
             gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
             include_uniform_baseline = False if args.data_sample == "icecube_public_ps_14yr_dr2" else not args.no_uniform_baseline
             task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, include_uniform_baseline, args.data_sample, gamma_mode, likelihood_mode, args.built_in_catalog, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg, args.catalog_operation)
@@ -151,10 +158,10 @@ def main(argv=None) -> int:
             set_source_window(task, args)
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
-            configure_single_source_stages(task)
             set_scan_fit_procedure(task, args)
             set_stacking_flux(task, args)
-
+            configure_spectrum(task, args, repo_root)
+            configure_single_source_stages(task)
             path = save_task(task, repo_root)
         else:
             task, path = load_task(args.task, repo_root)
@@ -184,6 +191,41 @@ def main(argv=None) -> int:
         print("AGENT WRAP ERROR: %s" % exc, file=sys.stderr)
         return 2
 
+
+
+def configure_spectrum(task, args, repo_root):
+    from agent_core.spectrum import tabulated_spectrum, validate_spectrum, response_notice
+    from agent_core.task_state import parameter, refresh_readiness
+    spectrum = {}
+    if args.spectrum_file:
+        if args.gamma is not None or args.gamma_bounds is not None:
+            raise ValueError("Choose a PL exponent or a supplied non-PL spectrum, not both")
+        spectrum = tabulated_spectrum(args.spectrum_file, args.spectrum_kind, args.spectrum_energy_unit,
+                                      args.spectrum_outside_support, repo_root)
+        task["parameters"]["spectrum"] = parameter(spectrum, "user", True)
+        # Passive fixed coordinate for the SkyLLH parameter mapper. Never
+        # report it as a physical PL index for a supplied spectrum.
+        task["parameters"]["gamma"] = parameter(0., "fixed_shape_coordinate", True)
+    elif any((args.spectrum_kind, args.spectrum_energy_unit, args.spectrum_outside_support)):
+        raise ValueError("Spectrum interpretation options require --spectrum-file")
+    if args.gamma_bounds is not None:
+        task["parameters"]["gamma_bounds"] = parameter(args.gamma_bounds, "user", True)
+        task["planning_errors"] = [e for e in task["planning_errors"] if e != "the default DR2 fitted-gamma seed must be in [-4, -1]"]
+    gamma = task["parameters"]["gamma"]["value"]
+    mode = task["parameters"]["gamma_mode"]["value"]
+    task["planning_errors"].extend(validate_spectrum(spectrum, gamma, mode, args.gamma_bounds, repo_root))
+    task["spectrum_preparation"] = response_notice(gamma, spectrum, args.gamma_bounds,
+        task["parameters"]["likelihood_mode"]["value"])
+    if spectrum:
+        # Existing flux outputs assume a PL. The fit accepts an arbitrary
+        # fixed shape; PL reference-hypothesis upper limits remain separate.
+        if "flux_measurement_ts_threshold" in task["parameters"]:
+            task["parameters"]["flux_measurement_ts_threshold"] = parameter(None, "not_applicable_to_tabulated_shape", True)
+        if task["parameters"].get("stacking_flux", {}).get("value"):
+            task["parameters"]["stacking_flux"]["value"]["measurement_ts_threshold"] = None
+    from agent_core.planner import combined_questions
+    task["questions"] = combined_questions(task, task["planning_errors"])
+    refresh_readiness(task)
 
 def set_scan_fit_procedure(task, args):
     """Pin new individual catalog fits independently of single/stack defaults."""
@@ -417,6 +459,15 @@ def build_parser() -> argparse.ArgumentParser:
     ra_scramble.add_argument("--seeds", default="104729,130363,155921", help="Comma-separated unique non-negative integer trial seeds.")
     ra_scramble.add_argument("--workers", type=positive_worker_count, default=1,
                             help="Single-thread worker processes for independent seeds. Default: 1.")
+    for command_parser in (single, catalog):
+        command_parser.add_argument("--spectrum-file", help="Two-column energy/value file; fixes the non-power-law shape.")
+        command_parser.add_argument("--spectrum-kind", choices=["dnde", "ednde", "e2dnde"])
+        command_parser.add_argument("--spectrum-energy-unit", choices=["GeV", "TeV"])
+        command_parser.add_argument("--spectrum-outside-support", choices=["zero", "extrapolate"])
+        command_parser.add_argument("--gamma-bounds", type=float, nargs=2, metavar=("EXP_MIN", "EXP_MAX"), help="Explicit fitted signed-exponent bounds; default fit bounds remain unchanged.")
+    spectrum_prepare = subparsers.add_parser("prepare-spectrum", help="Prepare a READY task spectrum response without fitting or starting trials.")
+    spectrum_prepare.add_argument("--task", required=True)
+    spectrum_prepare.add_argument("--estimate-only", action="store_true", help="Calculate one preparation unit for a current measured ETA; retain it for the full preparation.")
     return parser
 
 
@@ -481,6 +532,7 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
         "status": task.get("status"),
         "workflow": task.get("workflow"),
         "selection_reason": task.get("selection_reason"),
+        "spectrum_preparation": task.get("spectrum_preparation"),
         "missing_parameters": task.get("missing_parameters", []),
         "questions": task.get("questions", []),
         "planning_errors": task.get("planning_errors", []),

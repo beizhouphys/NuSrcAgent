@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Copied from likelihood_v4.py with minimal edits for a callable single-source backend.
 
+import json
 import math
 import builtins
 from pathlib import Path
@@ -18,15 +19,16 @@ DEFAULT_GAMMA = -2.53
 _CACHE: dict[tuple[str, float], dict[str, Any]] = {}
 
 
-def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFAULT_GAMMA):
-    data = load_backend_data(repo_root, gamma)
+def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFAULT_GAMMA, spectrum=None):
+    data = load_backend_data(repo_root, gamma, spectrum)
     RA_src = float(ra_deg)/d2r
     Dec_src = float(dec_deg)/d2r
     fks = source_sample_weights(Dec_src, data)
     S_ji, B_i, Nj = SnB_PDF(RA_src, Dec_src, data)
     SB_ji = [S_ji[k]/B_i[k] for k in range(len(data['Nks']))]
     logB_ki = [log(B_i[k]).sum() for k in range(len(data['Nks']))]
-    tmp1 = max_TS_j1(fks, SB_ji, logB_ki, Nj, data)
+    requested_spectrum = bool(spectrum) or not -6. <= float(gamma) <= -1.
+    tmp1 = max_TS_j1(fks, SB_ji, logB_ki, Nj, data, requested_spectrum=requested_spectrum)
     ts = float(tmp1[1])
     ns_hat = float(tmp1[2])
     p_loc = 0.5*math.erfc(math.sqrt(builtins.max(ts, 0.)/2.))
@@ -37,10 +39,13 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
         "pre_trial_p": p_loc,
         "post_trial_p": None,
         "n_events_in_roi": int(tmp1[0]),
-        "gamma": float(gamma),
+        "gamma": None if spectrum else float(gamma),
+        "spectrum": spectrum or {},
+        "fit_procedure": "original_slsqp_requested_spectrum_v1" if requested_spectrum else "numpy_bounded_compatibility",
+        "fit_bounds": {"ns": [-10., float(sum(Nj))]},
         "roi_deg": float(ROI*d2r),
         "note": "single-source time-integrated backend copied from likelihood_v4.py; p-value uses chi2(df=1)/2 approximation",
-        "warnings": ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."],
+        "warnings": (["Requested-spectrum DR1 path retains NumPy integration compatibility and uses the original likelihood code SLSQP maximization with unchanged ns bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
     }
 
 
@@ -48,15 +53,15 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
 
 
 
-def load_backend_data(repo_root='.', gamma=DEFAULT_GAMMA):
+def load_backend_data(repo_root='.', gamma=DEFAULT_GAMMA, spectrum=None):
     root = Path(repo_root).resolve()
-    cache_key = (str(root), float(gamma))
+    cache_key = (str(root), float(gamma), None if not spectrum else json.dumps(spectrum, sort_keys=True))
     if cache_key in _CACHE:
         return _CACHE[cache_key]
     Nks, RAs_nu, Decs_nu, sgms_nu = load_neutrino_events(root)
     bkgd_pdfs_nu = load_background_pdfs(root)
     uptimes = load_uptimes(root)
-    W_accs = load_acceptance_weights(root, gamma)
+    W_accs = load_acceptance_weights(root, gamma, spectrum)
     data = {"root": root, "Nks": Nks, "RAs_nu": RAs_nu, "Decs_nu": Decs_nu, "sgms_nu": sgms_nu, "bkgd_pdfs_nu": bkgd_pdfs_nu, "uptimes": uptimes, "W_accs": W_accs}
     _CACHE[cache_key] = data
     return data
@@ -119,7 +124,7 @@ def load_uptimes(root):
     return uptimes
 
 
-def load_acceptance_weights(root, gamma):
+def load_acceptance_weights(root, gamma, spectrum=None):
     # Copied from likelihood_v4.py EA and f_k block with a NumPy interpolation/integration fallback.
     EAfilenms = array([
         root/'data_input/IceCube_data_released/2021_icecube_10_year_track_data_point_source/irfs/IC40_effectiveArea.csv',
@@ -132,9 +137,15 @@ def load_acceptance_weights(root, gamma):
     coszeniths = (cos(90./d2r + unique(EAs[:,2])/d2r) + cos(90./d2r + unique(EAs[:,3])/d2r))/2.
     W_accs = []
     for i in range(len(EAfilenms)):
-        EAs = loadtxt(EAfilenms[i]) # 40 Es, 50 angles # Codex
+        EAs = loadtxt(EAfilenms[i]) # 40 Es, 50 angles
         Aeff = EAs[:,4]; Aeff = Aeff.reshape(len(coszeniths),-1)
-        W_acc_dat = simps_compat(Es.reshape(1,-1)**(gamma+1.)*Aeff, log(Es), axis=1) # checked # Codex
+        if spectrum:
+            from skyllh.core.config import Config
+            from analysis_backend.spectrum_response import TabulatedSpectrumProfile
+            shape = TabulatedSpectrumProfile(spectrum, Config())(Es)
+            W_acc_dat = simps_compat((shape*Es).reshape(1,-1)*Aeff, log(Es), axis=1)
+        else:
+            W_acc_dat = simps_compat(Es.reshape(1,-1)**(gamma+1.)*Aeff, log(Es), axis=1) # checked
         W_accs += [(coszeniths.copy(), W_acc_dat.copy())]
     return W_accs
 
@@ -176,7 +187,7 @@ def SnB_PDF(RA_src, Dec_src, data):
         spatial_facs = 1./(2.*pi*sgms_nu1D1**2.)*exp(-(ang_dis1**2)/(2.*sgms_nu1D1**2.))
         S_jik = spatial_facs
         S_ji = S_ji + [S_jik]
-        B_ik = bkgd_pdfs_nu[k][tmp_idx]*Nks[k]/Njk # better pdf # Codex
+        B_ik = bkgd_pdfs_nu[k][tmp_idx]*Nks[k]/Njk # better pdf
         B_i += [B_ik]
     return S_ji, B_i, Nj
 
@@ -193,7 +204,7 @@ def logL_j(n_s, fks, SB_ji, logB_ki, Nj, data):
             return -1e99, Nj[k]
         logL_jik = logB_ki[k] + log(L_jik_fac).sum()
         logL_j = logL_j + logL_jik
-    return logL_j, sum(array(Nj)) # maybe don't output Nk? # Codex
+    return logL_j, sum(array(Nj)) # maybe don't output Nk?
 
 
 def TS_j(n_s, fks, SB_ji, logB_ki, Nj, data):
@@ -202,14 +213,27 @@ def TS_j(n_s, fks, SB_ji, logB_ki, Nj, data):
     return 2.*(tmp3 - logL_j(0., fks, SB_ji, logB_ki, Nj, data)[0])
 
 
-def max_TS_j1(fks, SB_ji, logB_ki, Nj, data, ns_min=-10.):
+def max_TS_j1(fks, SB_ji, logB_ki, Nj, data, ns_min=-10., requested_spectrum=False):
     # Copied from likelihood_v4.py::max_TS_j1 with a NumPy bounded optimizer fallback.
     Nj_tot = logL_j(0., fks, SB_ji, logB_ki, Nj, data)[1]
     if Nj_tot == 0:
         return array([-999, -999, -999])
     def TS_j1(n_s):
         return -TS_j(n_s, fks, SB_ji, logB_ki, Nj, data)
-    max_ns, min_neg_ts = bounded_minimize(TS_j1, float(ns_min), float(Nj_tot))
+    if requested_spectrum:
+        # Copied from likelihood_v4.py::max_TS_j1 (including the untouched
+        # owner baseline): minimize(TS_j1, (0.), method='SLSQP', bounds=bnds).
+        # The compatibility golden-section routine can start entirely in
+        # the invalid-mixture plateau for a new acceptance distribution.
+        # Keep the same likelihood, physical data and original ns bounds.
+        from scipy.optimize import minimize
+        bnds = ((float(ns_min), float(Nj_tot)),)
+        res = minimize(lambda n: TS_j1(float(n[0])), (0.,), method='SLSQP', bounds=bnds)
+        if not res.success or not isfinite(res.fun):
+            raise ValueError('Original SLSQP did not converge for the requested DR1 spectrum: '+str(res.message))
+        max_ns, min_neg_ts = float(res.x[0]), float(res.fun)
+    else:
+        max_ns, min_neg_ts = bounded_minimize(TS_j1, float(ns_min), float(Nj_tot))
     max_TS_j = -1*min_neg_ts; max_ns = max_ns;
     return array([Nj_tot, max_TS_j, max_ns])
 

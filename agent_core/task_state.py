@@ -123,7 +123,7 @@ def questions_for_missing(task: Dict[str, Any]) -> List[str]:
     parameters = task.get("parameters", {})
     gamma = parameters.get("gamma", {})
     if missing_parameter_value(gamma.get("value")) or not gamma.get("confirmed", False):
-        questions.append("Which negative source spectral index gamma should be used?")
+        questions.append("Which signed source spectral exponent should be used?")
     if task.get("workflow") == "catalog_scan_and_stacking" and parameters.get("catalog_operation", {}).get("value") != "scan":
         mode = parameters.get("weight_mode", {})
         if missing_parameter_value(mode.get("value")) or not mode.get("confirmed", False):

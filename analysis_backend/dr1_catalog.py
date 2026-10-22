@@ -30,13 +30,15 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', w
     stacking_warnings: list[str] = []
     schemes = build_weighting_schemes(normalized)
     for gamma in track_progress(normalized.spectral_indices, "DR1 stacking spectra"):
-        data = load_backend_data(repo_root, gamma)
+        data = load_backend_data(repo_root, gamma, normalized.spectrum)
         for scheme_name, weights in schemes:
             result, curve = run_stacking_likelihood(normalized, weights, scheme_name, gamma, data)
+            if normalized.spectrum:
+                result.update(spectrum_sha256=normalized.spectrum["sha256"], spectrum_file=normalized.spectrum["file"], spectrum_kind="tabulated", spectral_index=None, flux_100tev_95=float("nan"), fraction_of_diffuse_flux_95=float("nan"))
             stacking_results.append(result)
             stacking_curves.append(curve)
             if not isfinite(float(result["flux_100tev_95"])):
-                stacking_warnings.append(f"Flux conversion is unavailable for gamma={float(gamma):g}; flux_100tev_95 and fraction_of_diffuse_flux_95 are left blank.")
+                stacking_warnings.append("Flux conversion for the supplied non-PL shape is not provided by the historical PL references; flux outputs are left blank." if normalized.spectrum else f"Flux conversion is unavailable for gamma={float(gamma):g}; flux_100tev_95 and fraction_of_diffuse_flux_95 are left blank.")
     stacking_warnings.append("Fig. 4 flux conversion uses the paper-calibrated astrophysical event-count references from legacy_codex_revised/likelihood_v4.py and legacy_codex_revised/ns2flux.py.")
     return {
         "backend": "likelihood_catalog_time_integrated_v1",
@@ -56,8 +58,9 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', w
 
 
 def _fit_source_job(job):
-    source, repo_root, gamma = job
-    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=gamma)
+    source, repo_root, gamma, spectrum = job
+    options = {"spectrum": spectrum} if spectrum else {}
+    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=gamma, **options)
 
 
 def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) -> tuple[list[dict[str, object]], list[str]]:
@@ -65,7 +68,7 @@ def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) ->
     rows: list[dict[str, object]] = []
     warnings: list[str] = []
     n_tests = len(normalized.sources)
-    jobs = [(source, repo_root, normalized.spectral_indices[0]) for source in normalized.sources]
+    jobs = [(source, repo_root, normalized.spectral_indices[0], getattr(normalized, "spectrum", {})) for source in normalized.sources]
     results = ordered_worker_map(_fit_source_job, jobs, workers)
     for source, result in track_progress(zip(normalized.sources, results), "DR1 catalog source fits", total=n_tests):
         pre_trial_p = float(result["pre_trial_p"])
@@ -130,7 +133,8 @@ def run_stacking_likelihood(normalized: NormalizedAnalysis, intrinsic_weights: n
     ns_seed_grid = legacy_ns_grid(float(Nks1.sum()))
     TS_seed_grid = array([ts_function(n_s) for n_s in ns_seed_grid])
     ns_s_hat = ns_seed_grid[argmax(TS_seed_grid)] if len(ns_seed_grid) else 0.
-    ts, ns_hat = max_TS_tot(ns_s_hat, fks, S_ki, B_ki, Nks1)
+    requested_spectrum = bool(normalized.spectrum) or not -6. <= float(gamma) <= -1.
+    ts, ns_hat = max_TS_tot(ns_s_hat, fks, S_ki, B_ki, Nks1, requested_spectrum=requested_spectrum)
     if ts <= 0.:
         ts = 0.
         ns_hat = 0.
@@ -141,6 +145,7 @@ def run_stacking_likelihood(normalized: NormalizedAnalysis, intrinsic_weights: n
     pre_trial_p = 0.5*math.erfc(math.sqrt(ts/2.))
     result = {
         "weighting_scheme": scheme_name,
+        "fit_procedure": "original_minimize_requested_spectrum_v1" if requested_spectrum else "numpy_bounded_compatibility",
         "spectral_index": float(gamma),
         "n_sources": len(normalized.sources),
         "ns_hat": float(ns_hat),
@@ -224,20 +229,40 @@ def TS_tot(n_s: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], N
     for k in range(len(Nks1)):
         L_k = n_s*fks[k]/float(Nks1[k])*S_ki[k] + (1.-n_s*fks[k]/float(Nks1[k]))*B_ki[k]
         L_k0 = B_ki[k]
-        if any(L_k <= 0.) or any(L_k0 <= 0.): # callable optimizer guard; legacy inputs are positive # Codex
+        if any(L_k <= 0.) or any(L_k0 <= 0.): # callable optimizer guard; legacy inputs are positive
             return -1e99
         TS_k = 2.*sum(log(L_k) - log(L_k0))
         TS_total = TS_total + TS_k
     return float(TS_total)
 
 
-def max_TS_tot(ns0: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray) -> tuple[float, float]:
+def max_TS_tot(ns0: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray, requested_spectrum=False) -> tuple[float, float]:
     """likelihood_v4.py:722-728 using the repository's NumPy optimizer."""
     def TS_tot1(n_s):
         return -1.*TS_tot(n_s, fks, S_ki, B_ki, Nks1)
-    max_ns, minimum = bounded_minimize(TS_tot1, 0., float(Nks1.sum()))
-    seed_minimum = TS_tot1(ns0)
-    if seed_minimum < minimum: # retain the legacy pre-scan seed as a fit candidate # Codex
+    if requested_spectrum:
+        # Restore the original likelihood_v4.py::max_TS_tot minimization
+        # block for new spectrum models; retain this runtime's [0,N] bounds.
+        from scipy.optimize import minimize
+        # Algebraically identical likelihood ratio, avoiding subtraction of
+        # two large background log likelihoods for a newly supplied model.
+        factors = [float(f)/float(n)*(s/b-1.) for f,n,s,b in zip(fks,Nks1,S_ki,B_ki)]
+        def stable_objective(value):
+            ns = float(value[0])
+            terms = [1.+ns*a for a in factors]
+            if builtins.any(any(t <= 0.) for t in terms):
+                return 1e99, array([0.])
+            value = -2.*builtins.sum(float(sum(log1p(ns*a))) for a in factors)
+            derivative = -2.*builtins.sum(float(sum(a/t)) for a,t in zip(factors,terms))
+            return value,array([derivative])
+        res = minimize(stable_objective, (float(ns0),), jac=True, bounds=((0., float(Nks1.sum())),))
+        if not res.success or not isfinite(res.fun):
+            raise ValueError('Original minimization did not converge for the requested DR1 spectrum: '+str(res.message))
+        max_ns, minimum = float(res.x[0]), float(res.fun)
+    else:
+        max_ns, minimum = bounded_minimize(TS_tot1, 0., float(Nks1.sum()))
+    seed_minimum = stable_objective([ns0])[0] if requested_spectrum else TS_tot1(ns0)
+    if seed_minimum < minimum: # retain the legacy pre-scan seed as a fit candidate
         max_ns = float(ns0)
         minimum = seed_minimum
     max_TS = -1.*minimum
