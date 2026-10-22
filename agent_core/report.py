@@ -121,6 +121,8 @@ def build_provenance(config_path: Path, normalized: NormalizedAnalysis, repo_roo
         input_paths.append(resolve_path(repo_root, config.catalog.file))
     if normalized.stacking_flux or normalized.flux_upper_limit_gammas or normalized.flux_measurement_ts_threshold is not None:
         input_paths.extend(sorted((repo_root / "data_input/references/neutrino_spectra").glob("*")))
+    if normalized.spectrum:
+        input_paths.append(Path(normalized.spectrum["file"]))
     input_hashes = {str(path): sha256_file(path) for path in input_paths if path.is_file()}
     try:
         commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True)
@@ -142,6 +144,11 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     for key, value in report["result"].items():
         if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "background_trial_note", "fit_procedure", "signal_energy_gamma_interpolation"}:
             lines.append(f"- {key}: `{value}`")
+    if report["result"].get("spectrum"):
+        spectrum = report["result"]["spectrum"]
+        lines.extend(["", "Spectrum: fixed supplied dN/dE shape; no power-law Gamma is fitted.",
+            "Input spectrum: `"+spectrum["file"]+"`; SHA-256: `"+spectrum["sha256"]+"`.",
+            "Outside the supplied energy support: `"+spectrum["outside_support"]+"`."])
     source_results = report["result"].get("source_results", [])
     if source_results:
         summary = report["result"]["catalog_scan_summary"]

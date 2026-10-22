@@ -45,3 +45,20 @@ Raw inputs for these checks were copied from the owner's existing frozen local
 inputs, not downloaded through public release instructions. Public download
 publication, full clean-clone validation, time-dependent work and release metadata
 remain pending. No commit, push or release tag was created.
+
+## Requested-spectrum runtime verification — 2026-10-22
+
+Owner validation executed real conventional, rising, steeply falling, fixed
+modeled-spectrum, catalog scan/stacking and spatial-only requests, including
+this release and the separate test checkout. Explicit fitted exponent bounds
+retain their fit-boundary warning. Requested-spectrum DR1 single-source and
+scan/stacking paths also completed their reviews, retaining their existing
+compatibility and historical flux-reference qualifications. Frozen numerical
+PDFs are unchanged.
+
+An E^-2.5 comparison of newly prepared and existing SEpdfs uses identical inputs
+and fit settings. Both TS and ns have signed relative difference 0 and signed
+absolute difference 0; detector acceptance is identical. Spectrum input, unit,
+support, mutation and content-hash checks passed. The owner tests additionally
+check stable DR1 scalar maxima against the original likelihood formula and an
+independent scalar score. No significance calibration is implied.

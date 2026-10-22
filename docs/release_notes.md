@@ -50,3 +50,14 @@ ns/Gamma/flux bias remain. Warning-bearing results are preliminary.
 See [scientific status](scientific_status.md),
 [release checks](testing_and_release.md) and
 [metadata awaiting approval](release_metadata_draft.md).
+
+## Requested spectra — 2026-10-22
+
+Conventional PLs retain the existing frozen SEpdfs. A PL outside interpolation
+coverage, an explicitly selected fitted exponent range, or a fixed tabulated
+non-PL spectrum now prepares the matching signal-energy PDFs and detector
+acceptance before interpolation and fitting. The Agent announces preparation
+and reports a current measured pilot ETA. Single-source analyses, catalog scans
+and stacking use the same interface; spatial-only computes acceptance without
+energy PDFs. See [requested spectra](requested_spectra.md) for spectrum columns,
+units, support conventions, provenance and current fixed-shape scope.

@@ -204,6 +204,7 @@ def _fit_summary(result, removed_numbers, label):
         "minimizer_warnflag": int(result["minimizer_status"].get("warnflag", -1)),
         "minimizer_iterations": int(result["minimizer_status"].get("nit", -1)),
         "source_hash": None,
+        "gamma_bounds": result.get("fit_bounds", {}).get("gamma_skyllh", [1.,6.]),
     }
 
 
@@ -219,6 +220,8 @@ def _run_reduced(specs, removed_numbers, repo_root, normalized, gamma_seed, ns_s
         likelihood_mode="spatial_energy",
         gamma_mode="fitted",
         gamma=float(gamma_seed),
+        gamma_min=-(normalized.get("gamma_bounds") or [-6., -1.])[1],
+        gamma_max=-(normalized.get("gamma_bounds") or [-6., -1.])[0],
         ns_seed=float(ns_seed),
         event_abs_dec_max_deg=normalized.get("event_abs_dec_max_deg"),
         event_dec_min_deg=normalized.get("event_dec_min_deg"),
@@ -372,7 +375,7 @@ def review_dominance_analysis(repo_root, output_directory):
     candidate_count = int(state["candidate_count"])
     valid_individual = len(individual) == candidate_count and all(
         np.isfinite(float(item[key])) for item in individual for key in ["TS", "ns", "gamma_skyllh", "delta_ts"]
-    ) and all(float(item["TS"]) >= 0.0 and float(item["ns"]) >= 0.0 and 1.0 <= float(item["gamma_skyllh"]) <= 6.0 and int(item["minimizer_warnflag"]) == 0 for item in individual)
+    ) and all(float(item["TS"]) >= 0.0 and float(item["ns"]) >= 0.0 and item.get("gamma_bounds", [1.,6.])[0] <= float(item["gamma_skyllh"]) <= item.get("gamma_bounds", [1.,6.])[1] and int(item["minimizer_warnflag"]) == 0 for item in individual)
     check("individual_refits", valid_individual, "%d candidate leave-one-out fits are finite and converged" % candidate_count)
     ranked = sorted(individual, key=lambda item: (-float(item["delta_ts"]), int(item["removed_source_numbers"][0])))
     top_n = int(state["top_n"])

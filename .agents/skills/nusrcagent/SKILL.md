@@ -107,7 +107,10 @@ Ask only about unresolved ambiguity that materially changes the spectrum,
 relative weights, source/event membership, fit hypotheses or trial family.
 Unsigned gamma 2.53 conventionally means E^-2.53; record that interpretation
 and pass CLI `--gamma -2.53`. A bare explicit positive sign needs clarification;
-preserve a power-law exponent explicitly defined by the user.
+preserve a power-law exponent explicitly defined by the user. CLI --gamma is
+the signed exponent; an explicit rising E^+2.5 maps to --gamma +2.5, while
+E^-Gamma with Gamma=+2.5 maps to --gamma -2.5. Prepare a missing response
+rather than reversing an exponent or rejecting it for its sign.
 A unique column identifying requested flux/relative weights may be used with
 recorded metadata. A common unknown multiplicative unit cancels in normalized
 weights. Do not invent absolute units or drop invalid rows.
@@ -116,6 +119,29 @@ The example's radio_weight is an illustrative relative proxy, not a measured flu
 Record interpretations with repeatable
 `--interpretation-note PARAMETER=EXPLANATION`; never pretend these are user
 confirmations. Supplied spectral indices are fixed unless fitting is requested.
+
+## Requested spectra and detector response
+
+This interface applies to every supported single-source analysis, catalog-wide
+single-source analysis and stacking analysis, including spatial-only acceptance
+and follow-ups using the recorded model. Read
+[requested-spectra.md](references/requested-spectra.md) when the spectrum
+needs preparation or the user supplies a non-power-law model.
+
+Conventional PLs with all required interpolation nodes in the frozen tables
+continue to use those tables. For other PLs or a supplied spectrum, first tell
+the user that signal-energy PDFs and detector acceptance must be calculated
+for that spectrum before interpolation and LLH fitting. Spatial-only fits
+calculate acceptance and do not construct/use energy PDFs. Do not reject a
+spectrum merely for its PL exponent or reverse its sign.
+
+After creating a READY task, run `prepare-spectrum --task <id> --estimate-only`
+to measure a preparation unit in this invocation. Report its numerical ETA
+with the returned scope and exclusions before continuing `prepare-spectrum`
+or `run`. A cache hit needs no new construction. Do not invent a whole-run ETA
+from one dataset's pilot. Preparation does not maximize the LLH or start trials.
+A supplied non-PL shape is fixed; fit its normalization through ns, without
+reporting a fictitious PL Gamma. Preserve all existing primary/flux-stage gates.
 
 ## Execution
 

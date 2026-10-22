@@ -152,12 +152,11 @@ def validate_planning_values(source_count: int, gamma: Optional[float], weight_m
         errors.append("use either event_abs_dec_max_deg or asymmetric event declination bounds, not both")
     if range_values and data_sample != "icecube_public_ps_14yr_dr2":
         errors.append("event declination cuts are currently supported only for the 14-year DR2 backend")
-    if gamma is not None and (not math.isfinite(float(gamma)) or gamma >= 0.0):
-        errors.append("gamma must use the negative power-law convention")
+    if gamma is not None and not math.isfinite(float(gamma)):
+        errors.append("gamma exponent must be finite")
     elif gamma is not None and data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fitted" and not -4.0 <= float(gamma) <= -1.0:
         errors.append("the default DR2 fitted-gamma seed must be in [-4, -1]")
-    elif gamma is not None and data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fixed" and not -6.1 <= float(gamma) <= -0.9:
-        errors.append("fixed DR2 gamma must be within [-6.1, -0.9]")
+
     if weight_mode is not None and weight_mode not in {"uniform", "column", "manual"}:
         errors.append("weight mode must be uniform, column, or manual")
     if weight_mode == "column" and not weight_column:
@@ -198,7 +197,7 @@ def combined_questions(task: Dict[str, Any], errors: List[str]) -> List[str]:
     questions = questions_for_missing(task)
     for error in errors:
         if "gamma" in error:
-            questions.append("Provide a finite negative gamma value.")
+            questions.append("Provide a finite signed power-law exponent and appropriate fit bounds.")
         elif "manual weights" in error:
             questions.append("Provide one finite non-negative manual weight per source, with a positive total.")
         elif "coordinate" in error or " RA " in error or " Dec " in error:
@@ -277,6 +276,13 @@ def revalidate_task_plan(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any
     event_dec_min_deg = parameters.get("event_dec_min_deg", {}).get("value")
     event_dec_max_deg = parameters.get("event_dec_max_deg", {}).get("value")
     validate_planning_values(source_count, gamma, weight_mode, weight_column, manual_weights, errors, data_sample, gamma_mode, likelihood_mode, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)
+    from agent_core.spectrum import validate_spectrum, response_notice
+    spectrum = parameters.get("spectrum", {}).get("value") or {}
+    bounds = parameters.get("gamma_bounds", {}).get("value")
+    if bounds is not None:
+        errors = [e for e in errors if e != "the default DR2 fitted-gamma seed must be in [-4, -1]"]
+    errors.extend(validate_spectrum(spectrum, gamma, gamma_mode, bounds, repo_root))
+    task["spectrum_preparation"] = response_notice(gamma, spectrum, bounds, likelihood_mode)
     task["planning_errors"] = errors
     task["questions"] = combined_questions(task, errors)
     return refresh_readiness(task)

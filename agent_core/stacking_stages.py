@@ -28,6 +28,7 @@ def record_primary(task, task_path, root, run, request_hash):
         chat_summary={key: run.result[key] for key in (
             "ns", "gamma", "gamma_mode", "TS", "pre_trial_p", "pre_trial_significance",
             "p_value_method", "p_value_is_estimate", "significance_convention", "n_sources")},
+        spectrum=run.result.get("spectrum", {}),
         review_status=run.review["status"],
         warnings=[c["message"] for c in run.review.get("checks", []) if c.get("status") == "warning"]), flux=dict(status="PENDING"))
     task["artifacts"]["primary_run_directory"] = str(run.run_dir)

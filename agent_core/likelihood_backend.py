@@ -8,6 +8,8 @@ from analysis_backend.dr1_catalog import run_catalog_time_integrated
 from analysis_backend.dr1_single_source import run_single_source_time_integrated
 
 DR2_SAMPLE = "icecube_public_ps_14yr_dr2"
+
+
 def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None, stacking_primary=None, workers: int = 1) -> dict[str, object]:
     if normalized.time_mode != "time_integrated":
         raise ConfigError("likelihood backend Phase 1.1 only supports time_integrated")
@@ -18,7 +20,11 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
             raise ConfigError("the 14-year DR2 backend requires the pinned SkyLLH v26 environment") from exc
         specs = [{"name": source.name, "ra_rad": source.ra_rad, "dec_rad": source.dec_rad, "w_model": source.weight} for source in normalized.sources]
         gamma_legacy = float(normalized.spectral_indices[0])
-        options = dict(repo_root=repo_root or ".", gamma_mode=normalized.gamma_mode, gamma=abs(gamma_legacy), random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode, event_abs_dec_max_deg=normalized.event_abs_dec_max_deg, event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg)
+        options = dict(repo_root=repo_root or ".", gamma_mode=normalized.gamma_mode, gamma=-gamma_legacy, random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode, event_abs_dec_max_deg=normalized.event_abs_dec_max_deg, event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg)
+        if normalized.spectrum:
+            options.update(spectrum=normalized.spectrum, gamma=0.)
+        if normalized.gamma_bounds:
+            options.update(gamma_min=-normalized.gamma_bounds[1], gamma_max=-normalized.gamma_bounds[0])
         operation = normalized.catalog_operation if normalized.analysis_type == "catalog_stacking" else "stack"
         backend_name = "skyllh_v26_dr2_spatial_only" if normalized.likelihood_mode == "spatial_only" else "skyllh_v26_dr2_spatial_energy"
         limit_options = dict(flux_upper_limit_cl=normalized.flux_upper_limit_cl, flux_upper_limit_gammas=normalized.flux_upper_limit_gammas)
@@ -65,4 +71,4 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
     if len(normalized.sources) != 1:
         raise ConfigError("likelihood backend Phase 1.1 expects exactly one source")
     source = normalized.sources[0]
-    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root or ".", gamma=normalized.spectral_indices[0])
+    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root or ".", gamma=normalized.spectral_indices[0], spectrum=normalized.spectrum)

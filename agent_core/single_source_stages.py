@@ -146,7 +146,8 @@ def _save_primary(task, run, full_hash, task_dir):
     task["single_source_llh_summary"] = dict(
         best_fit_ns=result.get("ns", result.get("best_fit_ns")),
         Gamma=result.get("gamma_legacy", result.get("gamma")),
-        gamma_convention="dN/dE proportional to (E/E0)^Gamma",
+        gamma_convention="fixed tabulated shape; no PL Gamma" if getattr(run.normalized, "spectrum", {}) else "dN/dE proportional to (E/E0)^Gamma",
+        spectrum=getattr(run.normalized, "spectrum", {}),
         gamma_mode=run.normalized.gamma_mode, TS=result.get("TS", result.get("ts")),
         p_value=result["pre_trial_p"], significance=result["pre_trial_significance"],
         significance_unit="sigma", p_value_method=result["p_value_method"],
@@ -202,7 +203,10 @@ def _run_flux(request_path, primary, root, workers=1):
             specs = [dict(name=s.name, ra_rad=s.ra_rad, dec_rad=s.dec_rad, w_model=s.weight)
                      for s in normalized.sources]
             result = run_dr2_single_source(specs, primary_result=primary,
-                repo_root=root, gamma_mode=normalized.gamma_mode, gamma=abs(normalized.spectral_indices[0]),
+                repo_root=root, gamma_mode=normalized.gamma_mode, gamma=0. if normalized.spectrum else -normalized.spectral_indices[0],
+                spectrum=normalized.spectrum,
+                gamma_min=-normalized.gamma_bounds[1] if normalized.gamma_bounds else 1.,
+                gamma_max=-normalized.gamma_bounds[0] if normalized.gamma_bounds else 6.,
                 random_seed=normalized.random_seed, likelihood_mode=normalized.likelihood_mode,
                 event_abs_dec_max_deg=normalized.event_abs_dec_max_deg,
                 event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg,

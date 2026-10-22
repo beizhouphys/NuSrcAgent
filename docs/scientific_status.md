@@ -40,6 +40,17 @@ Naming a package v3 does not demonstrate significance or coverage calibration.
 Coverage concerns how often an interval contains the true parameter in repeated
 experiments; checking a file's hash cannot test this property or parameter bias.
 
+## Requested spectra
+
+Conventional PLs retain the frozen signal-energy PDFs. A requested exponent
+outside the table's interpolation coverage, or a fixed non-PL spectrum from
+modeling, triggers separate signal-energy PDF and detector-acceptance preparation.
+The agent explains this step and reports a current measured preparation ETA
+before interpolation and LLH fitting. This applies to single-source analyses,
+catalog scans and stacking; spatial-only modes calculate acceptance without
+using energy PDFs. See [requested spectra](requested_spectra.md) for the input
+contract, support rules, response provenance and fixed-shape scope.
+
 ## Fitted spectra and boundaries
 
 Spatial+energy fits ns and Gamma with the existing SkyLLH bounds/initial values;

@@ -333,3 +333,15 @@ interpolation for the signal energy PDF in both the primary fit and flux
 calculation. Catalog scan and joint stacking defaults retain their original
 quadratic interpolation. Optimizer, tolerances and the flux-profile consistency
 guard remain unchanged. See [single-source interpolation](docs/single_source_linear_interpolation.md).
+
+## Spectra beyond the conventional power law
+
+A specified PL exponent is fixed unless fitting is requested. Conventional
+spectra use the existing signal-energy PDF tables. An explicit rising or steep
+spectrum, a fitted range outside those tables, or a supplied modeled spectrum
+triggers preparation of the matching signal-energy PDFs and detector acceptance
+before interpolation and likelihood fitting. The agent explains the preparation
+and reports a current measured ETA. Spatial-only analyses calculate acceptance
+without using energy PDFs. This applies to individual sources, catalog scans
+and stacking. See [requested spectra](docs/requested_spectra.md) for the input
+format, energy support, preparation command and current scope.
