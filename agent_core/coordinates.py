@@ -144,7 +144,7 @@ def resolve_catalog_coordinates(columns, ra_column=None, dec_column=None, spec=N
     lon_unit = spec.get("longitude_unit") or column_unit(lon_column) or ("deg" if legacy_degrees else None)
     lat_unit = spec.get("latitude_unit") or column_unit(lat_column) or ("deg" if legacy_degrees else None)
     settings = coordinate_spec(frame, lon_unit, lat_unit, longitude_column=lon_column, latitude_column=lat_column)
-    if spec.get("longitude_wrapping") is False or (not spec and settings["frame"] == "icrs"):
+    if spec.get("longitude_wrapping") is False or (not spec and settings["frame"] == "icrs" and settings["longitude_unit"] == "deg"):
         settings["longitude_wrapping"] = False
     if column_unit(lon_column) and spec.get("longitude_unit") and column_unit(lon_column) != settings["longitude_unit"]:
         raise CoordinateError("Longitude unit conflicts with its catalog header; clarify the intended units.")
