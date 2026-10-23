@@ -52,6 +52,8 @@ def convert_coordinates(longitude, latitude, **spec):
         raise CoordinateError("Cannot parse the supplied sky coordinates with the specified units: %s" % exc) from exc
     if not math.isfinite(lon_deg):
         raise CoordinateError("Coordinate longitude/RA must be finite.")
+    if spec.get("longitude_wrapping") is False and not 0 <= lon_deg < 360:
+        raise CoordinateError("Degree-only catalog RA must be in [0, 360); use generic coordinate options for cyclic longitude input.")
     if not math.isfinite(lat_deg) or not -90 <= lat_deg <= 90:
         raise CoordinateError("Coordinate latitude/Dec must be finite and in [-90, 90] degrees (or equivalent units).")
     longitude_period = {"deg": 360., "rad": math.tau, "hourangle": 24.}[spec["longitude_unit"]]
@@ -125,6 +127,9 @@ def resolve_catalog_coordinates(columns, ra_column=None, dec_column=None, spec=N
         elif glon and glat:
             frame = "galactic"
     if frame is None:
+        if ra_column and dec_column and not spec:
+            frame = "icrs"
+    if frame is None:
         raise CoordinateError("Identify the coordinate frame and longitude/latitude catalog columns before execution.")
     if str(frame).lower() in {"icrs", "equatorial", "radec"}:
         lon_column, lat_column = lon_column or ra, lat_column or dec
@@ -139,6 +144,8 @@ def resolve_catalog_coordinates(columns, ra_column=None, dec_column=None, spec=N
     lon_unit = spec.get("longitude_unit") or column_unit(lon_column) or ("deg" if legacy_degrees else None)
     lat_unit = spec.get("latitude_unit") or column_unit(lat_column) or ("deg" if legacy_degrees else None)
     settings = coordinate_spec(frame, lon_unit, lat_unit, longitude_column=lon_column, latitude_column=lat_column)
+    if spec.get("longitude_wrapping") is False or (not spec and settings["frame"] == "icrs"):
+        settings["longitude_wrapping"] = False
     if column_unit(lon_column) and spec.get("longitude_unit") and column_unit(lon_column) != settings["longitude_unit"]:
         raise CoordinateError("Longitude unit conflicts with its catalog header; clarify the intended units.")
     if column_unit(lat_column) and spec.get("latitude_unit") and column_unit(lat_column) != settings["latitude_unit"]:
