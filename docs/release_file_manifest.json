@@ -68,8 +68,8 @@
     },
     {
       "path": "agent_core/analysis_agent.py",
-      "bytes": 6911,
-      "sha256": "9105f179e1e67ac4dd30cbc8fdc42389f7ae1d4ecc2b2fefd0d443f41ee6ca71"
+      "bytes": 6955,
+      "sha256": "cc6599c0c2cc7eec107dbc4385529d9d8aebc86cfa8a3d383aafe2ce67365a8c"
     },
     {
       "path": "agent_core/analysis_outputs.py",
@@ -93,8 +93,8 @@
     },
     {
       "path": "agent_core/coordinates.py",
-      "bytes": 9187,
-      "sha256": "0192c5ec244c0feca726ee5f426b69ebd10fcfe93a214a77fd163d0690a99408"
+      "bytes": 8984,
+      "sha256": "87a6df5992208f5d470c488d316e222b59fa1c86980392d8f893dc94e8d63721"
     },
     {
       "path": "agent_core/cpu.py",
@@ -143,8 +143,8 @@
     },
     {
       "path": "agent_core/normalize.py",
-      "bytes": 7317,
-      "sha256": "1332fe8f6a4f3824dd303a7e5cba39a8e22163e9a67c423c771225c55fa9bb09"
+      "bytes": 7478,
+      "sha256": "6f097f0192456b2e58f7d44a938148eda51e175037bb6d08ec6ddf66c6f7b6a2"
     },
     {
       "path": "agent_core/p_value.py",
@@ -178,8 +178,8 @@
     },
     {
       "path": "agent_core/schemas.py",
-      "bytes": 11522,
-      "sha256": "53479669d37151a6593280b8f522b60be1fb6053a9643a175b66bbb030adeda0"
+      "bytes": 11580,
+      "sha256": "50741515bb050c298c5eb211770a4b7a90608aed572705dc392699288343afda"
     },
     {
       "path": "agent_core/simple_yaml.py",
@@ -188,8 +188,8 @@
     },
     {
       "path": "agent_core/single_source_stages.py",
-      "bytes": 16095,
-      "sha256": "e410e0250f590bb59472604d80bbf62ae37cd0b63db5da3279c8355cc16135a5"
+      "bytes": 16139,
+      "sha256": "df2c1063a3b57e6434f0f55fa18d93c5769149d7cdc67360e8d4628b79d2e38f"
     },
     {
       "path": "agent_core/spectrum.py",
@@ -223,8 +223,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 15161,
-      "sha256": "bf09f7d2980d991b049c7e29d888307e2c7ac2008ebd9293d918169730d1c26a"
+      "bytes": 14833,
+      "sha256": "f903f5c826ef8ecedd73aad962e7a170705570646ee2023500bce65b6dff1c04"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -378,8 +378,8 @@
     },
     {
       "path": "docs/coordinates.md",
-      "bytes": 5209,
-      "sha256": "bffe1103fb7feeb690c94a503e482606ee7e7ba253f767b3c2e275108c1d9a05"
+      "bytes": 5777,
+      "sha256": "868390a0d3e57c7d949caac4b96570cc8d313dd9773d9af865600b0688d717ea"
     },
     {
       "path": "docs/cpu_execution.md",

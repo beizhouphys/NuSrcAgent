@@ -51,7 +51,7 @@ class AnalysisAgent:
         validation = validate_config(config, self.repo_root)
         if not validation.ok:
             raise ConfigError("; ".join(validation.errors))
-        normalized = normalize_config(config, self.repo_root, validation.warnings)
+        normalized = normalize_config(config, self.repo_root, validation.warnings, catalog_sources=validation.catalog_sources)
         if prepare_only:
             return AgentRun(config_path=path, normalized=normalized, result={}, run_dir=None)
         if backend != "likelihood":
