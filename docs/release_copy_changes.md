@@ -22,7 +22,7 @@ retains substantive explanations, and introduces no old-name import adapters.
 | Background v1/v2/v3 selection | Production v3 only; unavailable versions rejected |
 | Development production PDF paths with owner markers | Formal release v3 paths with unchanged numerical hashes |
 | Selected radio-bright AGN CSV in `data_input/sources_cdx/` | Versioned under `data_input/sources/`, unchanged numerical bytes |
-| Local tests/transcripts/catalog experiments | Excluded |
+| Random-catalog generation and local tests/transcripts/catalog experiments | Excluded; general background-trial follow-up retained |
 | Historical research directories and old Python 3.8 environment | Excluded |
 | Owner-specific documentation and broken test-report links | Adapted public definitions and explicit limitations |
 

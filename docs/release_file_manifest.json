@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 33322,
-      "sha256": "a4934ada2fcff29b1c72e075e0a6cfc710baeb4935ee8810be971efd76166418"
+      "bytes": 34932,
+      "sha256": "8f8234f72d82831f0c34bcd7d929bf0a6dd17425c5aa3724bdc65ac3efb39614"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -13,8 +13,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
-      "bytes": 5741,
-      "sha256": "a6255989c418df06622c7768dd1ad61f9bce0badf92b1449f0aae72af328ae81"
+      "bytes": 6531,
+      "sha256": "b1d797331dc8ec71aef515f8e324eb04662e3da1076dfcd1d45f44a736ee50f3"
     },
     {
       "path": ".agents/skills/nusrcagent/references/requested-spectra.md",
@@ -58,8 +58,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 22916,
-      "sha256": "a579bedb38351b44b1fabc0f0bb6e350aa7c79a9a0292f2f7145ddd7bac20592"
+      "bytes": 22871,
+      "sha256": "c1da2a7d448578e80acffa733b6a1fd7d2a3d6cbd967345fbca983ffbea2bcda"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -103,8 +103,8 @@
     },
     {
       "path": "agent_core/dr2_empirical_scramble.py",
-      "bytes": 97023,
-      "sha256": "a1f9af69f29d6c759c3538e14b78a954af645ecd9ff2cc2454d7d5a77ea5fec9"
+      "bytes": 105055,
+      "sha256": "89a73710ece164cecdd301da40c57a09778c0bf18b099df772c531349ce025ba"
     },
     {
       "path": "agent_core/dr2_pdf_release.py",
@@ -403,8 +403,8 @@
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
-      "bytes": 5532,
-      "sha256": "5ee5103801ebdd63179060b919984adbd19aa257c100ae5f420726ef390b5e45"
+      "bytes": 6564,
+      "sha256": "0a75445e0d5acadc1b6317397b236e620c76dec713474a8d10bb2d55690aaf43"
     },
     {
       "path": "docs/dr2_v3_release.md",
@@ -453,13 +453,13 @@
     },
     {
       "path": "docs/release_copy_changes.md",
-      "bytes": 2617,
-      "sha256": "d11e8a0b2081cadd55050c750936f4bbf0084d09a12bc64f2d82fb3866f74d71"
+      "bytes": 2692,
+      "sha256": "31e3b56327efa51fabcc0234933d0ef3d65d880f36f878a1df3b17456792b5b6"
     },
     {
       "path": "docs/release_copy_verification.md",
-      "bytes": 3852,
-      "sha256": "ba5946cec1dc3bca31d927e6939b6061ec3c5e7fd5f145f4cf0b3543d1f80a5a"
+      "bytes": 5071,
+      "sha256": "569490129c1e3d753b4eb2f7295add60ccbbcba739b4193b1cbda4c9f5f922f3"
     },
     {
       "path": "docs/release_metadata_draft.md",
@@ -468,8 +468,8 @@
     },
     {
       "path": "docs/release_notes.md",
-      "bytes": 3664,
-      "sha256": "864325b534f5fb281b0d05d8c24855c9649c5d1a85cd17397b1d767d72eb1d70"
+      "bytes": 4193,
+      "sha256": "340fea0fdb5ede2eea982b17f3c6479527f0dac23e47e127a57f3d00b6d6a604"
     },
     {
       "path": "docs/release_scientific_baseline.md",
@@ -483,8 +483,8 @@
     },
     {
       "path": "docs/scientific_status.md",
-      "bytes": 13440,
-      "sha256": "2720884c26f9eb0dd254d744fe0a6c45caaaacbe6c4b015e243500e14df43bf6"
+      "bytes": 14094,
+      "sha256": "d6b597b680e7f293fd2bb54d7fcddf8fc3469a612ce424fc1fd02139bbd74be7"
     },
     {
       "path": "docs/single_source_linear_interpolation.md",
@@ -518,8 +518,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 18142,
-      "sha256": "63bb7bf16d4afeb7584b4abbf4b3b5d8e48f2a8be959ef414d13da06b42120d6"
+      "bytes": 19361,
+      "sha256": "2641fcc77c6734e489b805e0ec17ac1deedc4b761cc9b1f1179717d9471c19e3"
     },
     {
       "path": "install.sh",
@@ -538,8 +538,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 42087,
-      "sha256": "ca7292c129dfe5c91986e781c86bc4d72fafa4a92fd23dfec0032e9fb5fcb3bb"
+      "bytes": 42285,
+      "sha256": "fcfa142dd5eed08122809577328f426c8749a55a2b78020549c5db2c0ce40869"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",

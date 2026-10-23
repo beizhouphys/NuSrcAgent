@@ -219,11 +219,40 @@ source influence in a reviewed fitted-Gamma stack. Delta TS from deleting source
 is not source-detection significance.
 
 `dr2-ra-scramble` is a fixed-Gamma smoke test, not empirical calibration.
-`dr2-empirical-scramble` has the limited existing random-catalog stack scope
-described in `docs/dr2_empirical_scrambling.md`; do not promise calibration for
-arbitrary user catalogs or individual-source scans. Agree the trial family,
-count, seeds and stopping strategy before any background trials. Negative-TS
-discarding requires scientific review. Time-dependent trials are unsupported.
+For requested background trials following a reviewed DR2 time-integrated
+single-source analysis or stacking analysis, use the recorded primary task:
+
+```bash
+.venv/bin/python run_agent_wrap.py dr2-empirical-scramble \
+  --action prepare --baseline-task <task_id_or_path> \
+  --output-directory <new_directory> --n-trials <agreed_count> \
+  --workers <N> --request "<user request>"
+.venv/bin/python run_agent_wrap.py dr2-empirical-scramble \
+  --action run --output-directory <new_directory>
+```
+
+Agree trial count or continuous stopping rule and hypothesis scope first;
+use `--continuous` instead of a fixed count when explicitly requested, then
+`--action launch`. Do not launch trials merely because significance reporting
+reminds the user about them. The primary may be at `AWAITING_FLUX`; do not
+execute flux or alter its continuation gate. Preparation inherits source
+coordinates, weighting factors, event selection, fixed/fitted spectrum,
+interpolation, PDFs, fit bounds, initial values and optimizer seed. It imports
+the reviewed primary result without maximizing it again. Every trial repeats
+the corresponding fit, changing only event RA. Never replace the user's source
+or catalog with random sources. Catalog-scan maxima, DR1 and time-dependent
+trials are outside this workflow; a `scan_and_stack` follow-up calibrates only
+its stacking component. Report primary warnings and the actual hypothesis scope.
+
+Use `status|snapshot|stop|resume` to monitor or continue saved work. Report
+empirical p-value and one-sided significance, 68%/95% uncertainty intervals,
+and display the PNG trial-distribution figure with links to its PDF and tables.
+Follow the task's recorded negative-TS policy and preserve all historical
+trials/checkpoints. See `docs/dr2_empirical_scrambling.md`.
+When status may be inspected repeatedly or stopping is data-dependent, report
+the anytime-valid confidence sequence as the primary Monte Carlo uncertainty,
+alongside the fixed-N interval as a descriptive snapshot.
+
 
 Honor a requested CPU budget with `--workers N` (positive integer; default 1),
 including user-authorized flux commands. Single-source and joint stacking fits

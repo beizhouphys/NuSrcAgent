@@ -116,8 +116,8 @@ preserve Dec, energy proxy, angular uncertainty, dataset membership and counts.
 Observed and trial fits must use identical selected sources, intrinsic weights,
 PDFs, event cuts and optimization; refit every observed free parameter in every
 trial. Conditional randomization does not establish unbiased parameter estimates.
-The existing empirical workflow prepares one fixed random-catalog stack, not
-arbitrary user-catalog or source-scan calibration. Its negative-TS discard policy
+The empirical workflow follows a reviewed DR2 single-source analysis or stacking
+analysis; it does not calibrate a catalog-scan maximum. Its negative-TS discard policy
 can affect the sampled null distribution and requires explicit scientific review.
 
 ## Reproducing a calculation versus validating its science
@@ -205,3 +205,7 @@ Dominance uses workers for independent delete-one refits and keeps cumulative
 refits sequential with their original initial values. RA-scramble diagnostics
 use workers for independent seeds; both accept `--workers N`.
 See [CPU selection](cpu_execution.md).
+
+## General background-trial follow-up
+
+Use `prepare --baseline-task` to follow a reviewed DR2 single-source or stacking analysis with matched event-RA trials. Sources, weighting factors, event selection, fixed/fitted spectrum, PDFs, interpolation and fit procedure are inherited. The primary result is imported without another maximization. Reports include empirical p-value and significance, 68%/95% fixed-N and anytime-valid Monte Carlo intervals, PNG/PDF figures and checkpoints. Catalog-scan maxima, DR1 and time-dependent trials are not supported. Historical trials remain unchanged and do not calibrate another source/catalog hypothesis.
