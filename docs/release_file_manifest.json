@@ -93,8 +93,8 @@
     },
     {
       "path": "agent_core/coordinates.py",
-      "bytes": 9147,
-      "sha256": "428691b23fed307f1f794d4b8c6925815a1f6011351cc2c727313340898413a3"
+      "bytes": 9187,
+      "sha256": "0192c5ec244c0feca726ee5f426b69ebd10fcfe93a214a77fd163d0690a99408"
     },
     {
       "path": "agent_core/cpu.py",
