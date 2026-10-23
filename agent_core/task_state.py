@@ -105,13 +105,15 @@ def missing_parameter_value(value: Any) -> bool:
 def confirm_parameters(task: Dict[str, Any], values: Dict[str, Any], meanings: Optional[Dict[str, str]] = None, actor: str = "user") -> Dict[str, Any]:
     if task.get("status") in TERMINAL_STATES or task.get("status") in {"RUNNING", "REVIEWING", "AWAITING_FLUX"}:
         raise ValueError("parameters cannot be changed while a task is running or after it has reached a terminal state; create a new task")
-    allowed = {"gamma", "weight_mode", "weight_column", "weight_meaning", "manual_weights", "include_uniform_baseline", "name_column", "ra_column", "dec_column"}
+    allowed = {"gamma", "weight_mode", "weight_column", "weight_meaning", "manual_weights", "include_uniform_baseline", "name_column", "ra_column", "dec_column", "coordinates"}
     unknown = sorted(set(values) - allowed)
     if unknown:
         raise ValueError("unsupported confirmation parameters: %s" % ", ".join(unknown))
     for name, value in values.items():
         if value is None:
             continue
+        if name == "coordinates":
+            value = dict(task.get("parameters", {}).get(name, {}).get("value") or {}, **value)
         task.setdefault("parameters", {})[name] = parameter(value, actor, True, (meanings or {}).get(name))
         task.setdefault("user_confirmations", []).append({"parameter": name, "value": value, "actor": actor, "confirmed_at_utc": utc_now()})
     task["questions"] = questions_for_missing(task)

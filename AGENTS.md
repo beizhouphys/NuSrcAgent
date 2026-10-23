@@ -5,6 +5,11 @@
 - Preserve scientific definitions, catalog membership, weights, PDFs, fit bounds
   and recorded trial strategies. Ask only about unresolved material ambiguity.
 - Execute an analysis only after its persistent task reaches `READY`.
+- All currently supported analyses accept ICRS RA/Dec and Galactic l/b through
+  the shared coordinate input layer. Convert to backend ICRS RA/Dec, retaining
+  original values, frame, units and conversion provenance. Ask when the frame
+  or units remain unclear; never infer them from numeric ranges. Degrees,
+  radians and RA hourangle/sexagesimal are supported. See `docs/coordinates.md`.
 - Keep source data in `data_input/`, numerical outputs in `data_output/` and
   figures in `figures/`; never overwrite frozen inputs during an analysis.
 - The production DR2 background package is frozen v3. Verify its mapped

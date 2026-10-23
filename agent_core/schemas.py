@@ -47,6 +47,7 @@ class SourceBlock:
     name: str | None = None
     ra_deg: float | None = None
     dec_deg: float | None = None
+    coordinate_input: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -56,6 +57,7 @@ class CatalogBlock:
     name_column: str | None = None
     ra_column: str | None = None
     dec_column: str | None = None
+    coordinates: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -184,7 +186,9 @@ class NormalizedAnalysis:
 def parse_source(payload: Any) -> SourceBlock | None:
     if payload is None:
         return None
-    return SourceBlock(name=optional_str(payload, "name"), ra_deg=optional_float(payload, "ra_deg"), dec_deg=optional_float(payload, "dec_deg"))
+    from agent_core.coordinates import canonical_source
+    payload = canonical_source(payload)
+    return SourceBlock(name=optional_str(payload, "name"), ra_deg=optional_float(payload, "ra_deg"), dec_deg=optional_float(payload, "dec_deg"), coordinate_input=payload.get("coordinate_input", {}))
 
 
 def parse_sources(payload: Any) -> list[SourceBlock] | None:
@@ -204,7 +208,8 @@ def parse_sources(payload: Any) -> list[SourceBlock] | None:
 def parse_catalog(payload: Any) -> CatalogBlock | None:
     if payload is None:
         return None
-    return CatalogBlock(file=optional_str(payload, "file"), builtin=optional_str(payload, "builtin"), name_column=optional_str(payload, "name_column"), ra_column=optional_str(payload, "ra_column"), dec_column=optional_str(payload, "dec_column"))
+    coordinates = payload.get("coordinates") or {}
+    return CatalogBlock(file=optional_str(payload, "file"), builtin=optional_str(payload, "builtin"), name_column=optional_str(payload, "name_column"), ra_column=coordinates.get("longitude_column") or optional_str(payload, "ra_column"), dec_column=coordinates.get("latitude_column") or optional_str(payload, "dec_column"), coordinates=coordinates)
 
 
 def parse_weights(payload: Any) -> WeightsBlock:

@@ -8,6 +8,37 @@ description: Coordinate supported IceCube time-integrated single-source searches
 Use the repository wrapper for every analysis. Read `AGENTS.md` and
 `docs/scientific_status.md`; numerical success does not establish scientific validity.
 
+## Source coordinates: all analyses
+
+Under the default analysis settings, the minimum information required from
+the researcher is the sky coordinates or a resolvable name of each source.
+Accept ICRS RA/Dec or Galactic l/b. Resolve the frame and angular units from
+the request, explicit notation, column headers or catalog metadata, never
+from a numeric range alone. Ask only when the frame or units remain unclear;
+record the clarification before running. Do not label an unspecified
+equatorial equinox as ICRS. For name-only input, look up the coordinates,
+record the source and resolve any ambiguous object identification.
+
+Use the shared converter, not a hand-written numerical transformation:
+`create-single --longitude ... --latitude ... --coordinate-frame galactic
+--longitude-unit deg --latitude-unit deg`. For ICRS RA hourangle, use
+`--coordinate-frame icrs --longitude-unit hourangle --latitude-unit deg`;
+sexagesimal strings are supported. Radians are also supported. The original
+`--ra-deg/--dec-deg` interface and degree-only inline sources retain their
+explicit degree convention. Never combine these with generic coordinates.
+For catalogs use `--longitude-column/--latitude-column`, frame and units,
+or unambiguous headers such as `l_deg,b_deg` or `ra_deg,dec_deg`. Bare
+`l,b` or `ra,dec` headers alone do not specify units. Use `confirm` with
+the same options for a task awaiting coordinate clarification.
+
+All supported single-source, catalog-wide single-source and stacking
+analyses share this input layer, including DR1 and DR2, spatial-only and
+spatial+energy modes. Backends receive only canonical ICRS RA/Dec; retain
+original coordinates, units, frame and conversion provenance. Do not change
+weights, source membership or scientific settings during conversion. This
+does not enable a planned but unimplemented analysis mode.
+See `docs/coordinates.md` for CLI and structured-request examples.
+
 
 ## Progress estimates and final elapsed time
 

@@ -106,7 +106,7 @@ def main(argv=None) -> int:
             print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "inspect-catalog":
-            result = inspect_catalog(args.catalog, args.name_column, args.ra_column, args.dec_column, args.weight_column)
+            result = inspect_catalog(args.catalog, args.name_column, args.ra_column, args.dec_column, args.weight_column, coordinate_options(args))
             print_result(result)
             return 2 if result.get("status") == "fail" else 0
         if args.command == "review-run":
@@ -133,7 +133,10 @@ def main(argv=None) -> int:
             likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
             gamma_mode = args.gamma_mode or ("fixed" if args.gamma is not None or args.spectrum_file else "fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
             gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
-            task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, gamma, args.data_sample, gamma_mode, likelihood_mode, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg)
+            coordinates = coordinate_options(args)
+            if args.longitude is not None or args.latitude is not None or coordinates:
+                coordinates.update(longitude=args.longitude, latitude=args.latitude)
+            task = plan_single_task(args.request, args.name, args.ra_deg, args.dec_deg, gamma, args.data_sample, gamma_mode, likelihood_mode, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg, coordinates or None)
             if args.gamma_mode is not None:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
@@ -145,13 +148,13 @@ def main(argv=None) -> int:
 
             path = save_task(task, repo_root)
         elif args.command == "create-catalog":
-            sources = None if args.source is None else [parse_source(value) for value in args.source]
+            sources = None if args.source is None else [parse_source(value, coordinate_options(args)) for value in args.source]
             manual_weights = parse_weights(args.weights)
             likelihood_mode = args.likelihood_mode or ("spatial_energy" if args.data_sample == "icecube_public_ps_14yr_dr2" else "spatial_only")
             gamma_mode = args.gamma_mode or ("fixed" if args.gamma is not None or args.spectrum_file else "fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
             gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
             include_uniform_baseline = False if args.data_sample == "icecube_public_ps_14yr_dr2" else not args.no_uniform_baseline
-            task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, include_uniform_baseline, args.data_sample, gamma_mode, likelihood_mode, args.built_in_catalog, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg, args.catalog_operation)
+            task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, include_uniform_baseline, args.data_sample, gamma_mode, likelihood_mode, args.built_in_catalog, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg, args.catalog_operation, coordinate_options(args))
             if args.gamma_mode is not None:
                 task["parameters"]["gamma_mode"]["source"] = "user"
             set_mode_parameter_sources(task, args, likelihood_mode, gamma_mode)
@@ -358,8 +361,10 @@ def build_parser() -> argparse.ArgumentParser:
     single = subparsers.add_parser("create-single", help="Create a one-source task from a Codex-interpreted request.")
     single.add_argument("--request", required=True, help="Original natural-language request for the audit record.")
     single.add_argument("--name", default="source_0001")
-    single.add_argument("--ra-deg", required=True, type=float)
-    single.add_argument("--dec-deg", required=True, type=float)
+    single.add_argument("--ra-deg", type=float, help="ICRS RA in degrees; pair with --dec-deg (existing interface).")
+    single.add_argument("--dec-deg", type=float, help="ICRS Dec in degrees; pair with --ra-deg (existing interface).")
+    single.add_argument("--longitude", help="ICRS RA or Galactic l; requires coordinate frame and explicit units.")
+    single.add_argument("--latitude", help="ICRS Dec or Galactic b; sexagesimal strings are accepted with explicit units.")
     single.add_argument("--gamma", type=float, help="Signed power-law exponent. DR2 spatial-only defaults to fixed -2.5 for detector acceptance; DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
     single.add_argument("--gamma-mode", choices=["fitted", "fixed"])
     single.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
@@ -381,7 +386,7 @@ def build_parser() -> argparse.ArgumentParser:
     inputs = catalog.add_mutually_exclusive_group(required=True)
     inputs.add_argument("--catalog")
     inputs.add_argument("--built-in-catalog", choices=BUILTIN_CATALOG_NAMES)
-    inputs.add_argument("--source", action="append", help="name,ra_deg,dec_deg; repeat for each source")
+    inputs.add_argument("--source", action="append", help="Repeat name,ra_deg,dec_deg; with generic coordinate options, values are name,longitude,latitude in that frame and units.")
     catalog.add_argument("--name-column")
     catalog.add_argument("--ra-column")
     catalog.add_argument("--dec-column")
@@ -439,6 +444,13 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_parser.add_argument("--ra-column")
     inspect_parser.add_argument("--dec-column")
     inspect_parser.add_argument("--weight-column")
+    for coordinate_parser in (single, catalog, confirm, inspect_parser):
+        coordinate_parser.add_argument("--coordinate-frame", choices=["icrs", "equatorial", "galactic"], help="Equatorial means ICRS RA/Dec; Galactic means l/b. Missing or ambiguous information blocks execution.")
+        coordinate_parser.add_argument("--longitude-unit", choices=["deg", "rad", "hourangle"], help="Angular unit for RA/longitude; hourangle is for ICRS RA only.")
+        coordinate_parser.add_argument("--latitude-unit", choices=["deg", "rad"], help="Angular unit for Dec/latitude.")
+    for coordinate_parser in (catalog, confirm, inspect_parser):
+        coordinate_parser.add_argument("--longitude-column", help="Catalog RA or Galactic longitude column.")
+        coordinate_parser.add_argument("--latitude-column", help="Catalog Dec or Galactic latitude column.")
 
     review_parser = subparsers.add_parser("review-run", help="Review a completed analysis run and write review artifacts.")
     review_parser.add_argument("--run-directory", required=True)
@@ -482,6 +494,8 @@ def confirmation_values(args: argparse.Namespace) -> Dict[str, Any]:
         "ra_column": args.ra_column,
         "dec_column": args.dec_column,
     }
+    if coordinate_options(args):
+        values["coordinates"] = coordinate_options(args)
     if args.uniform_baseline:
         values["include_uniform_baseline"] = True
     elif args.no_uniform_baseline:
@@ -489,10 +503,20 @@ def confirmation_values(args: argparse.Namespace) -> Dict[str, Any]:
     return {key: value for key, value in values.items() if value is not None}
 
 
-def parse_source(value: str) -> Dict[str, Any]:
+def coordinate_options(args):
+    mapping = {"frame": "coordinate_frame", "longitude_unit": "longitude_unit", "latitude_unit": "latitude_unit",
+               "longitude_column": "longitude_column", "latitude_column": "latitude_column"}
+    return {key: getattr(args, option) for key, option in mapping.items() if getattr(args, option, None) is not None}
+
+
+def parse_source(value: str, coordinates=None) -> Dict[str, Any]:
     parts = [part.strip() for part in value.split(",")]
     if len(parts) != 3:
         raise ValueError("--source must have the form name,ra_deg,dec_deg")
+    if coordinates:
+        if any(key.endswith("_column") for key in coordinates):
+            raise ValueError("Coordinate column options require --catalog, not inline --source values.")
+        return {"name": parts[0], "coordinates": dict(coordinates, longitude=parts[1], latitude=parts[2])}
     return {"name": parts[0], "ra_deg": float(parts[1]), "dec_deg": float(parts[2])}
 
 

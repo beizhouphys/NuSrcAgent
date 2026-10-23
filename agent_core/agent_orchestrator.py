@@ -94,6 +94,8 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
         else:
             source = inputs["sources"][0]
         payload = build_single_source_request(str(source.get("name") or "source_0001"), float(source["ra_deg"]), float(source["dec_deg"]), gamma, "data_output/runs", data_sample, gamma_mode, likelihood_mode, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)
+        if source.get("coordinate_input"):
+            payload["source"]["coordinate_input"] = source["coordinate_input"]
         if "source_dec_window_deg" in parameters:
             payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
         for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measurement_ts_threshold", "fit_procedure", "signal_energy_gamma_interpolation", "spectrum", "gamma_bounds"):
@@ -107,6 +109,8 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
     sources = inputs.get("sources") if inputs["kind"] == "inline_sources" else None
     built_in_catalog = inputs.get("built_in_catalog") if inputs["kind"] == "built_in_catalog" else None
     payload = build_catalog_request(catalog, sources, parameters["name_column"]["value"], parameters["ra_column"]["value"], parameters["dec_column"]["value"], weight_column, manual_weights, [gamma], bool(parameters["include_uniform_baseline"]["value"]), "data_output/runs", data_sample, gamma_mode, likelihood_mode, built_in_catalog, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg, parameters.get("catalog_operation", {}).get("value"))
+    if catalog and parameters.get("coordinates", {}).get("value"):
+        payload["catalog"]["coordinates"] = parameters["coordinates"]["value"]
     if "source_dec_window_deg" in parameters:
         payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
     for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure", "stacking_flux", "spectrum", "gamma_bounds"):

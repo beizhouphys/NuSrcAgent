@@ -165,6 +165,16 @@ def validate_catalog(config: AnalysisConfig, result: ValidationResult, root: Pat
     for column in [config.catalog.name_column, config.catalog.ra_column, config.catalog.dec_column]:
         if column is not None and column not in columns:
             result.errors.append(f"catalog column is missing: {column}")
+    if config.catalog.coordinates and not result.errors:
+        from agent_core.coordinates import resolve_catalog_coordinates, convert_coordinates
+        try:
+            settings = resolve_catalog_coordinates(columns, config.catalog.ra_column, config.catalog.dec_column, config.catalog.coordinates)
+            if config.catalog.file is not None:
+                rows, _ = read_source_catalog(path)
+            for row in rows:
+                convert_coordinates(row[settings["longitude_column"]], row[settings["latitude_column"]], **settings)
+        except (ValueError, TypeError, KeyError) as exc:
+            result.errors.append("catalog coordinates: %s" % exc)
     if config.weights.mode == WeightMode.COLUMN and config.weights.column not in columns:
         result.errors.append(f"weights.column is missing: {config.weights.column}")
     if config.weights.mode == WeightMode.COLUMN and config.weights.column is None:
