@@ -96,6 +96,15 @@ change. Conversion uses
 
 ## Structured requests
 
+During execution, validation converts a coordinate-bearing catalog once and
+passes the validated sources, including weights and coordinate provenance,
+directly to normalization. This result is local to that invocation, not a
+persistent cache. Planning/confirmation inspection remains separate, and a
+new execution reads and validates the current catalog again. Direct calls to
+normalization without a validation result still perform the conversion.
+The source converter reads coordinate settings from the source itself; it
+has no separate settings-override argument.
+
 A source mapping may contain `coordinates` with `longitude`, `latitude`,
 `frame`, `longitude_unit` and `latitude_unit`, instead of `ra_deg,dec_deg`.
 A catalog mapping may contain `coordinates` with `frame`, both units,

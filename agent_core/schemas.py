@@ -134,6 +134,7 @@ class AnalysisConfig:
 class ValidationResult:
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    catalog_sources: list[NormalizedSource] | None = None
 
     @property
     def ok(self) -> bool:

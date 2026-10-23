@@ -77,17 +77,14 @@ def convert_coordinates(longitude, latitude, **spec):
     return dict(ra_deg=ra_deg, dec_deg=dec_deg, coordinate_input=provenance)
 
 
-def canonical_source(source, spec=None):
+def canonical_source(source):
     """Return canonical coordinates, retaining original user values for review."""
     result = dict(source)
     coordinates = source.get("coordinates")
     if coordinates is not None:
         settings = dict(coordinates)
         longitude, latitude = settings.pop("longitude", None), settings.pop("latitude", None)
-        settings.update(spec or {})
         result.update(convert_coordinates(longitude, latitude, **settings))
-    elif spec:
-        raise CoordinateError("Generic coordinate settings require longitude/latitude values; do not combine them with --ra-deg/--dec-deg.")
     return result
 
 

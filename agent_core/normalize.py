@@ -9,10 +9,12 @@ from agent_core.validate import resolve_path
 from agent_core.coordinates import catalog_source, resolve_catalog_coordinates
 
 
-def normalize_config(config: AnalysisConfig, repo_root: str | Path | None = None, warnings: list[str] | None = None) -> NormalizedAnalysis:
+def normalize_config(config: AnalysisConfig, repo_root: str | Path | None = None, warnings: list[str] | None = None, *, catalog_sources: list[NormalizedSource] | None = None) -> NormalizedAnalysis:
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     if config.analysis.type == AnalysisType.SINGLE_SOURCE:
         sources = normalize_single_source(config)
+    elif config.catalog is not None and catalog_sources is not None:
+        sources = catalog_sources
     else:
         sources = normalize_source_set(config, root)
     return NormalizedAnalysis(schema_version=config.schema_version, analysis_type=config.analysis.type.value, time_mode=config.analysis.time_mode, likelihood_mode=config.analysis.likelihood_mode, sample=config.data.sample, sources=sources, spectral_indices=list(config.stacking.spectral_indices), gamma_mode=config.stacking.gamma_mode, include_uniform_baseline=config.stacking.include_uniform_baseline, background_method=config.background.method, n_trials=config.background.n_trials, random_seed=config.background.random_seed, event_abs_dec_max_deg=config.background.event_abs_dec_max_deg, event_dec_min_deg=config.background.event_dec_min_deg, event_dec_max_deg=config.background.event_dec_max_deg, source_dec_window_deg=config.background.source_dec_window_deg, catalog_operation=config.analysis.catalog_operation, flux_upper_limit_cl=config.analysis.flux_upper_limit_cl, flux_upper_limit_gammas=list(config.analysis.flux_upper_limit_gammas), flux_measurement_ts_threshold=config.analysis.flux_measurement_ts_threshold, fit_procedure=config.analysis.fit_procedure, scan_fit_procedure=config.analysis.scan_fit_procedure, signal_energy_gamma_interpolation=config.analysis.signal_energy_gamma_interpolation, stacking_flux=dict(config.analysis.stacking_flux), spectrum=dict(config.analysis.spectrum), gamma_bounds=config.analysis.gamma_bounds, warnings=list(warnings or []))

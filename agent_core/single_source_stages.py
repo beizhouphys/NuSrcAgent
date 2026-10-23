@@ -193,7 +193,7 @@ def _run_flux(request_path, primary, root, workers=1):
     validation = validate_config(config, root)
     if not validation.ok:
         raise ConfigError("; ".join(validation.errors))
-    normalized = normalize_config(config, root, validation.warnings)
+    normalized = normalize_config(config, root, validation.warnings, catalog_sources=validation.catalog_sources)
     plan = StageProgress(root, {}, 'flux', started=started)
     try:
         with plan.phase('request preparation'):
