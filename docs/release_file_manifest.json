@@ -93,8 +93,8 @@
     },
     {
       "path": "agent_core/coordinates.py",
-      "bytes": 8303,
-      "sha256": "935ad1479aebf4193e31747fbcf865bdc79ebdd162c7a555e5c5ee957b3fa0ab"
+      "bytes": 8696,
+      "sha256": "e34e288c9433ab2cac3bedf520989cf64e51afc81b93fd839a8454242a78189b"
     },
     {
       "path": "agent_core/cpu.py",
@@ -218,8 +218,8 @@
     },
     {
       "path": "agent_core/task_state.py",
-      "bytes": 8251,
-      "sha256": "c7db8f34ed7d264401498340f3c43a74d650221bdd15fb9089f6fba98d235565"
+      "bytes": 8644,
+      "sha256": "8fbeb30285bcdd59f3f04819b63970c211c54389402d0fe0d69db1b8d6ea5a30"
     },
     {
       "path": "agent_core/validate.py",
@@ -378,8 +378,8 @@
     },
     {
       "path": "docs/coordinates.md",
-      "bytes": 4997,
-      "sha256": "d42b5a22db399404bca686f890d175efcb47c4de8689e6fb65e303c0856ad95c"
+      "bytes": 5209,
+      "sha256": "bffe1103fb7feeb690c94a503e482606ee7e7ba253f767b3c2e275108c1d9a05"
     },
     {
       "path": "docs/cpu_execution.md",

@@ -18,8 +18,11 @@ supports hourangle, including sexagesimal strings. Specify both angular
 units. A numeric range alone never determines a coordinate system or unit.
 Equatorial here means ICRS, not an arbitrary equinox: FK4/B1950 or FK5
 coordinates require a separately specified and validated transformation.
-Input longitude/RA must lie in [0,360) degrees, and latitude/Dec in [-90,90]
-degrees, or the equivalent ranges in the chosen units.
+Generic longitude/RA is wrapped to [0,360) degrees, accepting equivalent
+values such as Galactic l=-1 degree or ICRS RA=24 hours. Original values and
+any wrapping are recorded. Latitude/Dec must lie in [-90,90] degrees, or the
+equivalent range in the chosen units. The existing degree-only RA/Dec
+interface retains its strict [0,360) RA range.
 
 ## Single source and inline source lists
 

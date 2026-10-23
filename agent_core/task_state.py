@@ -109,6 +109,9 @@ def confirm_parameters(task: Dict[str, Any], values: Dict[str, Any], meanings: O
     unknown = sorted(set(values) - allowed)
     if unknown:
         raise ValueError("unsupported confirmation parameters: %s" % ", ".join(unknown))
+    inputs = task.get("inputs", {})
+    if "coordinates" in values and (inputs.get("kind") == "built_in_catalog" or (inputs.get("kind") == "inline_sources" and any("coordinates" not in row for row in inputs.get("sources", [])))):
+        raise ValueError("These inputs already declare RA/Dec in degrees; do not relabel them. Create a new task with generic longitude/latitude inputs instead.")
     for name, value in values.items():
         if value is None:
             continue
