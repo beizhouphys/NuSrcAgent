@@ -6,6 +6,7 @@ from pathlib import Path
 from analysis_backend.sources import load_builtin_catalog, read_source_catalog
 from agent_core.schemas import AnalysisConfig, AnalysisType, ConfigError, NormalizedAnalysis, NormalizedSource, WeightMode
 from agent_core.validate import resolve_path
+from agent_core.coordinates import catalog_source, resolve_catalog_coordinates
 
 
 def normalize_config(config: AnalysisConfig, repo_root: str | Path | None = None, warnings: list[str] | None = None) -> NormalizedAnalysis:
@@ -20,7 +21,8 @@ def normalize_config(config: AnalysisConfig, repo_root: str | Path | None = None
 def normalize_single_source(config: AnalysisConfig) -> list[NormalizedSource]:
     if config.source is None or config.source.ra_deg is None or config.source.dec_deg is None:
         raise ConfigError("source.ra_deg and source.dec_deg are required")
-    return [make_source(1, config.source.name or "source_0001", config.source.ra_deg, config.source.dec_deg, 1.0, {})]
+    metadata = {"coordinate_input": config.source.coordinate_input} if config.source.coordinate_input else {}
+    return [make_source(1, config.source.name or "source_0001", config.source.ra_deg, config.source.dec_deg, 1.0, metadata)]
 
 
 def normalize_source_set(config: AnalysisConfig, root: Path) -> list[NormalizedSource]:
@@ -41,12 +43,16 @@ def normalize_catalog(config: AnalysisConfig, root: Path) -> list[NormalizedSour
     raw_weights = get_raw_weights(config, rows)
     weights = normalize_weights(raw_weights) if config.weights.normalize else raw_weights
     sources = []
+    settings = resolve_catalog_coordinates(list(rows[0]), config.catalog.ra_column, config.catalog.dec_column, config.catalog.coordinates) if config.catalog.coordinates else None
     for index, row in enumerate(rows):
         name = row.get(config.catalog.name_column or "", "") or f"source_{index + 1:04d}"
-        ra_deg = float(row[config.catalog.ra_column])
-        dec_deg = float(row[config.catalog.dec_column])
+        converted = catalog_source(row, name, settings) if settings else {}
+        ra_deg = converted["ra_deg"] if settings else float(row[config.catalog.ra_column])
+        dec_deg = converted["dec_deg"] if settings else float(row[config.catalog.dec_column])
         coordinate_columns = {config.catalog.name_column, config.catalog.ra_column, config.catalog.dec_column}
         metadata = {key: value for key, value in row.items() if key not in coordinate_columns}
+        if settings:
+            metadata["coordinate_input"] = converted["coordinate_input"]
         sources.append(make_source(index + 1, name, ra_deg, dec_deg, weights[index], metadata))
     return sources
 
@@ -54,7 +60,7 @@ def normalize_catalog(config: AnalysisConfig, root: Path) -> list[NormalizedSour
 def normalize_inline_sources(config: AnalysisConfig) -> list[NormalizedSource]:
     if config.sources is None:
         raise ConfigError("sources list is required when catalog.file is not provided")
-    rows = [{"name": source.name or f"source_{index + 1:04d}", "ra_deg": source.ra_deg, "dec_deg": source.dec_deg} for index, source in enumerate(config.sources)]
+    rows = [{"name": source.name or f"source_{index + 1:04d}", "ra_deg": source.ra_deg, "dec_deg": source.dec_deg, **({"coordinate_input": source.coordinate_input} if source.coordinate_input else {})} for index, source in enumerate(config.sources)]
     raw_weights = get_inline_raw_weights(config, len(rows))
     weights = normalize_weights(raw_weights) if config.weights.normalize else raw_weights
     return [make_source(index + 1, str(row["name"]), float(row["ra_deg"]), float(row["dec_deg"]), weights[index], dict(row)) for index, row in enumerate(rows)]

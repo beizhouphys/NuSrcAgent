@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from analysis_backend.sources import read_source_catalog
+from agent_core.coordinates import CoordinateError, convert_coordinates, resolve_catalog_coordinates
 
 
 NAME_ALIASES = ["source_name", "name", "source", "object", "ivs_name", "j2000_name"]
@@ -13,7 +14,7 @@ DEC_ALIASES = ["dec_deg", "dec", "dej2000", "dec_j2000", "declination"]
 WEIGHT_HINTS = ["weight", "flux", "luminosity", "lumin", "radio", "xband"]
 
 
-def inspect_catalog(path_value: str, name_column: Optional[str] = None, ra_column: Optional[str] = None, dec_column: Optional[str] = None, weight_column: Optional[str] = None) -> Dict[str, Any]:
+def inspect_catalog(path_value: str, name_column: Optional[str] = None, ra_column: Optional[str] = None, dec_column: Optional[str] = None, weight_column: Optional[str] = None, coordinates=None) -> Dict[str, Any]:
     path = Path(path_value).expanduser().resolve()
     result: Dict[str, Any] = {"tool": "inspect_catalog", "catalog": str(path), "status": "pass", "errors": [], "warnings": [], "questions": []}
     if not path.exists():
@@ -32,19 +33,28 @@ def inspect_catalog(path_value: str, name_column: Optional[str] = None, ra_colum
         result["errors"].append("catalog contains no data rows")
         return result
     inferred_name = name_column or infer_column(columns, NAME_ALIASES)
-    inferred_ra = ra_column or infer_column(columns, RA_ALIASES)
-    inferred_dec = dec_column or infer_column(columns, DEC_ALIASES)
+    try:
+        coordinate_settings = resolve_catalog_coordinates(columns, ra_column, dec_column, coordinates)
+    except CoordinateError as exc:
+        result["errors"].append(str(exc))
+        result["questions"].append(str(exc))
+        result["status"] = "fail"
+        return result
+    result["coordinates"] = coordinate_settings
+    inferred_ra = coordinate_settings["longitude_column"]
+    inferred_dec = coordinate_settings["latitude_column"]
     result["inferred_columns"] = {"name": inferred_name, "ra_deg": inferred_ra, "dec_deg": inferred_dec, "weight": weight_column}
     for label, column in [("name", inferred_name), ("ra_deg", inferred_ra), ("dec_deg", inferred_dec)]:
         if column is None:
-            result["errors"].append("could not infer the %s column" % label)
+            if label != "name":
+                result["errors"].append("could not infer the %s column" % label)
         elif column not in columns:
             result["errors"].append("specified %s column is missing: %s" % (label, column))
     if result["errors"]:
         result["status"] = "fail"
-        result["questions"].append("Which columns contain source name, RA in degrees, and Dec in degrees?")
+        result["questions"].append("Identify the source-name and coordinate columns, with coordinate frame and angular units.")
         return result
-    coordinate_review = inspect_coordinates(rows, inferred_name, inferred_ra, inferred_dec)
+    coordinate_review = inspect_coordinates(rows, inferred_name, inferred_ra, inferred_dec, coordinate_settings)
     result["coordinate_review"] = coordinate_review
     if coordinate_review["invalid_rows"] or coordinate_review["missing_rows"] or coordinate_review["duplicate_coordinate_pairs"]:
         result["warnings"].append("catalog coordinates require review")
@@ -83,7 +93,7 @@ def normalize_name(value: str) -> str:
     return "".join(character.lower() for character in value if character.isalnum())
 
 
-def inspect_coordinates(rows: List[Dict[str, str]], name_column: str, ra_column: str, dec_column: str) -> Dict[str, Any]:
+def inspect_coordinates(rows: List[Dict[str, str]], name_column: str, ra_column: str, dec_column: str, settings=None) -> Dict[str, Any]:
     missing_rows: List[int] = []
     invalid_rows: List[int] = []
     unnamed_rows: List[int] = []
@@ -97,8 +107,12 @@ def inspect_coordinates(rows: List[Dict[str, str]], name_column: str, ra_column:
             missing_rows.append(index)
             continue
         try:
-            ra_value = float(row[ra_column])
-            dec_value = float(row[dec_column])
+            if settings:
+                converted = convert_coordinates(row[ra_column], row[dec_column], **settings)
+                ra_value, dec_value = converted["ra_deg"], converted["dec_deg"]
+            else:
+                ra_value = float(row[ra_column])
+                dec_value = float(row[dec_column])
         except (TypeError, ValueError):
             invalid_rows.append(index)
             continue

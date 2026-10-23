@@ -28,6 +28,19 @@ through `create-catalog --catalog <path>`, with `source_name`, `ra_deg`,
 instead needs the original raw RFC file, which is not bundled. Do not rebuild
 or materialize another catalog when the supplied CSV already matches the request.
 
+## Coordinate inputs
+
+All supported analyses use the shared coordinate conversion before backend
+evaluation. ICRS RA/Dec and Galactic l/b accept explicit degree/radian units;
+ICRS RA also accepts hourangle and sexagesimal strings. Generic single-source
+options are `--longitude`, `--latitude`, `--coordinate-frame`,
+`--longitude-unit` and `--latitude-unit`. Catalogs additionally accept
+`--longitude-column` and `--latitude-column`; repeated `--source` values use
+the declared frame/units. Existing degree-only options retain their contract.
+Missing frame or units block readiness; use `confirm` with the actual user
+clarification. Preserve `coordinate_input` provenance through the request and
+normalized sources. See `docs/coordinates.md`.
+
 ## Recovery
 
 The wrapper records one attempt per execution and hashes the deterministic request. Only dependency, output-generation, and transient I/O failures may retry automatically, at most once, using the identical request hash. Use `resume` only for a task left in `RUNNING` or `REVIEWING` after an interrupted process.

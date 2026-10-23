@@ -209,6 +209,15 @@ The assistant interprets natural language. The Python command-line interface
 does not: its `--request` text is only a description kept with the analysis.
 When using Python commands directly, provide positions and settings explicitly.
 
+Under the default analysis settings, the minimum information a researcher
+needs to provide is the sky coordinates or a resolvable name of each source.
+NuSrcAgent accepts ICRS RA/Dec and Galactic l/b, converting them to backend
+RA/Dec. Degrees, radians and RA hourangle are supported. It asks when the
+coordinate system or units are unclear; original inputs and the conversion
+are recorded. This applies to all currently supported analyses. The Python
+wrapper requires coordinates; name lookup is performed by the natural-language
+agent. See [coordinate input and conversion](docs/coordinates.md).
+
 For new single-source requests, the Agent first reports best-fit ns and Gamma,
 TS, local p value and one-sided significance in a final answer after LLH review.
 It asks whether to continue and ends that turn. Only after the user replies does

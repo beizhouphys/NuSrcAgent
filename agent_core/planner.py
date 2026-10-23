@@ -7,11 +7,17 @@ from typing import Any, Dict, List, Optional
 from analysis_backend.sources import load_builtin_catalog, read_source_catalog
 from agent_core.catalog_inspector import inspect_catalog, inspect_coordinates, inspect_numeric_column, inspect_weight_candidates
 from agent_core.task_state import create_task_record, parameter, questions_for_missing, refresh_readiness
+from agent_core.coordinates import CoordinateError, canonical_source, catalog_source
 
 
-def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: float, gamma: Optional[float], data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy", event_abs_dec_max_deg: Optional[float] = None, event_dec_min_deg: Optional[float] = None, event_dec_max_deg: Optional[float] = None) -> Dict[str, Any]:
+def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: float, gamma: Optional[float], data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy", event_abs_dec_max_deg: Optional[float] = None, event_dec_min_deg: Optional[float] = None, event_dec_max_deg: Optional[float] = None, coordinates=None) -> Dict[str, Any]:
     planning_errors: List[str] = []
-    validate_source_values([{"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg}], planning_errors)
+    source = {"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg}
+    if coordinates is not None:
+        if ra_deg is not None or dec_deg is not None:
+            raise CoordinateError("Use --ra-deg/--dec-deg or generic coordinates, not both.")
+        source["coordinates"] = dict(coordinates)
+    validate_source_values([source], planning_errors)
     validate_planning_values(1, gamma, None, None, None, planning_errors, data_sample, gamma_mode, likelihood_mode, event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)
     parameters = {
         "gamma": parameter(gamma, "user" if gamma is not None else None, gamma is not None),
@@ -23,13 +29,13 @@ def plan_single_task(original_request: str, name: str, ra_deg: float, dec_deg: f
         "event_dec_min_deg": parameter(event_dec_min_deg, "user" if event_dec_min_deg is not None else "system_default", True),
         "event_dec_max_deg": parameter(event_dec_max_deg, "user" if event_dec_max_deg is not None else "system_default", True),
     }
-    inputs = {"kind": "inline_sources", "sources": [{"name": name, "ra_deg": ra_deg, "dec_deg": dec_deg}], "source_count": 1}
+    inputs = {"kind": "inline_sources", "sources": [source], "source_count": 1}
     task = create_task_record(original_request, "analyze_sources", "single_source", "Exactly one input source was provided.", inputs, parameters, planning_errors=planning_errors)
     task["questions"] = combined_questions(task, planning_errors)
     return refresh_readiness(task)
 
 
-def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[str], sources: Optional[List[Dict[str, Any]]], name_column: Optional[str], ra_column: Optional[str], dec_column: Optional[str], gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], weight_meaning: Optional[str], manual_weights: Optional[List[float]], include_uniform_baseline: bool = True, data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy", built_in_catalog: Optional[str] = None, event_abs_dec_max_deg: Optional[float] = None, event_dec_min_deg: Optional[float] = None, event_dec_max_deg: Optional[float] = None, catalog_operation: Optional[str] = None) -> Dict[str, Any]:
+def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[str], sources: Optional[List[Dict[str, Any]]], name_column: Optional[str], ra_column: Optional[str], dec_column: Optional[str], gamma: Optional[float], weight_mode: Optional[str], weight_column: Optional[str], weight_meaning: Optional[str], manual_weights: Optional[List[float]], include_uniform_baseline: bool = True, data_sample: str = "icecube_public_ps_14yr_dr2", gamma_mode: str = "fitted", likelihood_mode: str = "spatial_energy", built_in_catalog: Optional[str] = None, event_abs_dec_max_deg: Optional[float] = None, event_dec_min_deg: Optional[float] = None, event_dec_max_deg: Optional[float] = None, catalog_operation: Optional[str] = None, coordinates=None) -> Dict[str, Any]:
     planning_errors: List[str] = []
     operation = catalog_operation or ("stack" if data_sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")
     validate_catalog_operation(operation, data_sample, weight_mode, weight_column, manual_weights, planning_errors)
@@ -38,6 +44,8 @@ def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[
     inspection = None
     supplied_columns = {"name": name_column is not None, "ra": ra_column is not None, "dec": dec_column is not None}
     if built_in_catalog is not None:
+        if coordinates:
+            raise CoordinateError("Built-in catalogs already define ICRS RA/Dec in degrees; do not override their coordinate system.")
         rows = load_builtin_catalog(built_in_catalog, repo_root)
         columns = list(rows[0])
         name_column = name_column or "source_name"
@@ -51,7 +59,7 @@ def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[
         catalog_path = Path(catalog).expanduser()
         if not catalog_path.is_absolute():
             catalog_path = repo_root / catalog_path
-        inspection = inspect_catalog(str(catalog_path), name_column, ra_column, dec_column, weight_column)
+        inspection = inspect_catalog(str(catalog_path), name_column, ra_column, dec_column, weight_column, coordinates)
         source_count = int(inspection.get("row_count", 0))
         inferred = inspection.get("inferred_columns", {})
         name_column = inferred.get("name") or name_column
@@ -79,6 +87,7 @@ def plan_catalog_task(original_request: str, repo_root: Path, catalog: Optional[
         "name_column": parameter(name_column, "user" if supplied_columns["name"] else "agent_inferred", name_column is not None),
         "ra_column": parameter(ra_column, "user" if supplied_columns["ra"] else "agent_inferred", ra_column is not None),
         "dec_column": parameter(dec_column, "user" if supplied_columns["dec"] else "agent_inferred", dec_column is not None),
+        "coordinates": parameter((inspection or {}).get("coordinates") or coordinates or {}, "user" if coordinates else "agent_inferred", True),
         "weight_mode": parameter(weight_mode, "user" if weight_mode is not None else None, weight_mode is not None),
         "weight_column": parameter(weight_column, "user" if weight_column is not None else None, weight_column is not None),
         "weight_meaning": parameter(weight_meaning, "user" if weight_meaning is not None else None, weight_meaning is not None),
@@ -171,6 +180,11 @@ def validate_planning_values(source_count: int, gamma: Optional[float], weight_m
 def validate_source_values(sources: List[Dict[str, Any]], errors: List[str]) -> None:
     for index, source in enumerate(sources, start=1):
         try:
+            source.update(canonical_source(source))
+        except CoordinateError as exc:
+            errors.append("source %d coordinates: %s" % (index, exc))
+            continue
+        try:
             ra_deg = float(source.get("ra_deg"))
             dec_deg = float(source.get("dec_deg"))
         except (TypeError, ValueError):
@@ -201,9 +215,11 @@ def combined_questions(task: Dict[str, Any], errors: List[str]) -> List[str]:
         elif "manual weights" in error:
             questions.append("Provide one finite non-negative manual weight per source, with a positive total.")
         elif "coordinate" in error or " RA " in error or " Dec " in error:
-            questions.append("Correct the source coordinates or catalog coordinate columns before execution.")
+            questions.append(error)
         elif "column" in error:
             questions.append("Correct or identify the required catalog column before execution.")
+        else:
+            questions.append(error)
     return list(dict.fromkeys(questions))
 
 
@@ -220,7 +236,11 @@ def source_from_single_row_catalog(task: Dict[str, Any], repo_root: Path) -> Dic
     name_column = parameters["name_column"]["value"]
     ra_column = parameters["ra_column"]["value"]
     dec_column = parameters["dec_column"]["value"]
-    return {"name": row.get(name_column, "source_0001") if name_column else "source_0001", "ra_deg": float(row[ra_column]), "dec_deg": float(row[dec_column])}
+    name = row.get(name_column, "source_0001") if name_column else "source_0001"
+    settings = parameters.get("coordinates", {}).get("value")
+    if settings:
+        return catalog_source(row, name, settings)
+    return {"name": name, "ra_deg": float(row[ra_column]), "dec_deg": float(row[dec_column])}
 
 
 def revalidate_task_plan(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any]:
@@ -254,7 +274,15 @@ def revalidate_task_plan(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any
             parameters.get("ra_column", {}).get("value"),
             parameters.get("dec_column", {}).get("value"),
             parameters.get("weight_column", {}).get("value") if parameters.get("weight_mode", {}).get("value") == "column" else None,
+            parameters.get("coordinates", {}).get("value"),
         )
+        if inspection.get("coordinates"):
+            parameters.setdefault("coordinates", parameter({}, "agent_inferred", True))["value"] = inspection["coordinates"]
+            inferred = inspection["inferred_columns"]
+            for key in ("name", "ra", "dec"):
+                column = inferred.get(key if key == "name" else key + "_deg")
+                if column and parameters.get(key + "_column", {}).get("value") != column:
+                    parameters[key + "_column"] = parameter(column, "agent_inferred", True)
         inputs["inspection"] = inspection
         source_count = int(inspection.get("row_count", 0))
         inputs["source_count"] = source_count
@@ -266,6 +294,10 @@ def revalidate_task_plan(task: Dict[str, Any], repo_root: Path) -> Dict[str, Any
     weight_column = parameters.get("weight_column", {}).get("value")
     manual_weights = parameters.get("manual_weights", {}).get("value")
     if inputs.get("kind") == "inline_sources":
+        settings = parameters.get("coordinates", {}).get("value") or {}
+        for source in inputs.get("sources", []):
+            if "coordinates" in source:
+                source["coordinates"].update(settings)
         validate_source_values(list(inputs.get("sources", [])), errors)
     data_sample = str(parameters.get("data_sample", {}).get("value") or "icecube_public_ps_10yr")
     operation = parameters.get("catalog_operation", {}).get("value") or ("stack" if data_sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")
