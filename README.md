@@ -98,9 +98,12 @@ substantial time, especially large catalog searches and repeated background fits
   densities, not a direct substitution of the energy proxy for neutrino energy.
 - **Spatial+energy** analysis uses both directional and energy information.
   By default it fits the signal count `ns` and spectral index `Gamma`.
-- **Spatial-only** analysis omits the energy term. It uses directional
-  information and fixes `Gamma` to calculate detector acceptance; this Gamma
-  is not a measured source spectrum.
+- **Spatial-only** analysis omits the energy term. For DR2, it assumes
+  `dN/dE` proportional to `(E/E0)^(-2.5)` by default when calculating detector
+  acceptance: `Gamma=2.5` in the paper/SkyLLH convention, or `--gamma -2.5`
+  in the command interface. The spectral index is fixed, not fitted. An explicitly
+  supplied spectrum overrides this default; this Gamma is not a measured source
+  spectrum. DR1 retains its separate recorded spectrum settings.
 - **Time-dependent** analysis also uses event arrival times to test emission
   over a specified or fitted time profile, for example a flare. This capability
   is planned but is not implemented in the current version.
