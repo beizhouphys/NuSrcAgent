@@ -61,3 +61,12 @@ and reports a current measured pilot ETA. Single-source analyses, catalog scans
 and stacking use the same interface; spatial-only computes acceptance without
 energy PDFs. See [requested spectra](requested_spectra.md) for spectrum columns,
 units, support conventions, provenance and current fixed-shape scope.
+
+## General background trials — 2026-10-23
+
+Use `dr2-empirical-scramble --action prepare --baseline-task <id_or_path>` after
+a reviewed DR2 single-source or stacking analysis. Trials inherit its scientific
+settings and import its primary result. The workflow retains checkpointed
+running/stopping/resumption and exports probability, significance, Monte Carlo
+intervals and PNG/PDF figures. Random-catalog generation is no longer a runtime
+operation. See [background trials](dr2_empirical_scrambling.md) for scope and commands.

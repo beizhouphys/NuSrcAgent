@@ -1,7 +1,7 @@
 """Persistent conditional event-RA calibration using the unchanged DR2 LLH.
 
-Observed data and each trial call run_dr2_stacking with the same fitted-ns,
-fitted-Gamma configuration. No PDF optimization or analytic TS calibration.
+Trials inherit the reviewed single-source or stacking configuration,
+including fixed/fitted Gamma, event selections and supplied spectra. No PDF optimization or analytic TS calibration.
 """
 from __future__ import annotations
 
@@ -123,70 +123,155 @@ def _advance_trial_cursor(out, completed):
     write_json(path, control)
 
 
-def prepare(root, out, request, n_trials=100, n_sources=1000, seed=2026091501, workers=2):
-    import numpy as np
+def _load_analysis(root, baseline_task):
+    """Read a sealed primary result without modifying or rerunning its task."""
+    from importlib.metadata import version
+    from agent_core.task_state import load_task, stable_payload_hash
+    from agent_core.agent_orchestrator import build_analysis_payload
+    from agent_core.simple_yaml import load_simple_yaml
+    from agent_core.review import review_run
+    task, task_path = load_task(baseline_task, root)
+    if task['status'] in ('READY', 'RUNNING', 'REVIEWING', 'AWAITING_CONFIRMATION', 'DRAFT'):
+        raise ValueError('Background trials require a reviewed primary analysis')
+    payload = build_analysis_payload(task, root)
+    single = task.get('stages', {}).get('llh', {})
+    stack = task.get('stacking_stages', {}).get('primary', {})
+    files = []
+    if single:
+        checkpoint = Path(single['checkpoint'])
+        if single.get('status') not in ('pass', 'warning') or sha256(checkpoint) != single['checkpoint_sha256']:
+            raise ValueError('Invalid primary checkpoint or review')
+        saved = read_json(checkpoint)
+        if saved['full_request_sha256'] != stable_payload_hash(payload):
+            raise ValueError('Scientific request changed after primary fit')
+        sealed = saved['files_sha256']
+        result = saved['result']
+        folder = Path(saved['run_directory'])
+        files.append(checkpoint)
+    elif stack:
+        if stack.get('status') not in ('COMPLETED', 'COMPLETED_WITH_WARNINGS'):
+            raise ValueError('Stacking primary did not pass review')
+        if stack['request_sha256'] != stable_payload_hash(payload):
+            raise ValueError('Scientific request changed after primary fit')
+        sealed = stack['artifacts_sha256']
+        result = read_json(stack['result_file'])
+        folder = Path(stack['run_directory'])
+    else:
+        if task['status'] not in ('COMPLETED', 'COMPLETED_WITH_WARNINGS'):
+            raise ValueError('No successfully reviewed primary result')
+        folder = Path(task['artifacts']['run_directory'])
+        sealed = {}
+        result = load_simple_yaml((folder/'report.yaml').read_text())['result']
+    for name, expected in sealed.items():
+        if sha256(name) != expected:
+            raise ValueError('Primary artifact changed: '+name)
+    normalized = load_simple_yaml((folder/'config.normalized.yaml').read_text())
+    if normalized['sample'] != 'icecube_public_ps_14yr_dr2' or normalized['time_mode'] != 'time_integrated':
+        raise ValueError('Background trials currently require DR2 time-integrated analysis')
+    if normalized['analysis_type'] not in ('single_source', 'catalog_stacking') or 'TS' not in result:
+        raise ValueError('Require a single-source or stacking result, not a scan maximum')
+    if normalized['analysis_type'] == 'catalog_stacking' and normalized.get('catalog_operation') == 'scan':
+        raise ValueError('Catalog-global scan calibration is not implemented')
+    if review_run(str(folder), str(root), write_artifacts=False)['status'] == 'fail':
+        raise ValueError('Primary analysis failed scientific/artifact review')
+    provenance = load_simple_yaml((folder/'provenance.yaml').read_text())
+    if any(version(name) != expected for name, expected in provenance['packages'].items() if expected is not None):
+        raise ValueError('Primary runtime packages changed')
+    # Orchestration may gain follow-ups; the scientific implementation must match.
+    scientific_code = {name: expected for name, expected in provenance['code_sha256'].items()
+                       if name.startswith('analysis_backend/') or name == 'agent_core/spectrum.py'}
+    for name, expected in {**provenance['input_sha256'], **scientific_code}.items():
+        path = Path(name) if Path(name).is_absolute() else root/name
+        if sha256(path) != expected:
+            raise ValueError('Scientific input/code changed after primary fit: '+name)
+        files.append(path)
+    files.extend(path for path in folder.iterdir() if path.is_file())
+    return task, normalized, result, files
+
+
+def prepare(root, out, request, n_trials=100, seed=2026091501, workers=2,
+            baseline_task=None, continuous=False):
+    """Prepare matched event-RA trials for an existing reviewed analysis."""
     root, out = Path(root).resolve(), Path(out).resolve()
-    if not request.strip() or n_trials < 1 or n_sources < 1 or workers < 1 or seed < 0:
+    if not baseline_task:
+        raise ValueError('prepare requires --baseline-task')
+    if not request.strip() or n_trials < 1 or workers < 1 or seed < 0:
         raise ValueError('Require request, positive counts and nonnegative seed')
-    if (out/'task.json').exists():
-        raise ValueError('Task already exists; use report or resume')
-    release = verify_v3_release(root)
-    rng = np.random.default_rng(seed)
-    catalog = [dict(name=f'random_{i+1:04d}', ra_rad=float(ra), dec_rad=float(dec), w_model=1./n_sources)
-               for i, (ra, dec) in enumerate(zip(rng.uniform(0, 2*np.pi, n_sources),
-                                                np.arcsin(rng.uniform(-1, 1, n_sources)), strict=True))]
-    # Separate deterministic streams for catalog coordinates, event RA and optimizer RNG.
-    children = np.random.SeedSequence(seed).spawn(n_trials + 1)
-    trial_seeds = [int(s.generate_state(1)[0]) for s in children]
-    if len(set(trial_seeds)) != len(trial_seeds):
-        raise ValueError('Seed collision')
-    config = dict(n_trials=n_trials, n_sources=n_sources, catalog_seed=seed,
-                  event_seeds=trial_seeds[1:], fit_seed=trial_seeds[0], workers=workers,
-                  numerical_threads_per_worker=1, sample='icecube_public_ps_14yr_dr2',
-                  data_selection='full14', likelihood_mode='spatial_energy', gamma_mode='fitted',
-                  gamma=3., gamma_min=1., gamma_max=6., ns_seed=10., ns_max=10000.,
-                  fit_procedure='skyllh_lbfgs_v1',
-                  weight_mode='uniform', sky='full_sky', background_pdf_version='v3',
-                  randomization='independent uniform event RA; other event quantities preserved',
-                  negative_ts_policy='discard_without_record',
-                  hypothesis_family='one prespecified fixed-catalog stack; no individual-source scan',
-                  p_estimator='(k+1)/(N+1); inclusive TS >= observed',
-                  mc_intervals='Clopper-Pearson 68% and 95% for conditional tail probability',
-                  stopping_rule='fixed N; operational pause/resume allowed; no significance stopping')
+    if out.exists() and any(out.iterdir()):
+        raise ValueError('Output directory must be new or empty; existing trials are unchanged')
+    baseline, normalized, observed, paths = _load_analysis(root, baseline_task)
+    if observed.get('background_pdf_version') != 'v3':
+        raise ValueError('New follow-ups require the production frozen v3 PDFs')
+    verify_v3_release(root)
+    source_specs = [dict(name=row['name'], ra_rad=row['ra_rad'], dec_rad=row['dec_rad'], w_model=row['weight'])
+                    for row in normalized['sources']]
+    bounds = observed['fit_bounds']
+    seeds = observed['fit_seeds']
+    fitted = normalized['gamma_mode'] == 'fitted'
+    gamma_bounds = bounds['gamma_skyllh'] if fitted else [1., 6.]
+    options = dict(likelihood_mode=normalized['likelihood_mode'], gamma_mode=normalized['gamma_mode'],
+        gamma=seeds['gamma_skyllh'] if fitted else (observed['gamma'] if observed['gamma'] is not None else 0.),
+        gamma_min=gamma_bounds[0], gamma_max=gamma_bounds[1], ns_seed=seeds['ns'], ns_max=bounds['ns'][1],
+        random_seed=normalized['random_seed'], fit_procedure=observed['fit_procedure'],
+        data_selection=observed['data_selection'], background_pdf_version=observed['background_pdf_version'],
+        event_abs_dec_max_deg=normalized.get('event_abs_dec_max_deg'),
+        event_dec_min_deg=normalized.get('event_dec_min_deg'), event_dec_max_deg=normalized.get('event_dec_max_deg'),
+        source_dec_window_deg=normalized.get('source_dec_window_deg') if normalized['analysis_type']=='single_source' else None,
+        signal_energy_gamma_interpolation=observed.get('signal_energy_gamma_interpolation'),
+        signal_energy_declination_mode=observed.get('signal_energy_declination_mode') or 'source',
+        spectrum=normalized.get('spectrum') or None)
+    config = dict(n_trials=None if continuous else n_trials, continuous=continuous,
+        n_sources=len(source_specs), catalog_seed=seed, workers=workers, numerical_threads_per_worker=1,
+        sample=normalized['sample'], **{key: options[key] for key in ('data_selection','likelihood_mode','gamma_mode',
+            'gamma','gamma_min','gamma_max','ns_seed','ns_max','fit_procedure','background_pdf_version')},
+        fit_seed=normalized['random_seed'], fit_options=options,
+        weight_mode='inherited_from_primary', negative_ts_policy='discard_without_record',
+        randomization='independent uniform event RA; other event quantities preserved',
+        hypothesis_family='one specified '+('single-source analysis' if normalized['analysis_type']=='single_source' else 'stacking analysis'),
+        analysis_type=normalized['analysis_type'], expected_event_selection=observed['event_selection'],
+        expected_event_counts=observed['event_counts'],
+        stopping_rule='continuous; user-requested graceful stop' if continuous else 'fixed N retained trials',
+        p_estimator='(k+1)/(N+1); inclusive TS >= observed')
     out.mkdir(parents=True, exist_ok=True)
-    write_json(out/'catalog.json', catalog)
-    with (out/'catalog.csv').open('w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['name', 'ra_deg', 'dec_deg', 'w_model'])
-        writer.writerows((s['name'], np.rad2deg(s['ra_rad']), np.rad2deg(s['dec_rad']), s['w_model']) for s in catalog)
-    paths = [root/p for p in release['files']] + [root/BACKGROUND_PDF_PROVENANCE, root/RC1_MANIFEST]
-    data = root/'data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2'
-    for folder in ('events', 'uptime', 'irfs'):
-        paths.extend((data/folder).glob('*.csv'))
-    paths.extend((root/'data_output/signal_energy_pdfs/14yr_dr2').glob('*'))
-    paths += [root/'run_agent_wrap.py', Path(__file__),
-              root/'analysis_backend/skyllh_dr2_stacking.py',
-              root/'analysis_backend/event_pdf_data.py',
-              root/'analysis_backend/skyllh_chunked.py',
-              root/'analysis_backend/skyllh_dr2_pdfs.py',
-              root/'agent_core/dr2_pdf_release.py', out/'catalog.json', out/'catalog.csv']
-    inputs = [dict(path=str(p), sha256=sha256(p)) for p in sorted(set(paths)) if p.is_file()]
-    task = create_task_record(request, 'empirical_background_calibration', 'dr2_empirical_scramble',
-                             'One fixed full-sky random catalog; fitted ns and Gamma in every realization',
-                             {'files': inputs}, {'gamma': parameter(-3., 'system_default', True),
-                             'experiment': parameter(config, 'user', True)})
-    task['parameter_provenance'] = {'fit_bounds_and_initial_values': 'existing project defaults',
-                                   'catalog_and_trial_seeds': 'recorded implementation choice',
-                                   'trial_count': 'proposed total 100; only timing pilot authorized pending runtime estimate',
-                                   'workers': 'user'}
-    task['planned_tools'] = ['run_agent_wrap.py dr2-empirical-scramble']
-    task['request_sha256'] = digest({'config': config, 'inputs': inputs})
-    task['artifacts'] = {'output_directory': str(out)}
-    central = save_task(task, root)
-    task['central_task_path'] = str(central)
-    write_json(central, task)
-    write_json(out/'task.json', task)
-    return dict(task_id=task['task_id'], status=task['status'], request_sha256=task['request_sha256'], config=config)
+    write_json(out/'catalog.json', source_specs)
+    with (out/'catalog.csv').open('w', newline='') as stream:
+        import numpy as np
+        writer=csv.writer(stream);writer.writerow(['name','ra_deg','dec_deg','w_model'])
+        writer.writerows((row['name'], np.rad2deg(row['ra_rad']), np.rad2deg(row['dec_rad']), row['w_model']) for row in source_specs)
+    write_json(out/'baseline_task.json', baseline)
+    # Freeze source/settings snapshots and all runtime code, inputs and responses.
+    paths += [root/'run_agent_wrap.py', *list((root/'agent_core').glob('*.py')),
+              *list((root/'analysis_backend').glob('*.py')),
+              out/'catalog.json', out/'catalog.csv', out/'baseline_task.json']
+    if observed.get('spectrum_response'):
+        from analysis_backend.spectrum_response import verify_response
+        response_path=Path(observed['spectrum_response']['manifest'])
+        response=verify_response(response_path)
+        paths += [response_path, *(Path(row['file']) for row in response['datasets'])]
+    inputs=[dict(path=str(path),sha256=sha256(path)) for path in sorted(set(paths)) if path.is_file()]
+    task=create_task_record(request, 'empirical_background_calibration', 'dr2_empirical_scramble',
+        'Matched event-RA trials for a reviewed '+normalized['analysis_type'], {'files':inputs},
+        {'gamma':parameter(-options['gamma'],'inherited',True), 'experiment':parameter(config,'user',True)})
+    task['baseline_analysis']=dict(task_id=baseline['task_id'], snapshot=str(out/'baseline_task.json'),
+        primary_warnings=baseline.get('single_source_llh_summary',{}).get('warnings',[]) or
+                         baseline.get('stacking_stages',{}).get('primary',{}).get('warnings',[]) or
+                         observed.get('warnings', []))
+    task['parameter_provenance']=dict(scientific_settings='inherited from reviewed primary; only event RA changes',
+        trial_seed='user or recorded default; does not change optimizer RNG', workers='user or recorded default')
+    task['artifacts']={'output_directory':str(out)}
+    task['planned_tools']=['run_agent_wrap.py dr2-empirical-scramble']
+    task['request_sha256']=digest({'config':config,'inputs':inputs})
+    central=save_task(task,root);task['central_task_path']=str(central)
+    write_json(out/'control.json',dict(stop_requested=False,next_trial_index=0))
+    row=dict(index=-1,trial_id='observed',kind='observed',request_sha256=task['request_sha256'],
+        event_ra_scramble_seed=None,result=observed,review=fit_review(observed,config),
+        elapsed_seconds=0.,completed_at_utc=utc_now(),primary_maximization_repeated=False)
+    if row['review']['status']=='fail':
+        raise ValueError('Imported primary result failed trial review: '+str(row['review']))
+    write_json(out/'fits/observed.json',row)
+    write_json(central,task);write_json(out/'task.json',task)
+    return dict(task_id=task['task_id'],status=task['status'],request_sha256=task['request_sha256'],
+        baseline_task_id=baseline['task_id'],observed_imported=True,config=config)
 
 
 def fit_review(result, config):
@@ -195,22 +280,32 @@ def fit_review(result, config):
     if (config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'
             or result.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'):
         failures.append('unsupported or inconsistent fit procedure')
-    for name in ('TS', 'ns', 'gamma'):
+    for name in (('TS', 'ns') if config.get('fit_options', {}).get('spectrum') else ('TS', 'ns', 'gamma')):
         if not math.isfinite(result[name]):
             failures.append(f'nonfinite {name}')
-    if result['TS'] < 0 or not 0 <= result['ns'] <= config['ns_max'] or not config['gamma_min'] <= result['gamma'] <= config['gamma_max']:
+    if (result['TS'] < 0 or not 0 <= result['ns'] <= config['ns_max'] or
+            (config.get('gamma_mode', 'fitted') == 'fitted' and not config['gamma_min'] <= result['gamma'] <= config['gamma_max'])):
         failures.append('fit outside constrained domain')
     if result['minimizer_status'].get('warnflag', -1) != 0:
         failures.append('optimizer did not converge')
-    if (result['gamma_mode'] != 'fitted' or
+    if (result['gamma_mode'] != config.get('gamma_mode', 'fitted') or
             result['background_pdf_version'] != config['background_pdf_version']):
         failures.append('wrong Gamma mode or background version')
-    if result['n_sources'] != config['n_sources'] or result['event_selection'] != 'all_events':
+    if result['n_sources'] != config['n_sources'] or result['event_selection'] != config.get('expected_event_selection', 'all_events'):
         failures.append('wrong catalog size or event selection')
-    if min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
+    if config.get('gamma_mode', 'fitted') == 'fitted' and min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
         warnings.append('Gamma at fit boundary; not a precise spectral measurement')
     if abs(result['ns']-config['ns_max']) < 1e-5:
         warnings.append('ns at upper boundary')
+    if 'fit_options' in config:
+        options = config['fit_options']
+        for key in ('likelihood_mode', 'signal_energy_gamma_interpolation', 'spectrum'):
+            if (result.get(key) or None) != (options.get(key) or None):
+                failures.append('changed '+key)
+        if result['event_counts'] != config['expected_event_counts']:
+            failures.append('changed event counts')
+        if result.get('fit_bounds', {}).get('ns') != [0., options['ns_max']]:
+            failures.append('changed ns bounds')
     return dict(status='fail' if failures else ('warning' if warnings else 'pass'), failures=failures, warnings=warnings)
 
 
@@ -273,6 +368,9 @@ def fit_one(root, out, config, request_hash, index):
     label = 'observed' if index < 0 else f'trial_{index:04d}'
     started = time.monotonic()
     def evaluate():
+        if 'fit_options' in config:
+            return run_dr2_stacking(read_json(out/'catalog.json'), repo_root=root,
+                event_ra_scramble_seed=event_seed_for_index(config, index), **config['fit_options'])
         return run_dr2_stacking(read_json(out/'catalog.json'), repo_root=root,
             likelihood_mode='spatial_energy', gamma_mode='fitted', gamma=config['gamma'],
             gamma_min=config['gamma_min'], gamma_max=config['gamma_max'],
@@ -425,6 +523,9 @@ def report(out, persist=True):
         if not skipped:
             result.pop('skipped_negative_ts_fits')
         result['negative_ts_policy'] = config['negative_ts_policy']
+    if 'baseline_analysis' in task:
+        result['baseline_analysis']=task['baseline_analysis']
+        result['hypothesis_family']=config['hypothesis_family']
     if rows:
         average = sum(r['elapsed_seconds'] for r in rows)/len(rows)
         result['mean_fit_seconds'] = average
@@ -480,6 +581,9 @@ def _run_locked(root, out, resume, max_hours, max_fits):
             raise ValueError('Input/code changed: '+item['path'])
     verify_background_release(root, config['background_pdf_version'])
     prior = report(out)
+    if (out/'control.json').exists():
+        control=read_json(out/'control.json');control['stop_requested']=False
+        write_json(out/'control.json',control)
     if prior['failed_fits']:
         raise ValueError('Failed fit needs scientific review; no automatic retry')
     for name in THREAD_VARIABLES:
@@ -510,6 +614,10 @@ def _run_locked(root, out, resume, max_hours, max_fits):
                                  max_tasks_per_child=1) as pool:
             offset = 0
             while offset < len(pending):
+                if (out/'control.json').exists() and read_json(out/'control.json').get('stop_requested'):
+                    task['status']='PAUSED'
+                    task['pause_reason']='User-requested graceful stop after in-flight fits checkpointed'
+                    break
                 if max_fits is not None and offset >= max_fits:
                     task['status'] = 'PAUSED'
                     task['pause_reason'] = 'Operational fit limit; ensemble remains incomplete'
@@ -571,7 +679,7 @@ def _run_locked(root, out, resume, max_hours, max_fits):
         write_json(Path(task['central_task_path']).parent/'agent_review.json', review)
         task['completion'] = dict(status=task['status'], review=review)
         persist()
-    return summary
+    return snapshot(out)
 
 
 def prepare_continuous(root, out, parent_directory, request, workers=2):
@@ -588,7 +696,7 @@ def prepare_continuous(root, out, parent_directory, request, workers=2):
     if parent_task['status'] != 'PAUSED':
         raise ValueError('Parent timing pilot must be PAUSED before protocol amendment')
     parent_config = parent_task['parameters']['experiment']['value']
-    if parent_config.get('background_pdf_version') != 'v3' or parent_config.get('gamma_mode') != 'fitted':
+    if parent_config.get('background_pdf_version') != 'v3':
         raise ValueError('Parent task is not the required fitted-Gamma v3 calibration')
     verify_v3_release(root)
     out.mkdir(parents=True, exist_ok=False)
@@ -1223,7 +1331,7 @@ def _validate_task_inputs(root, out, task):
     if config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1':
         raise ValueError('Unsupported empirical fit procedure; existing checkpoints are unchanged')
     expected = digest({'config': config, 'inputs': task['inputs']['files'],
-                       'parent_request_sha256': task['parent_task']['request_sha256']})
+                       **({'parent_request_sha256': task['parent_task']['request_sha256']} if 'parent_task' in task else {})})
     if expected != task['request_sha256']:
         raise ValueError('Continuous configuration hash mismatch')
     for item in task['inputs']['files']:
@@ -1412,6 +1520,8 @@ def plot_snapshot(out):
     path = out/'ts_background_snapshot.png'
     temporary = out/f'ts_background_snapshot.{os.getpid()}.tmp.png'
     figure.savefig(temporary, dpi=170)
+    pdf_path=out/'ts_background_snapshot.pdf'
+    figure.savefig(pdf_path)
     plt.close(figure)
     temporary.replace(path)
     return str(path)
@@ -1447,8 +1557,11 @@ def write_snapshot_exports(out, result):
         f"- Catalog SHA-256: `{sha256(out/'catalog.json')}`",
         f"- Workers: `{config['workers']}`; numerical threads per worker: `{config['numerical_threads_per_worker']}`",
         f"- Completed background trials: `{result['completed_trials']}`",
-        f"- Failed fits: `{len(result['failed_fits'])}`", '',
+        f"- Failed fits: `{len(result['failed_fits'])}`",
+        f"- Hypothesis: {config.get('hypothesis_family', 'one specified stacking analysis')}", '',
     ]
+    if task.get('baseline_analysis', {}).get('primary_warnings'):
+        lines += ['Primary-analysis warnings: '+str(task['baseline_analysis']['primary_warnings']), '']
     if _discard_negative_ts(config):
         lines += ['- Background TS < 0 policy: discard without recording the fit.', '']
     elif 'skipped_negative_ts_fits' in result:
@@ -1459,7 +1572,7 @@ def write_snapshot_exports(out, result):
             '## Result', '',
             f"- Observed TS: `{observed['TS']:.12g}`",
             f"- Observed ns: `{observed['ns']:.12g}`",
-            f"- Observed Gamma: `{observed['gamma']:.12g}`",
+            f"- Observed Gamma: `{observed['gamma']}`",
             f"- Exceedances: `{stats['exceedances']}` of `{stats['n_trials']}`",
             f"- Empirical pre-trial p-value: `{stats['p_pre']:.12g}`",
             f"- Empirical post-trial p-value: `{stats['p_post']:.12g}`",
@@ -1496,6 +1609,7 @@ def snapshot(out):
     result = report(out)
     if result.get('observed_complete') and result.get('completed_trials', 0):
         result['plot'] = plot_snapshot(out)
+        result['plot_pdf'] = str(Path(out).resolve()/'ts_background_snapshot.pdf')
     if (Path(out)/'launch.json').exists():
         result['launch'] = read_json(Path(out)/'launch.json')
     result['exports'] = write_snapshot_exports(out, result)

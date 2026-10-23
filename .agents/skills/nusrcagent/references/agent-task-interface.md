@@ -71,3 +71,16 @@ to continue, and end the turn. After the user replies, use the same task with
 Do not launch flux from the first turn or fabricate the reply. Report reviewed
 flux quantities and figures in the next final answer. Multiple pending tasks
 must be selected from conversation context; ask only if the selection is unclear.
+
+## Background-trial continuation
+
+A reviewed DR2 single-source or stacking primary can be followed by
+`dr2-empirical-scramble --action prepare --baseline-task <task_id_or_path>`.
+Choose a new output directory and the agreed trial budget or `--continuous`.
+Preparation creates a separate READY task, imports the primary result without
+rerunning its maximization, and inherits its scientific settings. It leaves
+the original analysis and its flux gate unchanged. Run fixed-N trials with
+`--action run`; launch a continuous task with `--action launch`. Snapshot,
+graceful stop and resume preserve completed checkpoints and deterministic
+seed allocation. Statistics cover only the specified source or stack, not a
+catalog-scan maximum. See the background-trial guide for interval conventions.

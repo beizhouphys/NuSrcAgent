@@ -52,7 +52,7 @@ def main(argv=None) -> int:
                     raise ValueError("DR2 preflight failed")
             if args.action == "prepare":
                 result = prepare(repo_root, args.output_directory, args.request, args.n_trials,
-                                 args.n_sources, args.seed, args.workers)
+                                 args.seed, args.workers, args.baseline_task, args.continuous)
             elif args.action == "prepare-continuous":
                 result = prepare_continuous(repo_root, args.output_directory, args.parent_directory,
                                             args.request, args.workers)
@@ -325,7 +325,7 @@ def build_parser() -> argparse.ArgumentParser:
     source.add_argument("--bundle-dir", help="Use local asset files instead of downloading")
     source.add_argument("--base-url", help="Explicit HTTPS mirror for the same hash-pinned bundle filenames")
 
-    empirical = subparsers.add_parser("dr2-empirical-scramble", help="Conditional event-RA calibration with fitted ns and Gamma; checkpointed fixed-N or continuous ensemble.")
+    empirical = subparsers.add_parser("dr2-empirical-scramble", help="Matched event-RA background trials for a reviewed DR2 single-source or stacking task.")
     empirical.add_argument("--action", choices=["prepare", "prepare-continuous", "prepare-versioned",
                                                 "prepare-shard", "aggregate-shards", "merge-shards", "run", "launch",
                                                 "resume", "report", "status", "snapshot", "stop"], required=True)
@@ -339,7 +339,8 @@ def build_parser() -> argparse.ArgumentParser:
     empirical.add_argument("--import-reference-fits", action="store_true")
     empirical.add_argument("--request", default="")
     empirical.add_argument("--n-trials", type=int, default=100)
-    empirical.add_argument("--n-sources", type=int, default=1000)
+    empirical.add_argument("--baseline-task", help="Reviewed single-source or stacking task ID/path; required for prepare.")
+    empirical.add_argument("--continuous", action="store_true", help="Prepare without a preset trial cap; stop gracefully on request.")
     empirical.add_argument("--seed", type=int, default=2026091501)
     empirical.add_argument("--workers", type=positive_worker_count, default=2)
     empirical.add_argument("--max-hours", type=float, default=2.)

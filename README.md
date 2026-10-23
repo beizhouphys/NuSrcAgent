@@ -49,12 +49,13 @@ substantial time, especially large catalog searches and repeated background fits
    significance requires background trials; an estimate strictly above 2 sigma
    receives an explicit reminder that trials are needed. Ordinary fits do not
    start trials automatically. A separate, checkpointed event-right-ascension
-   trial workflow supports progress snapshots and stopping/resumption for its
-   documented, prespecified random-catalog stack. It repeats the observed fit,
-   reports an empirical p-value and significance with Monte Carlo uncertainty,
-   and retains the same catalog, weights, PDFs and fit procedure. It does not
-   currently provide general calibration for arbitrary sources, user catalogs
-   or source-scan maxima. See [background trials](docs/dr2_empirical_scrambling.md).
+   trial workflow follows an existing reviewed DR2 single-source analysis or
+   stacking analysis, retaining its sources, weighting factors, event selection,
+   spectrum, PDFs and fitting procedure. It reports empirical p-value and
+   significance, 68%/95% Monte Carlo intervals and trial-distribution figures,
+   with checkpoints, stopping and resumption. Catalog-scan maxima and
+   time-dependent trials remain outside this workflow.
+   See [background trials](docs/dr2_empirical_scrambling.md).
 
 ## What analyses can I run?
 
@@ -277,9 +278,8 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   be read in the report; results are preliminary. Failed reviews are not valid results.
   At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,
   not a measured spectrum.
-- The existing background-trial procedure is limited to its documented
-  random-catalog stack; it cannot simply be used to calibrate any new catalog
-  or these examples. Time-dependent analysis is not available yet.
+- Background trials can follow a reviewed DR2 single-source or stacking
+  analysis. Catalog-scan maxima and time-dependent trials remain unavailable.
 
 See [scientific status](docs/scientific_status.md) and the
 [fixed scientific baseline](docs/release_scientific_baseline.md) before interpreting outputs.

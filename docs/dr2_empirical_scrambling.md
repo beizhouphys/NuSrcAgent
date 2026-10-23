@@ -1,39 +1,55 @@
-# Estimating significance with event-RA background trials
+# DR2 empirical event-RA calibration
 
-A fitted TS is not a probability. Background trials estimate how often a
-background-only data realization gives a TS at least as large as the observed
-one. Here the realizations are made by randomizing each event's right ascension
-(RA), under the time-integrated uniform-RA background assumption.
+A background-trial calculation estimates how often background alone gives a
+TS at least as large as the observed fit. It is distinct from fitting the
+observed data: ordinary single-source/scan/stack commands do not perform these
+trials. Event RA means right ascension. The procedure below randomizes it under
+the time-integrated uniform-RA background assumption, while keeping other event
+quantities and the chosen analysis fixed.
 
-## Current scope
+The public `dr2-empirical-scramble` workflow follows a reviewed DR2
+single-source analysis or stacking analysis. It imports the observed primary
+result without another maximization and freezes its source list, weighting
+factors, event selection, spectrum, PDFs, interpolation, fit bounds, initial
+values and optimizer random seed. Fixed/fitted Gamma, spatial+energy and
+spatial-only modes retain their original settings. A fixed supplied spectrum
+retains its shape without fitting a fictitious PL Gamma.
 
-The existing `dr2-empirical-scramble` interface prepares a prespecified random
-catalog stack with uniform intrinsic weights, full14 data and frozen v3. It fits
-ns and Gamma for observed data and every trial, preserving the same LLH/PDFs.
-It is not a general user-catalog or source-scan post-trial calibration interface.
-Choose the trial count, seeds, hypotheses and stopping strategy before running.
+```bash
+.venv/bin/python run_agent_wrap.py dr2-empirical-scramble \
+  --action prepare --baseline-task <analysis_task_id_or_path> \
+  --output-directory <new_directory> --n-trials 100 --workers 2 \
+  --seed 20261023 --request "Calibrate this specified analysis with 100 background trials"
+.venv/bin/python run_agent_wrap.py dr2-empirical-scramble \
+  --action run --output-directory <new_directory>
+```
 
-This is a separate calculation, not a step automatically performed by the
-ordinary `run` command. The worked single-source and three-source examples do
-not run these trials, and this specialized interface does not calibrate them.
+`prepare` checks primary scientific/artifact review, sealed primary artifacts,
+scientific code/input hashes and package versions, and creates a `READY` task.
+It does not run trials or modify the original analysis. A primary result at
+`AWAITING_FLUX` can be used; flux calculation is independent and still requires
+the user's separate continuation reply. The trial seed controls event RA;
+the optimizer keeps the original analysis random seed. Existing source
+coordinates and weighting factors are never replaced by random sources.
 
-## Preparing a new background-trial calculation
+For continuous trials, replace `--n-trials 100` with `--continuous` during
+preparation, then use `--action launch`. No ending time is set. `status` and
+`snapshot` export completed-trial statistics, `stop` is graceful, and `resume`
+continues with unused deterministic trial indices. Fixed-N runs also support
+`--max-fits` for an operational pilot and later `resume`; a pilot is not a
+precision significance measurement. Choose the trial budget or stopping rule
+before production. Changing inputs/code blocks continuation rather than
+rewriting existing checkpoints.
 
-Read the [scientific status](scientific_status.md) and
-[frozen v3 definition](dr2_v3_release.md), then check the selected catalog,
-weights, event cuts and hypothesis family against the current request. Record
-input fingerprints and the approved fit settings. Ask about unresolved choices
-that materially change the calculation; historical examples do not authorize
-a new run. Use `.venv/bin/python run_agent_wrap.py`; the environment check must
-pass and the persistent task must reach `READY` before execution.
-
-For the supported random-catalog stack, a separately authorized small timing
-pilot can assess runtime and memory on the actual catalog and worker setup.
-It does not precisely measure a tail probability. Choose the production trial
-count or stopping strategy and Monte Carlo precision in advance; do not stop
-solely because a target significance has been reached. Do not choose among PDF
-versions using their resulting p-values. These preparation requirements do not
-extend the interface to arbitrary user catalogs or source scans.
+Outputs include `background_trials.csv`, `results_snapshot.md`,
+`ts_background_snapshot.png` and `.pdf`, plus machine-readable snapshots,
+per-fit reviews and provenance. Both p-value and one-sided significance include
+68%/95% fixed-N Clopper-Pearson intervals and anytime-valid confidence sequences.
+Primary warnings remain visible. Ordinary fits do not launch trials automatically.
+The selected hypothesis is one specified single-source analysis or stacking
+analysis; a stacking component of `scan_and_stack` calibrates only that stack.
+This does not calibrate the largest TS from a catalog scan, choices among
+weighting schemes/cuts, DR1, or time-dependent searches.
 
 ## What is randomized?
 
@@ -79,13 +95,11 @@ at it; an ordinary fixed-N interval alone does not cover that stopping procedure
 
 New tasks follow the owner-approved discard-without-record rule for negative-TS
 background fits. Its possible bias must be reviewed before interpreting the
-retained ensemble as a calibrated null distribution. No significance claim for
-an arbitrary catalog is justified by this implementation's historical runs.
+retained ensemble as a calibrated null distribution. Historical random-catalog trials do not calibrate a different source/catalog hypothesis.
 
 Report observed TS, fitted ns/Gamma, the trial TS distribution, K/N, p-value
 and intervals, one-sided significance, fit boundaries, failures, runtime and
 the input/fit/review records. Disclose any choices informed by observed results:
 freezing them afterwards does not remove selection bias. Several catalog,
-weight or cut choices require trials covering that selection; the current
-fixed-stack interface does not provide that general correction. PDF tuning,
+weight or cut choices require trials covering that selection; this specified-analysis workflow does not provide that general correction. PDF tuning,
 signal injections and time-dependent trials require separately defined work.

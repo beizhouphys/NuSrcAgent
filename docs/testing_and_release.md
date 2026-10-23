@@ -291,3 +291,22 @@ and after, and have identical hashes across all four copies. Colors, labels and
 point counts are unchanged. Spectrum PNGs were visually inspected; PNG, vector
 PDF and SVG exports were verified. This rendering change reruns no LLH fit or
 background trial and does not overwrite historical figures or numerical products.
+
+## General background-trial follow-up — 2026-10-23
+
+Background trials can follow a reviewed DR2 time-integrated single-source or
+stacking primary through `dr2-empirical-scramble --action prepare --baseline-task`.
+Scientific settings and the observed result are inherited. Fixed/fitted Gamma,
+spatial+energy/spatial-only modes retain their original definitions. Ordinary
+fits still execute zero trials; a stack from `scan_and_stack` calibrates only
+that stack. Catalog-scan maxima, DR1 and time-dependent trials are excluded.
+Outputs include empirical probability/significance, 68%/95% fixed-N and
+anytime-valid Monte Carlo intervals, PNG/PDF figures and resumable checkpoints.
+
+Owner verification passed 385 unit tests, 27 golden cases and input hash checks.
+Real single-source and weighted two-source scan/stack runs exercised fitted-Gamma
+trials, pause/resume, immutable primary/checkpoint records and statistical/figure
+exports. A fixed-Gamma spatial-only run verified continuous launch and graceful
+stop. Small regression ensembles do not establish precision significance or
+parameter coverage. Random-catalog generation is owner-only testing code;
+historical ensembles and their seed mappings remain unchanged.
