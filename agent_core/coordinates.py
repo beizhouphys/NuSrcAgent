@@ -50,10 +50,17 @@ def convert_coordinates(longitude, latitude, **spec):
         lon_deg, lat_deg = float(lon.degree), float(lat.degree)
     except (TypeError, ValueError, u.UnitsError) as exc:
         raise CoordinateError("Cannot parse the supplied sky coordinates with the specified units: %s" % exc) from exc
-    if not math.isfinite(lon_deg) or not 0 <= lon_deg < 360:
-        raise CoordinateError("Coordinate longitude/RA must be finite and in [0, 360) degrees (or equivalent units).")
+    if not math.isfinite(lon_deg):
+        raise CoordinateError("Coordinate longitude/RA must be finite.")
     if not math.isfinite(lat_deg) or not -90 <= lat_deg <= 90:
         raise CoordinateError("Coordinate latitude/Dec must be finite and in [-90, 90] degrees (or equivalent units).")
+    longitude_period = {"deg": 360., "rad": math.tau, "hourangle": 24.}[spec["longitude_unit"]]
+    longitude_native = float(lon.to_value(u.Unit(spec["longitude_unit"])))
+    wrapped = not 0 <= longitude_native < longitude_period
+    if wrapped:
+        lon = Angle(longitude_native % longitude_period, unit=u.Unit(spec["longitude_unit"]))
+        lon_deg = float(lon.degree)
+    lon_deg %= 360
     if spec["frame"] == "icrs":
         # Preserve explicitly supplied degree RA/Dec without a round trip.
         ra_deg, dec_deg = lon_deg, lat_deg
@@ -63,6 +70,8 @@ def convert_coordinates(longitude, latitude, **spec):
     provenance = dict(spec, longitude=longitude, latitude=latitude,
                       output_frame="icrs", ra_deg=ra_deg, dec_deg=dec_deg,
                       method="astropy.coordinates", astropy_version=astropy_version)
+    if wrapped:
+        provenance["longitude_wrapped_deg"] = lon_deg
     return dict(ra_deg=ra_deg, dec_deg=dec_deg, coordinate_input=provenance)
 
 
