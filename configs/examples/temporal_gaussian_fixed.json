@@ -1,0 +1,12 @@
+{
+  "profile": "gaussian",
+  "time_format": "mjd",
+  "time_scale": "ut1",
+  "background_time_model": "uniform_livetime",
+  "t0": {
+    "value": 57000.0
+  },
+  "width": {
+    "value": 65.0
+  }
+}

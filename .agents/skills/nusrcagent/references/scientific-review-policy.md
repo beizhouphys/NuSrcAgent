@@ -94,3 +94,14 @@ catalog correction does not imply empirical calibration or parameter coverage.
 
 
 Owner reporting policy, 2026-10-19: the interpolation-switch detail and the two method-qualification flags remain in numerical metadata, not in default answers, readable reports or captions. They do not generate warnings or block COMPLETED. Explain them when requested. Other fit, bounds, input and artifact checks remain active. The TS > 9 measurement workflow is for single-source analysis only; catalog scans keep their current procedure.
+
+## Time-dependent exception to analytic significance reporting
+
+DR2 time-dependent single-source analysis and catalog scans require a recorded
+Gaussian/box model, fixed/fitted t0 and width, explicit search settings and
+uniform-livetime background assumption. Check time-profile normalization and
+detector fractions, convergence, source identity/order and artifact hashes.
+Do not apply time-integrated analytic p-values or catalog corrections. Calibration
+remains unavailable, and no time-dependent background trials may execute before
+the owner approves the scrambling method. Deterministic validation does not
+establish significance, parameter coverage or a global search maximum.

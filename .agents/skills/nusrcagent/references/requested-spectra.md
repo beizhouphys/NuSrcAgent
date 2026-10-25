@@ -52,6 +52,7 @@ checks as blocking, not as permission to change the spectrum. Prepare a response
 on one host; do not write the same Dropbox cache directory from multiple hosts.
 
 DR1 remains spatial-only and uses its original acceptance integration with the
-requested shape; no energy-PDF term is introduced. Existing time-dependent
-execution limitations remain. Any corresponding trials must retain the same
+requested shape; no energy-PDF term is introduced. DR2 time-dependent
+single-source analysis and catalog scans use the same spectrum response with
+temporal acceptance; time-dependent stacking and flux/fluence remain pending. Any corresponding trials must retain the same
 spectrum/response and observed fit procedure; this feature never starts trials.

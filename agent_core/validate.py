@@ -89,11 +89,24 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         elif config.analysis.likelihood_mode == "spatial_energy" and config.stacking.gamma_mode == "fitted" and config.analysis.gamma_bounds is None and not -4.0 <= config.stacking.spectral_indices[0] <= -1.0:
             result.errors.append("the default DR2 fitted-Gamma range requires a seed in [-4, -1]")
 
-    if config.analysis.time_mode != "time_integrated":
-        result.errors.append("only time_integrated analysis is supported in this Phase 0 scaffold")
-    if config.background.method != "ra_scramble":
+    if config.analysis.time_mode not in {"time_integrated", "time_dependent"}:
+        result.errors.append("analysis.time_mode must be time_integrated or time_dependent")
+    if config.analysis.time_mode == "time_dependent":
+        from agent_core.temporal import temporal_errors
+        result.errors.extend(temporal_errors(config.analysis.temporal))
+        if config.data.sample != "icecube_public_ps_14yr_dr2":
+            result.errors.append("Time-dependent analysis currently requires DR2")
+        if config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation != "scan":
+            result.errors.append("Time-dependent stacking awaits collaborator code; select catalog_operation=scan")
+        if confidence is not None or limit_gammas or measurement_threshold is not None or stack_flux:
+            result.errors.append("Time-integrated flux products cannot be used for a time-dependent fit")
+        if config.background.n_trials != 0 or config.background.method != "none":
+            result.errors.append("Time-dependent background trials await owner approval; require method=none and n_trials=0")
+    elif config.analysis.temporal:
+        result.errors.append("Temporal settings require time_mode=time_dependent")
+    if config.analysis.time_mode != "time_dependent" and config.background.method != "ra_scramble":
         result.errors.append("only background.method='ra_scramble' is supported now")
-    if config.background.n_trials <= 0:
+    if config.analysis.time_mode != "time_dependent" and config.background.n_trials <= 0:
         result.errors.append("background.n_trials must be positive")
     event_cut = config.background.event_abs_dec_max_deg
     if event_cut is not None and (not math.isfinite(event_cut) or not 0.0 < event_cut <= 90.0):

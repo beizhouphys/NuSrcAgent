@@ -28,6 +28,8 @@ FLUX_FIELDS = ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measureme
 
 def configure_single_source_stages(task):
     """New wrapper tasks only; historical records keep their execution contract."""
+    if task.get("parameters", {}).get("time_mode", {}).get("value") == "time_dependent":
+        return
     if task["workflow"] != "single_source" or task.get("parameters", {}).get("gaussian_score_baseline", {}).get("value") is not None:
         return
     task["execution_flow"] = FLOW

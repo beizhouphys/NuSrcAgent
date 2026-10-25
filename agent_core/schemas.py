@@ -35,6 +35,7 @@ class AnalysisBlock:
     stacking_flux: dict[str, Any] = field(default_factory=dict)
     spectrum: dict[str, Any] = field(default_factory=dict)
     gamma_bounds: list[float] | None = None
+    temporal: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -118,7 +119,7 @@ class AnalysisConfig:
         default_spectral_index = -2.5 if likelihood_mode == "spatial_only" and sample == "icecube_public_ps_14yr_dr2" else (-3.0 if sample == "icecube_public_ps_14yr_dr2" else -2.53)
         return cls(
             schema_version=str(payload.get("schema_version", "0.1")),
-            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")), flux_upper_limit_cl=optional_float(analysis_payload, "flux_upper_limit_cl"), flux_upper_limit_gammas=[float(value) for value in analysis_payload.get("flux_upper_limit_gammas", [])], flux_measurement_ts_threshold=optional_float(analysis_payload, "flux_measurement_ts_threshold"), fit_procedure=str(analysis_payload.get("fit_procedure", "skyllh_lbfgs_v1")), scan_fit_procedure=optional_str(analysis_payload, "scan_fit_procedure"), signal_energy_gamma_interpolation=optional_str(analysis_payload, "signal_energy_gamma_interpolation"), stacking_flux=analysis_payload.get("stacking_flux", {}), spectrum=analysis_payload.get("spectrum", {}), gamma_bounds=analysis_payload.get("gamma_bounds")),
+            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")), flux_upper_limit_cl=optional_float(analysis_payload, "flux_upper_limit_cl"), flux_upper_limit_gammas=[float(value) for value in analysis_payload.get("flux_upper_limit_gammas", [])], flux_measurement_ts_threshold=optional_float(analysis_payload, "flux_measurement_ts_threshold"), fit_procedure=str(analysis_payload.get("fit_procedure", "skyllh_lbfgs_v1")), scan_fit_procedure=optional_str(analysis_payload, "scan_fit_procedure"), signal_energy_gamma_interpolation=optional_str(analysis_payload, "signal_energy_gamma_interpolation"), stacking_flux=analysis_payload.get("stacking_flux", {}), spectrum=analysis_payload.get("spectrum", {}), gamma_bounds=analysis_payload.get("gamma_bounds"), temporal=analysis_payload.get("temporal", {})),
             data=DataBlock(sample=sample),
             source=parse_source(payload.get("source")),
             sources=parse_sources(payload.get("sources")),
@@ -182,6 +183,7 @@ class NormalizedAnalysis:
     stacking_flux: dict[str, Any] = field(default_factory=dict)
     spectrum: dict[str, Any] = field(default_factory=dict)
     gamma_bounds: list[float] | None = None
+    temporal: dict[str, Any] = field(default_factory=dict)
 
 
 def parse_source(payload: Any) -> SourceBlock | None:

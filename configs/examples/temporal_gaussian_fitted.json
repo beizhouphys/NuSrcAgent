@@ -1,0 +1,33 @@
+{
+  "profile": "gaussian",
+  "time_format": "mjd",
+  "time_scale": "ut1",
+  "background_time_model": "uniform_livetime",
+  "t0": {
+    "bounds": [
+      56900.0,
+      57100.0
+    ],
+    "seeds": [
+      56950.0,
+      57000.0,
+      57050.0
+    ]
+  },
+  "width": {
+    "bounds": [
+      10.0,
+      100.0
+    ],
+    "seeds": [
+      20.0,
+      65.0
+    ]
+  },
+  "search": {
+    "method": "grid_powell_v1",
+    "maxiter": 100,
+    "xtol": 0.0001,
+    "ftol": 1e-05
+  }
+}

@@ -48,8 +48,10 @@ as recorded.
 - DR1 definitions remain unchanged and do not use full14 v3 event tables.
 - Conditional time-integrated event-RA scrambling preserves other event quantities;
   trial count and hypothesis family must be agreed for each actual calibration.
-- Time-dependent scope is planned; its fit/search settings and scrambling require
-  confirmation and implementation/validation before the final release.
+- DR2 time-dependent single-source analysis and catalog scans support explicit
+  Gaussian/box profiles with livetime-dependent acceptance and recorded searches.
+  Time-dependent stacking awaits collaborator code; scrambling requires owner
+  approval and time-search significance calibration remains unavailable.
 
 BSpdf means background spatial probability density. If an event-declination
 cut is requested, this density is normalized over the retained region rather
