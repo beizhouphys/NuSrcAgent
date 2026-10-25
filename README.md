@@ -12,9 +12,11 @@ The tool assumes basic familiarity with physics/astronomy; familiarity with
 AI or software architecture is not required. Start with installation below,
 then run the two [worked examples](docs/quickstart.md).
 
-The current version is `0.2.0`, a time-integrated development version shared
+The current version is `0.2.0`, a development version shared
 through a private repository. Input data and precomputed probability-density
-tables are provided automatically. Time-dependent analysis is not available yet.
+tables are provided automatically. DR2 time-dependent single-source analysis
+and catalog scans support explicit Gaussian/box profiles; time-dependent
+stacking awaits collaborator code.
 
 Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
 and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
@@ -64,7 +66,7 @@ substantial time, especially large catalog searches and repeated background fits
 | DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and Gamma |
 | DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance Gamma; no energy term |
 | DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
-| DR2 time-dependent | Planned single source, catalog scan and stacking | Not implemented in this copy; integration and validation pending |
+| DR2 time-dependent | Single source and individual catalog scan | Gaussian/box profiles; explicit fixed parameters or time searches; stacking awaits collaborator code |
 
 ### Data and analysis terminology
 
@@ -107,7 +109,9 @@ substantial time, especially large catalog searches and repeated background fits
   spectrum. DR1 retains its separate recorded spectrum settings.
 - **Time-dependent** analysis also uses event arrival times to test emission
   over a specified or fitted time profile, for example a flare. This capability
-  is planned but is not implemented in the current version.
+  supports DR2 single-source analysis and independent catalog scans with Gaussian
+  or box profiles. See the [time-dependent guide](docs/time_dependent.md) for
+  explicit search settings and the current calibration limits.
 - **Single source** analysis fits for a neutrino excess at one specified
   sky position.
 - **Individual catalog scan** fits each catalog source independently,
@@ -312,14 +316,14 @@ dataset. Use `--full-sky-events` at task creation for all events, or
 `scan_and_stack` retains its existing event selection. Scans reuse complete
 loaded data and validated PDF tables. [Settings and limitations](docs/single_source_performance.md).
 
-New DR2 spatial+energy single-source tasks also report preliminary one-sided 95% flux upper limits for E^-2, E^-2.5 and E^-3, with a spectrum figure including published NGC 1068 and diffuse uncertainty bands. Use `--no-flux-upper-limits` to omit them; catalog scans enable the per-source limits and figures only with `--flux-upper-limits`. See [flux limits and reference spectra](docs/flux_upper_limits.md) for definitions, units, files and coverage limitations.
+New DR2 time-integrated spatial+energy single-source tasks also report preliminary one-sided 95% flux upper limits for E^-2, E^-2.5 and E^-3, with a spectrum figure including published NGC 1068 and diffuse uncertainty bands. Use `--no-flux-upper-limits` to omit them; catalog scans enable the per-source limits and figures only with `--flux-upper-limits`. See [flux limits and reference spectra](docs/flux_upper_limits.md) for definitions, units, files and coverage limitations.
 
 Catalog scans now automatically report the top five sources with separate local/global
 p value and significance columns, an analytic independent-source catalog correction,
 and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
 See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.
 
-New DR2 spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and free-Gamma flux–Gamma contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
+New DR2 time-integrated spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and free-Gamma flux–Gamma contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
 
 New catalog scans explicitly record the original SkyLLH optimizer separately
 from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).
@@ -330,7 +334,7 @@ energy interpolation lookups (16 MiB per dataset). Budgets apply per analysis
 process; CPU settings and scientific fit definitions retain their existing values.
 See [stacking performance and cache lifecycle](docs/stacking_performance.md).
 
-New DR2 spatial+energy stacks report the primary ns, Gamma, TS, p-value and
+New DR2 time-integrated spatial+energy stacks report the primary ns, Gamma, TS, p-value and
 one-sided significance first. Continue the same task with `run --task <id>
 --stage flux --flux-user-reply "<actual user reply>"` for default Gamma=2, 2.5, 3 upper limits and primary intensity
 measurements when TS > 9. The Agent ends the first turn with the primary result
@@ -340,7 +344,7 @@ regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
 Joint-stack figures use total flux / (4*pi sr),
 with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).
 
-New DR2 spatial+energy standalone single-source tasks use two-node linear Gamma
+New DR2 time-integrated spatial+energy standalone single-source tasks use two-node linear Gamma
 interpolation for the signal energy PDF in both the primary fit and flux
 calculation. Catalog scan and joint stacking defaults retain their original
 quadratic interpolation. Optimizer, tolerances and the flux-profile consistency

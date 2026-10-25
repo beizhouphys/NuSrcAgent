@@ -95,15 +95,16 @@ license: "<approved SPDX identifier, if applicable>"
    commit/tag and publishing. Additional runtime changes require proportionate
    verification, not automatic reruns of unrelated owner tests.
 
-### Deferred by owner: time-dependent analysis
+### Time-dependent implementation update (20261024)
 
-On 2026-10-16 the owner explicitly deferred this work. Do not implement or
-block the current code synchronization on time-dependent analysis. The owner
-will integrate collaborator code first; synchronize it and verify the affected
-paths afterward when authorized. The original full first-release target still
-includes time-dependent capabilities, but they remain unimplemented in this
-copy and must not be advertised as supported or validated. This deferral does
-not authorize a push or release tag.
+The owner's earlier deferral is superseded for DR2 time-dependent single-source
+analysis and independent catalog scans. These paths use SkyLLH with explicit
+Gaussian/box profiles and fixed/fitted temporal parameters; see
+[the method and validation scope](time_dependent.md). Time-dependent stacking
+still awaits collaborator-provided code. The single-source/catalog integration
+does not add collaborator code or change the author list. Time-dependent
+scrambling is unapproved; significance calibration and flux/fluence remain
+unavailable. No release tag is implied by this synchronization.
 
 No new packaging framework, mandatory workbook integration, general significance
 calibration service or PDF regeneration is proposed. Existing scientific

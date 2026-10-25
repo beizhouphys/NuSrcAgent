@@ -1,6 +1,6 @@
 ---
 name: nusrcagent
-description: Coordinate supported IceCube time-integrated single-source searches, catalog scans and stacking through persistent tasks and scientific review.
+description: Coordinate supported IceCube single-source searches, catalog scans and time-integrated stacking through persistent tasks and scientific review, including DR2 Gaussian/box time-dependent source searches.
 ---
 
 # NuSrcAgent
@@ -173,6 +173,41 @@ or `run`. A cache hit needs no new construction. Do not invent a whole-run ETA
 from one dataset's pilot. Preparation does not maximize the LLH or start trials.
 A supplied non-PL shape is fixed; fit its normalization through ns, without
 reporting a fictitious PL Gamma. Preserve all existing primary/flux-stage gates.
+
+## Time-dependent DR2 single-source analysis and catalog scans
+
+Use the same public wrapper with `--time-mode time_dependent` and a complete
+`--temporal-file` JSON specification. Read `docs/time_dependent.md` first.
+Single sources and independent catalog scans are supported; time-dependent
+stacking and scan_and_stack await collaborator code and must not execute.
+For multiple sources select `--catalog-operation scan`; do not request stacking
+weights. Coordinates and spectrum use the existing shared input layers.
+
+Require an explicit Gaussian or box profile, MJD/UT1 convention and
+`background_time_model=uniform_livetime`; do not choose this rate assumption
+silently. A supplied t0 or width is fixed unless explicitly requested as a fit
+seed. Omitted t0/width defaults to fitted, but execution requires each fitted
+parameter's finite bounds and explicit seeds plus the time-search method,
+maxiter, xtol and ftol. Ask only about remaining material settings. Record these
+values as user inputs, not invented confirmations. A task with missing/invalid
+temporal settings stays AWAITING_CONFIRMATION; complete it through
+`confirm --task <id> --temporal-file <complete.json>`. Run only after READY.
+
+The likelihood includes good-run interval normalization and time-dependent
+acceptance across all four DR2 datasets, retaining the original SkyLLH ns/Gamma
+maximization. Inspect `time_dependent_summary`, settings, search convergence,
+boundaries, detector fractions, input order, CSV/PNG/PDF and artifact reviews.
+Report ns, fitted/fixed Gamma, TS, t0 and Gaussian sigma_t or full box duration
+with units and modes. At ns=0 temporal parameters/Gamma are not measurements.
+P-values, significances and catalog-corrected quantities remain unavailable:
+never apply the time-integrated half-chi-square estimate, catalog-size correction
+or sqrt(TS) as a significance. No time-dependent trials are authorized; their
+scrambling method remains pending owner discussion, and future trials must
+repeat the complete observed temporal/spectral/catalog search. These tasks
+execute zero trials and no time-integrated flux products; they finish after
+the primary result and review, without a flux-continuation question. Match any
+validation claim to the deterministic and real-wrapper evidence, separately
+from time-search calibration, coverage or proof of a global maximum.
 
 ## Execution
 

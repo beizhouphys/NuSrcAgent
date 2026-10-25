@@ -37,6 +37,10 @@ def review_run(run_directory: str, repo_root: str = ".", write_artifacts: bool =
     review["metrics"]["analysis_type"] = analysis_type
     review["metrics"]["n_sources"] = int(report.get("analysis", {}).get("n_sources", 0))
     data_sample = str(report.get("analysis", {}).get("sample", ""))
+    if normalized.get("time_mode") == "time_dependent" or report.get("analysis", {}).get("time_mode") == "time_dependent":
+        from agent_core.time_dependent_outputs import review_time_dependent
+        review_time_dependent(review, report, normalized, root)
+        return finalize_review(review, run_dir, write_artifacts)
     if data_sample == "icecube_public_ps_14yr_dr2":
         operation = normalized.get("catalog_operation", "stack") if analysis_type == "catalog_stacking" else "stack"
         if analysis_type == "catalog_stacking":

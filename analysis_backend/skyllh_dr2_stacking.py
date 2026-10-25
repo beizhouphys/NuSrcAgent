@@ -477,10 +477,15 @@ def run_dr2_stacking(
     flux_upper_limit_cl=None,
     flux_measurement_ts_threshold=None,
     fit_procedure="skyllh_lbfgs_v1",
+    temporal_settings=None,
 ):
     """Run an unblinded catalog stack and return serializable results."""
     if fit_procedure != "skyllh_lbfgs_v1":
         raise ValueError("Unsupported DR2 fit procedure; this runtime uses skyllh_lbfgs_v1")
+    if temporal_settings is not None and (len(source_specs) != 1 or data_selection != "full14"
+            or flux_upper_limit_cl is not None or flux_measurement_ts_threshold is not None
+            or event_ra_scramble_seed is not None or source_ra_scramble_seed is not None):
+        raise ValueError("Time-dependent runtime requires one unscrambled full14 DR2 source, no trials and no time-integrated flux products")
     with subphase('input loading and analysis setup'):
         analysis = create_dr2_stacking_analysis(
             repo_root=repo_root,
@@ -505,14 +510,19 @@ def run_dr2_stacking(
             signal_energy_gamma_interpolation=signal_energy_gamma_interpolation,
             spectrum=spectrum,
         )
-    progress = start_stacking_progress(source_specs, gamma_mode,
+    temporal_controller = None
+    if temporal_settings is not None:
+        from analysis_backend.skyllh_dr2_time_dependent import attach_temporal_profile
+        temporal_controller = attach_temporal_profile(analysis, temporal_settings)
+    progress = None if temporal_controller is not None else start_stacking_progress(source_specs, gamma_mode,
         cost_state=lambda: tuple(ratio._cache_key for ratio in analysis.chunked_ratios),
         cache_cost=lambda **options: current_stacking_cache_cost(analysis.chunked_ratios,**options))
     minimizer_impl = analysis.llhratio.minimizer.minimizer_impl
     minimizer_impl.progress_observer = progress
     fit_timing = None
     try:
-        ts, fitparams, minimizer_status = analysis.unblind(RandomStateService(seed=int(random_seed)))
+        ts, fitparams, minimizer_status = (analysis.unblind(RandomStateService(seed=int(random_seed)))
+            if temporal_controller is None else temporal_controller.maximize(random_seed))
     finally:
         minimizer_impl.progress_observer = None
         if progress is not None:
@@ -611,6 +621,12 @@ def run_dr2_stacking(
             analysis.spectrum_response["manifest"] if likelihood_mode == "spatial_energy" else background_provenance)
     if fit_timing is not None:
         result['fit_timing'] = fit_timing
+    if temporal_controller is not None:
+        from agent_core.temporal import unavailable_significance
+        result.update(time_mode="time_dependent", temporal=temporal_controller.metadata,
+                      **unavailable_significance())
+        result["w_acc_by_dataset"] = {name: _json_safe(w_acc[idx] * temporal_controller.yield_factors[idx])
+                                     for idx, name in enumerate(dataset_names)}
     if flux_upper_limit_cl is not None:
         from analysis_backend.profile_upper_limit import fixed_gamma_flux_upper_limit
         with subphase('fixed-spectrum likelihood profile'):

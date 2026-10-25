@@ -310,3 +310,31 @@ exports. A fixed-Gamma spatial-only run verified continuous launch and graceful
 stop. Small regression ensembles do not establish precision significance or
 parameter coverage. Random-catalog generation is owner-only testing code;
 historical ensembles and their seed mappings remain unchanged.
+
+## DR2 time-dependent integration — 20261024
+
+DR2 time-dependent single-source analysis and independent catalog scans support
+explicit Gaussian/box profiles, fixed/fitted temporal parameters, good-run
+interval normalization and temporal detector acceptance across four datasets.
+Time-dependent stacking awaits collaborator code. Time-dependent p-values,
+significance, trials and flux/fluence remain unavailable; time-integrated
+significance/flux formulas are not used for these tasks.
+
+Owner verification passed 397 full-suite unit tests, the final 13 targeted
+temporal checks, 34 golden-corpus structural cases and frozen-input hashes.
+Independent event-mixture likelihood/gradient/maximum comparisons and the
+broad-box time-integrated limit passed, as did deterministic injected-profile
+optimizer recovery under a normalized toy spatial model. Real wrapper runs
+cover fixed/fitted Gaussian/box parameters, fixed/fitted Gamma, spatial-only,
+parallel/reversed-order scans, and unchanged time-integrated source/scan/stack
+execution. Deliberately changed results and artifacts were rejected. Real
+release/test source and two-source scans agree exactly in TS/ns/Gamma,
+temporal values and dataset fractions (relative difference 0 for nonzero
+references, absolute difference 0; zero references have undefined relative
+difference). No time-dependent background trials were executed.
+
+Empty temporal overlap has zero detector acceptance. Exact equality to a
+published run stop is accepted without changing any event time or uptime
+integral; actual gaps remain invalid. These checks establish implementation
+consistency and optimizer recovery, not time-search significance, detector
+sensitivity, parameter bias or coverage. See [the method](time_dependent.md).

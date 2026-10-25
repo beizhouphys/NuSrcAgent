@@ -25,6 +25,8 @@ from agent_core.environment import _required_paths
 
 def add_significance(result: dict[str, object], gamma_mode: str) -> None:
     """Attach the declared local estimate to each ordinary fit."""
+    if result.get("time_mode") == "time_dependent":
+        return
     primary = [result, *(item["fit"] for item in result.get("source_results", []))]
     fits = [*primary, *(child for fit in primary for child in fit.get("flux_upper_limit_fits", []))]
     for fit in fits:
@@ -40,6 +42,9 @@ def make_run_id() -> str:
 
 
 def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normalized: NormalizedAnalysis, result: dict[str, object], repo_root: str | Path | None = None) -> Path:
+    if normalized.time_mode == "time_dependent":
+        from agent_core.time_dependent_outputs import write_time_dependent_artifacts
+        return write_time_dependent_artifacts(config_path, config, normalized, result, repo_root or ".")
     add_significance(result, normalized.gamma_mode)
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     run_dir = resolve_path(root, config.outputs.output_root) / make_run_id()

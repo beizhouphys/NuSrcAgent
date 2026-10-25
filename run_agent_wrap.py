@@ -17,6 +17,7 @@ if __name__ == "__main__" and any(command in sys.argv[1:] for command in
     _cpu_options, _ = _cpu_parser.parse_known_args()
     configure_threads(1 if "dr2-empirical-scramble" in sys.argv[1:] else _cpu_options.workers)
 
+from agent_core.temporal import configure_temporal_task
 from agent_core.progress import timed_command, print_result
 from analysis_backend.sources import BUILTIN_CATALOG_NAMES
 from agent_core.agent_orchestrator import execute_task, resume_interrupted_task
@@ -144,6 +145,7 @@ def main(argv=None) -> int:
             set_flux_upper_limits(task, args)
             set_flux_measurement(task, args)
             configure_spectrum(task, args, repo_root)
+            configure_temporal_task(task, args, repo_root)
             configure_single_source_stages(task)
 
             path = save_task(task, repo_root)
@@ -154,6 +156,8 @@ def main(argv=None) -> int:
             gamma_mode = args.gamma_mode or ("fixed" if args.gamma is not None or args.spectrum_file else "fitted" if likelihood_mode == "spatial_energy" and args.data_sample == "icecube_public_ps_14yr_dr2" else "fixed")
             gamma = default_gamma(args.gamma, args.data_sample, likelihood_mode, gamma_mode)
             include_uniform_baseline = False if args.data_sample == "icecube_public_ps_14yr_dr2" else not args.no_uniform_baseline
+            if (args.time_mode == "time_dependent" or args.temporal_file) and args.catalog_operation is None:
+                args.catalog_operation = "scan"
             task = plan_catalog_task(args.request, repo_root, args.catalog, sources, args.name_column, args.ra_column, args.dec_column, gamma, args.weight_mode, args.weight_column, args.weight_meaning, manual_weights, include_uniform_baseline, args.data_sample, gamma_mode, likelihood_mode, args.built_in_catalog, args.event_abs_dec_max_deg, args.event_dec_min_deg, args.event_dec_max_deg, args.catalog_operation, coordinate_options(args))
             if args.gamma_mode is not None:
                 task["parameters"]["gamma_mode"]["source"] = "user"
@@ -164,6 +168,7 @@ def main(argv=None) -> int:
             set_scan_fit_procedure(task, args)
             set_stacking_flux(task, args)
             configure_spectrum(task, args, repo_root)
+            configure_temporal_task(task, args, repo_root)
             configure_single_source_stages(task)
             path = save_task(task, repo_root)
         else:
@@ -172,6 +177,7 @@ def main(argv=None) -> int:
                 values = confirmation_values(args)
                 confirm_parameters(task, values)
                 revalidate_task_plan(task, repo_root)
+                configure_temporal_task(task, args, repo_root)
                 save_task(task, repo_root, path)
             elif args.command == "run":
                 if args.flux_user_reply is not None and args.stage != "flux":
@@ -481,6 +487,10 @@ def build_parser() -> argparse.ArgumentParser:
     spectrum_prepare = subparsers.add_parser("prepare-spectrum", help="Prepare a READY task spectrum response without fitting or starting trials.")
     spectrum_prepare.add_argument("--task", required=True)
     spectrum_prepare.add_argument("--estimate-only", action="store_true", help="Calculate one preparation unit for a current measured ETA; retain it for the full preparation.")
+    for command in (single, catalog):
+        command.add_argument("--time-mode", choices=["time_integrated", "time_dependent"])
+        command.add_argument("--temporal-file", help="JSON time profile, MJD/UT1 convention, fixed values or explicit fit bounds/seeds/search settings.")
+    confirm.add_argument("--temporal-file", help="Resolve pending time-search settings using a complete JSON specification.")
     return parser
 
 
@@ -571,6 +581,8 @@ def print_task(task: Dict[str, Any], path: Path) -> None:
             report_path = Path(run_directory) / "report.yaml"
             if report_path.is_file():
                 report_result = load_simple_yaml(report_path.read_text()).get("result", {})
+                if task.get("parameters", {}).get("time_mode", {}).get("value") == "time_dependent":
+                    summary["time_dependent_summary"] = report_result.get("time_dependent_summary")
                 scan_summary = report_result.get("catalog_scan_summary")
                 if scan_summary:
                     from agent_core.catalog_scan_outputs import compact_scan_table

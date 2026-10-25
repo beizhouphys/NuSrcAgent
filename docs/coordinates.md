@@ -10,8 +10,9 @@ The shared input layer accepts ICRS equatorial RA/Dec and Galactic longitude
 and latitude (l/b). It converts both to ICRS RA/Dec in degrees before the
 existing backend converts degrees to radians. This applies to all currently
 supported single-source analyses, catalog-wide single-source analyses and
-stacking analyses, for both data samples and likelihood modes. It does not
-implement the planned time-dependent analyses.
+stacking analyses, for both data samples and likelihood modes. DR2 time-dependent
+single-source analysis and catalog scans use this same coordinate layer;
+time-dependent stacking remains pending.
 
 Degrees and radians are supported for either axis; ICRS RA additionally
 supports hourangle, including sexagesimal strings. Specify both angular

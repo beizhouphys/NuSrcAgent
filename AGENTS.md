@@ -25,8 +25,13 @@
   preliminary; failed reviews must not be reported as valid results.
 - Report the maximized likelihood statistic as `TS`. Analytic local p-values
   do not establish empirical significance or parameter coverage.
-- Time-dependent analysis is planned but not implemented in this copy. Do not
-  claim support or run time-dependent background trials.
+- DR2 time-dependent single-source analysis and independent catalog scans use
+  explicit Gaussian/box settings, including the uniform-livetime background
+  assumption. Supplied t0/width are fixed unless explicitly requested as fit
+  seeds; omitted parameters require bounds/seeds/search settings before READY.
+  Time-dependent stacking awaits collaborator code. No time-dependent
+  background trials or time-integrated significance/flux formulas may run here.
+  See docs/time_dependent.md.
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
 

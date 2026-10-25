@@ -39,7 +39,7 @@ means the saved record of data/code versions and settings used in that calculati
 
 ## Significance and example inputs
 
-Ordinary local p-values and significances are estimates: half-chi-square dof=2
+Ordinary time-integrated local p-values and significances are estimates: half-chi-square dof=2
 for fitted Gamma and dof=1 for fixed Gamma. The source CSV records the method,
 dof and estimate flag alongside each result. An analytic independent-source catalog correction is reported; no empirical
 catalog post-trial significance is produced. The excluded 3386-source reproduction
@@ -153,3 +153,14 @@ upper-limit spectrum figures are generated and reported regardless of primary
 TS. Primary TS > 9 additionally enables measured intensity and its uncertainty.
 Individual scan limits
 remain opt-in. See [stacking flux and two-stage reporting](stacking_flux.md).
+
+## Time-dependent catalog scans
+
+DR2 single-source analysis and independent catalog scans also support explicit
+Gaussian/box time profiles. Supplied t0/width are fixed unless explicitly used
+as fit seeds; omitted parameters require bounds, seeds and search settings
+before READY. These scans write time_dependent_results.csv, temporal search
+traces and profile figures, with unavailable p-values/significances. They do
+not use the time-integrated analytic formulas or catalog correction above.
+Time-dependent stacking awaits collaborator code; time-dependent background
+trials await owner approval. See [the guide](time_dependent.md).

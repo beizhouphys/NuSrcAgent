@@ -35,3 +35,13 @@ Generic dominance, fixed-Gamma RA smoke tests and empirical orchestration are
 retained with their existing scientific scope. No background trials are started
 by source preparation. The original time-integrated fit formulas and optimizer
 bounds are preserved. All substantive adaptations must pass owner-side review.
+
+## Time-dependent runtime — 20261024
+
+The release includes temporal configuration/review/artifact modules and a DR2
+SkyLLH adapter for independent single-source and catalog fits. Temporal detector
+yields and dataset fractions include good-run overlap. The public wrapper,
+skill, JSON examples and documentation use neutral release names and retain
+existing release adaptations. Owner tests, injection fixtures and validation
+products remain excluded. Time-dependent stacking awaits collaborator code;
+no time-dependent background-trial or flux/fluence path is enabled.

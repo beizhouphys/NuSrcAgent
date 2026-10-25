@@ -43,7 +43,9 @@ new timing samples. Do not infer an all-analysis ETA from this preparation rate.
 
 DR1 is still spatial-only. Its existing effective-area integration accepts the
 supplied shape; its spatial likelihood and event selection are retained. No new
-DR1 energy likelihood or time-dependent capability is claimed. Non-PL shapes
+DR1 energy likelihood is claimed. DR2 time-dependent single-source analysis and
+catalog scans use this same fixed-shape interface, including temporal detector
+acceptance; time-dependent flux/fluence products remain unavailable. Non-PL shapes
 have no fitted PL Gamma. Model-specific shape-parameter fits and per-source
 spectra are outside this fixed-shape interface. Existing PL-reference upper
 limits are distinct hypotheses; PL-specific primary flux-measurement figures

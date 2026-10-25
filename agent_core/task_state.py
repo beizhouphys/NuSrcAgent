@@ -60,6 +60,8 @@ def create_task_record(original_request: str, intent: str, workflow: str, reason
 
 def required_parameter_names(task: Dict[str, Any]) -> List[str]:
     names = ["gamma"]
+    if task.get("parameters", {}).get("time_mode", {}).get("value") == "time_dependent":
+        names.append("temporal")
     if task.get("workflow") == "catalog_scan_and_stacking" and task.get("parameters", {}).get("catalog_operation", {}).get("value") != "scan":
         names.append("weight_mode")
         mode = task.get("parameters", {}).get("weight_mode", {}).get("value")

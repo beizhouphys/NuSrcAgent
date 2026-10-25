@@ -98,9 +98,11 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
             payload["source"]["coordinate_input"] = source["coordinate_input"]
         if "source_dec_window_deg" in parameters:
             payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
-        for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measurement_ts_threshold", "fit_procedure", "signal_energy_gamma_interpolation", "spectrum", "gamma_bounds"):
+        for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "flux_measurement_ts_threshold", "fit_procedure", "signal_energy_gamma_interpolation", "spectrum", "gamma_bounds", "time_mode", "temporal"):
             if key in parameters:
                 payload["analysis"][key] = parameters[key]["value"]
+        if payload["analysis"]["time_mode"] == "time_dependent":
+            payload["background"].update(method="none", n_trials=0)
         return payload
     mode = parameters["weight_mode"]["value"]
     weight_column = parameters["weight_column"]["value"] if mode == "column" else None
@@ -113,9 +115,11 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
         payload["catalog"]["coordinates"] = parameters["coordinates"]["value"]
     if "source_dec_window_deg" in parameters:
         payload["background"]["source_dec_window_deg"] = parameters["source_dec_window_deg"]["value"]
-    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure", "stacking_flux", "spectrum", "gamma_bounds"):
+    for key in ("flux_upper_limit_cl", "flux_upper_limit_gammas", "scan_fit_procedure", "stacking_flux", "spectrum", "gamma_bounds", "time_mode", "temporal"):
         if key in parameters:
             payload["analysis"][key] = parameters[key]["value"]
+    if payload["analysis"]["time_mode"] == "time_dependent":
+        payload["background"].update(method="none", n_trials=0)
     return payload
 
 

@@ -17,9 +17,12 @@ only the original raw RFC input for the optional built-in reader remains externa
 The [README support table](../README.md#what-analyses-can-i-run) distinguishes
 implemented paths from the approved first-release target.
 
-Time-dependent analysis is not implemented in this copy. Planned single-source
-and catalog-scan integration uses SkyLLH; time-dependent stacking awaits
-collaborator code and validation. No time-dependent scrambling is approved here.
+DR2 time-dependent single-source analysis and independent catalog scans use
+Gaussian/box profiles, good-run interval normalization and temporal detector
+acceptance across all four datasets. Explicit fixed parameters or bounded,
+seeded searches are recorded and reviewed. Time-dependent p-values and
+significances are unavailable; no time-dependent scrambling is approved.
+Stacking awaits collaborator code. See [the guide](time_dependent.md).
 This release copy does not establish publication readiness or implement extended
 source modeling through its point-coordinate examples.
 
@@ -63,7 +66,7 @@ measure model influence or stability, not source-detection significance.
 
 ## Local p-values are not calibrated detection significances
 
-Ordinary fits execute zero background trials and use an analytic half-chi-square
+Ordinary time-integrated fits execute zero background trials and use an analytic half-chi-square
 local p-value approximation. A default `background.n_trials` in request metadata
 does not mean those trials ran. Jointly fitting Gamma and optimizer boundaries
 require appropriate null calibration; an analytic p-value is not a validated
