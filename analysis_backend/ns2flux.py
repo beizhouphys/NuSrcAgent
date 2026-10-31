@@ -89,7 +89,7 @@ def _effective_area(repo_root, configuration, selection="dr2_full14"):
 
 
 def diffuse_expected_events_per_phi0_mu(
-    repo_root=".", gamma=2.53, e0=1e5, selection="dr2_full14",
+    repo_root=".", gamma=2.5, e0=1e5, selection="dr2_full14",
     event_abs_dec_max_deg=None,
 ):
     """Expected events for Phi0_mu=1 GeV^-1 cm^-2 s^-1 sr^-1."""
@@ -118,7 +118,7 @@ def diffuse_expected_events_per_phi0_mu(
     return float(sum(by_configuration.values())), by_configuration
 
 
-def ns_to_allflavor_e2_intensity_100tev(ns, repo_root=".", gamma=2.53, selection="dr2_full14"):
+def ns_to_allflavor_e2_intensity_100tev(ns, repo_root=".", gamma=2.5, selection="dr2_full14"):
     """Convert expected events to all-flavor E^2 dF/dE at 100 TeV."""
     events_per_phi0_mu, _ = diffuse_expected_events_per_phi0_mu(
         repo_root, gamma=gamma, e0=1e5, selection=selection
@@ -127,7 +127,7 @@ def ns_to_allflavor_e2_intensity_100tev(ns, repo_root=".", gamma=2.53, selection
     return 3.0 * phi0_mu * 1e10
 
 
-def point_expected_yield_per_phi0(repo_root, dec_deg, gamma=2.53, e0=1e3, selection="dr2_full14"):
+def point_expected_yield_per_phi0(repo_root, dec_deg, gamma=2.5, e0=1e3, selection="dr2_full14"):
     """Point-source yield for a unit muon-neutrino normalization at E0."""
     livetimes = configuration_livetimes_seconds(repo_root, selection=selection)
     result = {}
