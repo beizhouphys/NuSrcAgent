@@ -218,8 +218,9 @@ from time-search calibration, coverage or proof of a global maximum.
    `--catalog-operation stack|scan|scan_and_stack`; scan-only needs no weights.
    DR1 retains its existing scan+stack behavior.
 3. Approved DR2 defaults: full14 spatial+energy, fitted ns and Gamma, seed
-   CLI -3.0 / SkyLLH 3.0. Spatial-only fixes acceptance Gamma at CLI -2.5;
-   it does not measure the source spectrum. Select DR1 only when requested.
+   CLI -3.0 / SkyLLH 3.0. DR1 and DR2 spatial-only analyses use the fixed
+   acceptance exponent -2.5 unless the user supplies another spectrum.
+   Historical tasks keep their recorded spectra. Select DR1 only when requested.
 4. Persist the request through `create-single` or `create-catalog`. Use
    `confirm` only for actual user answers. Run only tasks whose state is READY.
 

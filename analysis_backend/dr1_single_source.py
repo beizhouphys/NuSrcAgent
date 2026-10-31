@@ -15,7 +15,7 @@ from numpy import trapezoid # NumPy 2 replacement for removed trapz alias
 
 d2r = 180./pi
 ROI = 20./d2r
-DEFAULT_GAMMA = -2.53
+DEFAULT_GAMMA = -2.5
 _CACHE: dict[tuple[str, float], dict[str, Any]] = {}
 
 

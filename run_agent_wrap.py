@@ -372,7 +372,7 @@ def build_parser() -> argparse.ArgumentParser:
     single.add_argument("--dec-deg", type=float, help="ICRS Dec in degrees; pair with --ra-deg (existing interface).")
     single.add_argument("--longitude", help="ICRS RA or Galactic l; requires coordinate frame and explicit units.")
     single.add_argument("--latitude", help="ICRS Dec or Galactic b; sexagesimal strings are accepted with explicit units.")
-    single.add_argument("--gamma", type=float, help="Signed power-law exponent. DR2 spatial-only defaults to fixed -2.5 for detector acceptance; DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
+    single.add_argument("--gamma", type=float, help="Signed power-law exponent. DR1 and DR2 spatial-only analyses default to fixed -2.5 for detector acceptance. DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
     single.add_argument("--gamma-mode", choices=["fitted", "fixed"])
     single.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     single.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
@@ -397,7 +397,7 @@ def build_parser() -> argparse.ArgumentParser:
     catalog.add_argument("--name-column")
     catalog.add_argument("--ra-column")
     catalog.add_argument("--dec-column")
-    catalog.add_argument("--gamma", type=float, help="Signed power-law exponent. DR2 spatial-only defaults to fixed -2.5 for detector acceptance; DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
+    catalog.add_argument("--gamma", type=float, help="Signed power-law exponent. DR1 and DR2 spatial-only analyses default to fixed -2.5 for detector acceptance. DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
     catalog.add_argument("--gamma-mode", choices=["fitted", "fixed"])
     catalog.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     catalog.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
@@ -538,7 +538,7 @@ def parse_weights(value: Optional[str]) -> Optional[List[float]]:
 def default_gamma(value: Optional[float], data_sample: str, likelihood_mode: str, gamma_mode: str) -> Optional[float]:
     if value is not None:
         return value
-    if data_sample == "icecube_public_ps_14yr_dr2" and likelihood_mode == "spatial_only":
+    if data_sample in {"icecube_public_ps_10yr", "icecube_public_ps_14yr_dr2"} and likelihood_mode == "spatial_only":
         return -2.5
     if data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fitted":
         return -3.0
@@ -548,7 +548,7 @@ def default_gamma(value: Optional[float], data_sample: str, likelihood_mode: str
 def set_mode_parameter_sources(task: Dict[str, Any], args: argparse.Namespace, likelihood_mode: str, gamma_mode: str) -> None:
     if args.likelihood_mode is not None:
         task["parameters"]["likelihood_mode"]["source"] = "user"
-    if args.gamma is None and likelihood_mode == "spatial_only" and args.data_sample == "icecube_public_ps_14yr_dr2":
+    if args.gamma is None and likelihood_mode == "spatial_only" and args.data_sample in {"icecube_public_ps_10yr", "icecube_public_ps_14yr_dr2"}:
         task["parameters"]["gamma"]["source"] = "system_default_acceptance_gamma"
     elif args.gamma is None and gamma_mode == "fitted":
         task["parameters"]["gamma"]["source"] = "system_default_fit_seed"
