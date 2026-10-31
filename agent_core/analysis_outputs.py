@@ -172,7 +172,7 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None:
     c = canvas.Canvas(str(path), pagesize=(900., 420.))
     panels = [(65., 65., 355., 300.), (510., 65., 355., 300.)]
     color_map = {"uniform": colors.red, "input_weight": colors.blue}
-    dash_map = {-2.0: [], -2.53: [7, 4], -3.0: [2, 3]}
+    dash_map = {-2.0: [], -2.5: [7, 4], -3.0: [2, 3]}
     profile_points = [[(float(x), float(y)) for x, y in zip(curve["flux_100tev"], curve["delta_ts"]) if x is not None and y is not None and isfinite(x) and isfinite(y) and x > 0. and y > -1e90] for curve in curves]
     flux_values = [x for points in profile_points for x, _ in points]
     flux_min = builtins.min(flux_values) if flux_values else 1e-12

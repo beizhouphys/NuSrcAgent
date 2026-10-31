@@ -136,9 +136,9 @@ later turn's final answer. This supersedes earlier automatic-continuation rules.
 
 Ask only about unresolved ambiguity that materially changes the spectrum,
 relative weights, source/event membership, fit hypotheses or trial family.
-Unsigned gamma 2.53 conventionally means E^-2.53; record that interpretation
-and pass CLI `--gamma -2.53`. A bare explicit positive sign needs clarification;
-preserve a power-law exponent explicitly defined by the user. CLI --gamma is
+Interpret unsigned gamma 2.5 as E^-2.5 and record the convention.
+Pass CLI `--gamma -2.5`. Ask about a bare explicit positive sign.
+Preserve a power-law exponent explicitly defined by the user. CLI --gamma is
 the signed exponent; an explicit rising E^+2.5 maps to --gamma +2.5, while
 E^-Gamma with Gamma=+2.5 maps to --gamma -2.5. Prepare a missing response
 rather than reversing an exponent or rejecting it for its sign.

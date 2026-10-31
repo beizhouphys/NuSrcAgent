@@ -128,7 +128,7 @@ substantial time, especially large catalog searches and repeated background fits
   contribution from the catalog, not a separate count for every source.
 - **Gamma** is the positive spectral index in `dN/dE` proportional to
   `(E/E0)^(-Gamma)`, where `E` is neutrino energy and `E0` is a reference energy.
-  The command-line option `--gamma -2.53` denotes the spectrum with `Gamma=2.53`.
+  The command-line option `--gamma -2.5` denotes the spectrum with `Gamma=2.5`.
   When `ns=0`, Gamma is not identifiable from the fit.
 - **TS** is the likelihood-ratio test statistic after maximization. A larger
   value favors the signal model relative to background alone; it is not itself
