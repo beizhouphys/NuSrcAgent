@@ -8,6 +8,7 @@ import math
 import builtins
 from pathlib import Path
 from typing import Any
+from analysis_backend.event_selection import _event_declination_bounds, source_declination_window
 
 from numpy import *
 from numpy import trapezoid # NumPy 2 replacement for removed trapz alias
@@ -19,12 +20,29 @@ DEFAULT_GAMMA = -2.5
 _CACHE: dict[tuple[str, float], dict[str, Any]] = {}
 
 
-def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFAULT_GAMMA, spectrum=None):
+def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFAULT_GAMMA, spectrum=None,
+                                      source_dec_window_deg=None, event_abs_dec_max_deg=None,
+                                      event_dec_min_deg=None, event_dec_max_deg=None):
     data = load_backend_data(repo_root, gamma, spectrum)
     RA_src = float(ra_deg)/d2r
     Dec_src = float(dec_deg)/d2r
     fks = source_sample_weights(Dec_src, data)
-    S_ji, B_i, Nj = SnB_PDF(RA_src, Dec_src, data)
+    cuts = builtins.any(value is not None for value in (event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg))
+    if source_dec_window_deg is not None and cuts:
+        raise ValueError("Adaptive source windows cannot be combined with explicit event cuts")
+    bounds = None
+    window = None
+    names = ("IC40", "IC59", "IC79", "IC86_I", "IC86_II-VII")
+    if source_dec_window_deg is not None:
+        lower, upper, half = source_declination_window(
+            {name: rad2deg(values) for name, values in zip(names, data['Decs_nu'])},
+            float(dec_deg), source_dec_window_deg)
+        bounds = (lower, upper)
+        window = {"minimum_half_width_deg": float(source_dec_window_deg), "half_width_deg": half,
+                  "minimum_event_fraction_per_dataset": 0.2}
+    elif cuts:
+        bounds = _event_declination_bounds(event_abs_dec_max_deg, event_dec_min_deg, event_dec_max_deg)
+    S_ji, B_i, Nj = SnB_PDF(RA_src, Dec_src, data, event_bounds=bounds)
     SB_ji = [S_ji[k]/B_i[k] for k in range(len(data['Nks']))]
     logB_ki = [log(B_i[k]).sum() for k in range(len(data['Nks']))]
     requested_spectrum = bool(spectrum) or not -6. <= float(gamma) <= -1.
@@ -32,7 +50,27 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
     ts = float(tmp1[1])
     ns_hat = float(tmp1[2])
     p_loc = 0.5*math.erfc(math.sqrt(builtins.max(ts, 0.)/2.))
+    selection = {}
+    if bounds is not None:
+        before = dict(zip(names, (int(value) for value in data['Nks'])))
+        counts = dict(zip(names, (int(value) for value in Nj)))
+        fractions = {name: counts[name]/before[name] for name in names}
+        if window is not None:
+            window["retained_fractions"] = fractions
+            if builtins.any(value < 0.2 for value in fractions.values()):
+                raise ValueError("Source window contains less than 20% of a DR1 dataset")
+        selection = {"event_selection": "adaptive_source_dec_window" if window is not None else
+                     "all_events" if bounds == (-90., 90.) else
+                     "abs_dec_cut" if event_abs_dec_max_deg is not None else "dec_range_cut",
+                     "source_dec_window": window, "event_dec_min_deg": bounds[0], "event_dec_max_deg": bounds[1],
+                     "event_abs_dec_max_deg": event_abs_dec_max_deg,
+                     "event_counts_before_selection": before, "event_counts": counts,
+                     "n_events_total": int(builtins.sum(Nj)),
+                     "background_spatial_conditional_normalization": fractions,
+                     "background_spatial_normalization_method": "event_count_fraction",
+                     "base_event_selection": "abs_dec_lt87"}
     return {
+        **selection,
         "backend": "likelihood_single_source_v1",
         "best_fit_ns": ns_hat,
         "ts": ts,
@@ -43,7 +81,7 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
         "spectrum": spectrum or {},
         "fit_procedure": "original_slsqp_requested_spectrum_v1" if requested_spectrum else "numpy_bounded_compatibility",
         "fit_bounds": {"ns": [-10., float(sum(Nj))]},
-        "roi_deg": float(ROI*d2r),
+        "roi_deg": float(ROI*d2r) if bounds is None else None,
         "note": "single-source time-integrated backend copied from likelihood_v4.py; p-value uses chi2(df=1)/2 approximation",
         "warnings": (["Requested-spectrum DR1 path retains NumPy integration compatibility and uses the original likelihood code SLSQP maximization with unchanged ns bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
     }
@@ -162,7 +200,7 @@ def source_sample_weights(Dec_src, data):
     return W_accs_src/W_accs_src.sum()
 
 
-def SnB_PDF(RA_src, Dec_src, data):
+def SnB_PDF(RA_src, Dec_src, data, event_bounds=None):
     # Copied from likelihood_v4.py::SnB_PDF with the source coordinate passed directly.
     Nks = data['Nks']
     RAs_nu = data['RAs_nu']
@@ -174,7 +212,8 @@ def SnB_PDF(RA_src, Dec_src, data):
         RAs_nu1D = RAs_nu[k]
         Decs_nu1D = Decs_nu[k]
         sgms_nu1D = sgms_nu[k]
-        tmp_idx = where(abs(Dec_src-Decs_nu1D) <= ROI)
+        tmp_idx = (where(abs(Dec_src-Decs_nu1D) <= ROI) if event_bounds is None else
+                   where((Decs_nu1D >= event_bounds[0]/d2r) & (Decs_nu1D <= event_bounds[1]/d2r)))
         RAs_nu1D1 = RAs_nu1D[tmp_idx];
         Decs_nu1D1 = Decs_nu1D[tmp_idx];
         sgms_nu1D1 = sgms_nu1D[tmp_idx];
@@ -183,7 +222,10 @@ def SnB_PDF(RA_src, Dec_src, data):
         ang_dis[where(ang_dis> 1.)] = 1.
         ang_dis = arccos(ang_dis)
         ang_dis1 = ang_dis
-        Njk = len(RAs_nu1D1); Nj += [Njk]
+        Njk = len(RAs_nu1D1)
+        if not Njk:
+            raise ValueError("Event declination selection contains no events in a DR1 dataset")
+        Nj += [Njk]
         spatial_facs = 1./(2.*pi*sgms_nu1D1**2.)*exp(-(ang_dis1**2)/(2.*sgms_nu1D1**2.))
         S_jik = spatial_facs
         S_ji = S_ji + [S_jik]

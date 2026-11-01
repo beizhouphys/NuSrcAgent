@@ -150,8 +150,6 @@ def validate_planning_values(source_count: int, gamma: Optional[float], weight_m
         errors.append("spatial-only analysis requires gamma_mode='fixed'; gamma is the fixed acceptance gamma")
     if event_abs_dec_max_deg is not None and (not math.isfinite(float(event_abs_dec_max_deg)) or not 0.0 < float(event_abs_dec_max_deg) <= 90.0):
         errors.append("event absolute-declination maximum must be finite and in (0, 90] degrees")
-    if event_abs_dec_max_deg is not None and data_sample != "icecube_public_ps_14yr_dr2":
-        errors.append("event declination cuts are currently supported only for the 14-year DR2 backend")
     range_values = [value for value in (event_dec_min_deg, event_dec_max_deg) if value is not None]
     if any(not math.isfinite(float(value)) or not -90.0 <= float(value) <= 90.0 for value in range_values):
         errors.append("event declination bounds must be finite and in [-90, 90] deg")
@@ -159,8 +157,6 @@ def validate_planning_values(source_count: int, gamma: Optional[float], weight_m
         errors.append("event_dec_min_deg must be less than event_dec_max_deg")
     if event_abs_dec_max_deg is not None and range_values:
         errors.append("use either event_abs_dec_max_deg or asymmetric event declination bounds, not both")
-    if range_values and data_sample != "icecube_public_ps_14yr_dr2":
-        errors.append("event declination cuts are currently supported only for the 14-year DR2 backend")
     if gamma is not None and not math.isfinite(float(gamma)):
         errors.append("gamma exponent must be finite")
     elif gamma is not None and data_sample == "icecube_public_ps_14yr_dr2" and gamma_mode == "fitted" and not -4.0 <= float(gamma) <= -1.0:

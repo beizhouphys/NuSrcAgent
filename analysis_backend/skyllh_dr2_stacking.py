@@ -11,6 +11,8 @@ from agent_core.progress import track_progress
 from agent_core.stage_progress import subphase
 from agent_core.stacking_progress import start_stacking_progress
 
+from analysis_backend.event_selection import _event_declination_bounds, source_declination_window
+
 from copy import copy, deepcopy
 from pathlib import Path
 
@@ -119,21 +121,6 @@ def _attach_on_the_fly_background(cfg, dataset, data_exp):
     data_exp[BACKGROUND_ENERGY_FIELD] = np.asarray(energy_values, dtype=np.float64)
 
 
-def _event_declination_bounds(event_abs_dec_max_deg=None, event_dec_min_deg=None, event_dec_max_deg=None):
-    if event_abs_dec_max_deg is not None and (event_dec_min_deg is not None or event_dec_max_deg is not None):
-        raise ValueError("Use either event_abs_dec_max_deg or event_dec_min_deg/event_dec_max_deg, not both")
-    if event_abs_dec_max_deg is not None:
-        cut = float(event_abs_dec_max_deg)
-        if not 0.0 < cut <= 90.0:
-            raise ValueError("event_abs_dec_max_deg must be in (0, 90] deg or None")
-        return -cut, cut
-    lower = -90.0 if event_dec_min_deg is None else float(event_dec_min_deg)
-    upper = 90.0 if event_dec_max_deg is None else float(event_dec_max_deg)
-    if not np.isfinite(lower) or not np.isfinite(upper) or not -90.0 <= lower < upper <= 90.0:
-        raise ValueError("Event declination bounds must be finite and satisfy -90 <= min < max <= 90 deg")
-    return lower, upper
-
-
 def _conditional_background_spatial_normalization(cfg, dataset, full_data_exp, event_dec_min_deg, event_dec_max_deg):
     if float(event_dec_min_deg) <= -90.0 and float(event_dec_max_deg) >= 90.0:
         return 1.0
@@ -153,29 +140,6 @@ def _conditional_background_spatial_normalization(cfg, dataset, full_data_exp, e
     if not np.isfinite(normalization) or not 0.0 < normalization <= 1.01:
         raise ValueError("Conditional background spatial-PDF normalization is invalid")
     return float(normalization)
-
-
-def source_declination_window(event_decs_by_dataset, source_dec_deg, minimum_half_width_deg=20.0):
-    """Smallest symmetric Dec interval retaining >=20% in every dataset."""
-    minimum = float(minimum_half_width_deg)
-    if not np.isfinite(minimum) or not 20.0 <= minimum <= 180.0:
-        raise ValueError("source_dec_window_deg must be finite and in [20, 180]")
-    center = float(source_dec_deg)
-    if not np.isfinite(center) or not -90.0 <= center <= 90.0:
-        raise ValueError("Source declination must be in [-90, 90] deg")
-    half_width = minimum
-    for values in event_decs_by_dataset.values():
-        values = np.asarray(values, dtype=np.float64)
-        if not len(values) or not np.all(np.isfinite(values)):
-            raise ValueError("Each dataset must contain finite event declinations")
-        index = int(np.ceil(0.2 * len(values))) - 1
-        distances = np.abs(values - center)
-        half_width = max(half_width, float(np.partition(distances, index)[index]))
-    # Outward rounding keeps threshold events on floating-point boundaries.
-    half_width = float(np.nextafter(half_width, np.inf))
-    lower = max(-90.0, float(np.nextafter(center - half_width, -np.inf)))
-    upper = min(90.0, float(np.nextafter(center + half_width, np.inf)))
-    return lower, upper, half_width
 
 
 def create_dr2_stacking_analysis(

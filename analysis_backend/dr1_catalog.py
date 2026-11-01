@@ -10,6 +10,7 @@ from agent_core.progress import track_progress
 from agent_core.cpu import ordered_worker_map, positive_worker_count
 import builtins
 import math
+import json
 from statistics import NormalDist
 from typing import Any
 
@@ -17,6 +18,8 @@ from numpy import *
 
 from agent_core.schemas import NormalizedAnalysis
 from analysis_backend.dr1_single_source import bounded_minimize, interp1d_linear, load_backend_data, run_single_source_time_integrated
+from analysis_backend.event_selection import _event_declination_bounds
+from analysis_backend.dr1_single_source import d2r
 
 
 FIG4_ASTRO_NS_REFERENCES = {-2.00: 3217.3, -2.53: 8845.7, -3.00: 49282.2}
@@ -31,8 +34,10 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', w
     schemes = build_weighting_schemes(normalized)
     for gamma in track_progress(normalized.spectral_indices, "DR1 stacking spectra"):
         data = load_backend_data(repo_root, gamma, normalized.spectrum)
+        data, stack_selection = select_stacking_events(data, normalized)
         for scheme_name, weights in schemes:
             result, curve = run_stacking_likelihood(normalized, weights, scheme_name, gamma, data)
+            result.update(stack_selection)
             if normalized.spectrum:
                 result.update(spectrum_sha256=normalized.spectrum["sha256"], spectrum_file=normalized.spectrum["file"], spectrum_kind="tabulated", spectral_index=None, flux_100tev_95=float("nan"), fraction_of_diffuse_flux_95=float("nan"))
             stacking_results.append(result)
@@ -51,6 +56,9 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', w
         "figures": ["fig1_sky_distribution.pdf", "fig3_ts_distribution.pdf", "fig4_stacking.pdf"],
         "note": "catalog-wide single-source scan plus time-integrated stacking likelihood",
         "warnings": source_warnings + stacking_warnings,
+        "source_event_selections": [dict(source_number=row["source_number"],
+            **json.loads(row["event_selection_json"])) for row in source_results if "event_selection_json" in row],
+        "stacking_event_selection": stack_selection,
         "_source_results": source_results,
         "_stacking_results": stacking_results,
         "_stacking_curves": stacking_curves,
@@ -58,9 +66,9 @@ def run_catalog_time_integrated(normalized: NormalizedAnalysis, repo_root='.', w
 
 
 def _fit_source_job(job):
-    source, repo_root, gamma, spectrum = job
+    source, repo_root, gamma, spectrum, selection = job
     options = {"spectrum": spectrum} if spectrum else {}
-    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=gamma, **options)
+    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root, gamma=gamma, **selection, **options)
 
 
 def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) -> tuple[list[dict[str, object]], list[str]]:
@@ -68,7 +76,10 @@ def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) ->
     rows: list[dict[str, object]] = []
     warnings: list[str] = []
     n_tests = len(normalized.sources)
-    jobs = [(source, repo_root, normalized.spectral_indices[0], getattr(normalized, "spectrum", {})) for source in normalized.sources]
+    selection = {key: getattr(normalized, key) for key in
+        ("source_dec_window_deg", "event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")
+        if getattr(normalized, key, None) is not None}
+    jobs = [(source, repo_root, normalized.spectral_indices[0], getattr(normalized, "spectrum", {}), selection) for source in normalized.sources]
     results = ordered_worker_map(_fit_source_job, jobs, workers)
     for source, result in track_progress(zip(normalized.sources, results), "DR1 catalog source fits", total=n_tests):
         pre_trial_p = float(result["pre_trial_p"])
@@ -93,12 +104,44 @@ def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) ->
             "fit_status": "completed",
         })
         rows.append(row)
+        if "event_selection" in result:
+            keys = ("event_selection", "source_dec_window", "event_dec_min_deg", "event_dec_max_deg",
+                    "event_abs_dec_max_deg", "event_counts_before_selection", "event_counts", "n_events_total",
+                    "background_spatial_conditional_normalization", "background_spatial_normalization_method", "base_event_selection")
+            row["event_selection_json"] = json.dumps({key: result[key] for key in keys}, sort_keys=True)
         warnings.extend(str(value) for value in result.get("warnings", []))
     ranked = sorted(rows, key=lambda row: float(row["signed_sqrt_ts"]), reverse=True)
     ranks = {int(row["source_number"]): rank for rank, row in enumerate(ranked, start=1)}
     for row in rows:
         row["significance_rank"] = ranks[int(row["source_number"])]
     return rows, list(dict.fromkeys(warnings))
+
+
+def select_stacking_events(data, normalized):
+    """Apply explicit catalog cuts without a source-centered stacking window."""
+    options = {key: getattr(normalized, key, None) for key in
+               ("event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")}
+    if builtins.all(value is None for value in options.values()):
+        return data, {"event_selection": "all_events", "base_event_selection": "abs_dec_lt87"}
+    lower, upper = _event_declination_bounds(**options)
+    selected = dict(data)
+    names = ("IC40", "IC59", "IC79", "IC86_I", "IC86_II-VII")
+    masks = [(values >= lower/d2r) & (values <= upper/d2r) for values in data['Decs_nu']]
+    counts = array([int(count_nonzero(mask)) for mask in masks])
+    if any(counts == 0):
+        raise ValueError("Event declination selection contains no events in a DR1 dataset")
+    fractions = counts/data['Nks']
+    for key in ('RAs_nu', 'Decs_nu', 'sgms_nu', 'bkgd_pdfs_nu'):
+        selected[key] = [values[mask] for values, mask in zip(data[key], masks)]
+    selected['bkgd_pdfs_nu'] = [values/fraction for values, fraction in zip(selected['bkgd_pdfs_nu'], fractions)]
+    selected['Nks'] = counts
+    return selected, {"event_selection": "all_events" if (lower, upper) == (-90., 90.) else
+                     "abs_dec_cut" if options['event_abs_dec_max_deg'] is not None else "dec_range_cut",
+                     **options, "event_dec_min_deg": lower, "event_dec_max_deg": upper,
+                     "event_counts_before_selection": dict(zip(names, map(int, data['Nks']))),
+                     "event_counts": dict(zip(names, map(int, counts))), "n_events_total": int(counts.sum()),
+                     "background_spatial_conditional_normalization": dict(zip(names, map(float, fractions))),
+                     "background_spatial_normalization_method": "event_count_fraction", "base_event_selection": "abs_dec_lt87"}
 
 
 def build_weighting_schemes(normalized: NormalizedAnalysis) -> list[tuple[str, ndarray]]:

@@ -54,6 +54,7 @@ def review_run(run_directory: str, repo_root: str = ".", write_artifacts: bool =
         review_catalog_run(review, run_dir, root, report, normalized)
     elif analysis_type == "single_source":
         review_single_run(review, report)
+        review_dr1_event_selection(review, report.get("result", {}), normalized, normalized.get("sources", [{}])[0])
     else:
         add_check(review, "analysis_type", "fail", "unknown analysis type: %s" % analysis_type, False)
     warnings = report.get("warnings", [])
@@ -381,7 +382,61 @@ def review_single_run(review: Dict[str, Any], report: Dict[str, Any]) -> None:
         add_check(review, "single_fit_boundary", "warning", "ns_hat is at the lower optimizer boundary", False)
 
 
+def review_dr1_event_selection(review, result, normalized, source, prefix="dr1_event_selection"):
+    window_min = normalized.get("source_dec_window_deg")
+    cut = normalized.get("event_abs_dec_max_deg")
+    lower = normalized.get("event_dec_min_deg")
+    upper = normalized.get("event_dec_max_deg")
+    if all(value is None for value in (window_min, cut, lower, upper)):
+        return
+    before, counts = result.get("event_counts_before_selection", {}), result.get("event_counts", {})
+    fractions = result.get("background_spatial_conditional_normalization", {})
+    valid = (len(counts) == 5 and set(counts) == set(before) == set(fractions)
+             and all(isinstance(count, int) and isinstance(before[name], int) and 0 < count <= before[name]
+                     and finite_float(fractions[name]) is not None
+                     and abs(fractions[name] - count/before[name]) < 1e-12 for name, count in counts.items())
+             and sum(counts.values()) == result.get("n_events_total")
+             and result.get("background_spatial_normalization_method") == "event_count_fraction"
+             and result.get("base_event_selection") == "abs_dec_lt87")
+    actual_lower, actual_upper = finite_float(result.get("event_dec_min_deg")), finite_float(result.get("event_dec_max_deg"))
+    if window_min is not None:
+        window = result.get("source_dec_window") or {}
+        half = finite_float(window.get("half_width_deg"))
+        center = finite_float(source.get("dec_deg"))
+        ratios = window.get("retained_fractions", {})
+        valid = (valid and result.get("event_selection") == "adaptive_source_dec_window"
+                 and half is not None and half >= window_min >= 20. and center is not None
+                 and window.get("minimum_half_width_deg") == window_min
+                 and window.get("minimum_event_fraction_per_dataset") == 0.2
+                 and actual_lower is not None and actual_upper is not None
+                 and abs(actual_lower-max(-90., center-half)) < 1e-9
+                 and abs(actual_upper-min(90., center+half)) < 1e-9
+                 and all(count >= .2*before[name] and ratios.get(name) == fractions[name] for name, count in counts.items()))
+    else:
+        expected_lower, expected_upper = (-float(cut), float(cut)) if cut is not None else (
+            -90. if lower is None else lower, 90. if upper is None else upper)
+        mode = "all_events" if (expected_lower, expected_upper) == (-90., 90.) else "abs_dec_cut" if cut is not None else "dec_range_cut"
+        valid = valid and result.get("event_selection") == mode and actual_lower == expected_lower and actual_upper == expected_upper
+    add_check(review, prefix, "pass" if valid else "fail",
+              "DR1 event selection and background normalization match the request" if valid else
+              "DR1 event selection or background normalization differs from the request", False)
+
+
 def review_catalog_run(review: Dict[str, Any], run_dir: Path, root: Path, report: Dict[str, Any], normalized: Dict[str, Any]) -> None:
+    if any(normalized.get(key) is not None for key in ("source_dec_window_deg", "event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")):
+        selections = report.get("result", {}).get("source_event_selections", [])
+        sources = normalized.get("sources", [])
+        complete = len(selections) == len(sources) and all(item.get("source_number") == index for index, item in enumerate(selections, 1))
+        add_check(review, "dr1_scan_selection_count", "pass" if complete else "fail", "DR1 scan records event selection for each input source", False)
+        for index, (selection, source) in enumerate(zip(selections, sources), 1):
+            review_dr1_event_selection(review, selection, normalized, source, f"dr1_source_{index}_event_selection")
+        stack_selection = report.get("result", {}).get("stacking_event_selection", {})
+        stack_request = dict(normalized, source_dec_window_deg=None)
+        if any(normalized.get(key) is not None for key in ("event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")):
+            review_dr1_event_selection(review, stack_selection, stack_request, {}, "dr1_stack_event_selection")
+        else:
+            valid = stack_selection.get("event_selection") == "all_events"
+            add_check(review, "dr1_stack_event_selection", "pass" if valid else "fail", "DR1 stack uses all sample events without the source window", False)
     source_path = run_dir / "source_results.csv"
     stacking_path = run_dir / "stacking_results.csv"
     source_rows = read_csv_if_present(source_path)
