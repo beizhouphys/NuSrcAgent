@@ -76,4 +76,8 @@ def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path
     if len(normalized.sources) != 1:
         raise ConfigError("likelihood backend Phase 1.1 expects exactly one source")
     source = normalized.sources[0]
-    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root or ".", gamma=normalized.spectral_indices[0], spectrum=normalized.spectrum)
+    return run_single_source_time_integrated(source.ra_deg, source.dec_deg, repo_root=repo_root or ".",
+        gamma=normalized.spectral_indices[0], spectrum=normalized.spectrum,
+        source_dec_window_deg=normalized.source_dec_window_deg,
+        event_abs_dec_max_deg=normalized.event_abs_dec_max_deg,
+        event_dec_min_deg=normalized.event_dec_min_deg, event_dec_max_deg=normalized.event_dec_max_deg)

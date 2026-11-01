@@ -111,8 +111,6 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
     event_cut = config.background.event_abs_dec_max_deg
     if event_cut is not None and (not math.isfinite(event_cut) or not 0.0 < event_cut <= 90.0):
         result.errors.append("background.event_abs_dec_max_deg must be finite and in (0, 90]")
-    if event_cut is not None and config.data.sample != "icecube_public_ps_14yr_dr2":
-        result.errors.append("background.event_abs_dec_max_deg is currently supported only for the 14-year DR2 backend")
     event_bounds = [value for value in (config.background.event_dec_min_deg, config.background.event_dec_max_deg) if value is not None]
     if any(not math.isfinite(value) or not -90.0 <= value <= 90.0 for value in event_bounds):
         result.errors.append("background event declination bounds must be finite and in [-90, 90]")
@@ -120,14 +118,10 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         result.errors.append("background.event_dec_min_deg must be less than background.event_dec_max_deg")
     if event_cut is not None and event_bounds:
         result.errors.append("use either background.event_abs_dec_max_deg or asymmetric event declination bounds, not both")
-    if event_bounds and config.data.sample != "icecube_public_ps_14yr_dr2":
-        result.errors.append("background event declination bounds are currently supported only for the 14-year DR2 backend")
     window = config.background.source_dec_window_deg
     if window is not None:
         if not math.isfinite(window) or not 20.0 <= window <= 180.0:
             result.errors.append("background.source_dec_window_deg must be finite and in [20, 180]")
-        if config.data.sample != "icecube_public_ps_14yr_dr2":
-            result.errors.append("Adaptive source windows require the 14-year DR2 sample")
         if event_cut is not None or event_bounds:
             result.errors.append("Adaptive source windows cannot be combined with explicit event cuts")
         if config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation == "stack":

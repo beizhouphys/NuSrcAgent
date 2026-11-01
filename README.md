@@ -309,7 +309,7 @@ No open-source license is granted by this preparation copy.
 See the [metadata decisions and remaining work](docs/release_metadata_draft.md)
 and [draft release notes](docs/release_notes.md).
 
-New DR2 single-source tasks and individual catalog fits default to a source-centered
+New DR1 and DR2 single-source tasks and individual catalog fits default to a source-centered
 declination window: minimum half-width 20 degrees and at least 20% of each
 dataset. Use `--full-sky-events` at task creation for all events, or
 `--source-dec-window-deg 30` for a larger minimum half-width. The stack part of

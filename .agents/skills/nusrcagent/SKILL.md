@@ -348,15 +348,19 @@ See [task interface](references/agent-task-interface.md) and
 
 ## Individual-source performance settings
 
-New DR2 single-source tasks and individual catalog fits use a source-centered
+New DR1 and DR2 single-source tasks and individual catalog fits use a source-centered
 declination window with minimum half-width 20 degrees, expanded until every
-dataset retains at least 20% of its full sample. This is recorded at task
+dataset includes at least 20% of its full sample. This is recorded at task
 creation. Explicit event cuts keep their own rules; `--full-sky-events` requests
 all events, and `--source-dec-window-deg` selects a larger minimum half-width.
 The stack part of `scan_and_stack` retains its recorded event selection.
 Scans reuse complete data and validated PDF tables; they never reuse another
 source's event mask or fitted state. See `docs/single_source_performance.md`.
 Do not change the event selection of historical tasks or background ensembles.
+For DR1, use its existing abs(Dec) < 87 degree sample and original background
+PDF normalization by the selected-event fraction. New `--full-sky-events`
+requests record [-90, 90] bounds. Historical DR1 requests without a window
+or explicit bounds keep their fixed 20-degree half-width.
 
 ## Fixed-spectrum flux upper limits and reference-spectrum figures
 

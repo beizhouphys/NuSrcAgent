@@ -1,11 +1,16 @@
 # Individual-source event selection and input reuse
 
-New DR2 single-source tasks and catalog scans use a source-centered declination
-window. Its half-width starts at 20 degrees and expands until IC40, IC59, IC79
-and IC86 I–XI each retain at least 20% of their own full event sample. A single
-half-width is used for all four datasets; boundaries are clipped at the poles.
-The background spatial PDF is conditioned using the frozen model's integral
-over the selected interval. No event-count normalization is substituted.
+For new DR1 and DR2 single-source tasks and catalog scans, use a source-centered
+declination window. Its half-width starts at 20 degrees and expands until each
+detector dataset includes at least 20% of its own sample. Use one half-width
+for the datasets in an analysis, with boundaries clipped at the poles.
+DR1 uses five datasets: IC40, IC59, IC79, IC86 I and IC86 II–VII. Its existing
+sample excludes abs(Dec) >= 87 degrees. DR2 uses IC40, IC59, IC79 and IC86 I–XI.
+
+Keep the background PDF model and normalization of each backend. DR2 uses the
+frozen model's integral over the selected interval. DR1 uses its original
+selected-event fraction: B_selected = B_full * N_full / N_selected. The
+window rule does not change detector acceptance, source weights or fit bounds.
 
 For an individual-source task or scan, add `--source-dec-window-deg 30` at
 creation to start with a larger minimum half-width. Values below 20 degrees
@@ -14,14 +19,20 @@ fit. Explicit `--event-dec-min-deg`, `--event-dec-max-deg` or
 `--event-abs-dec-max-deg` instead retain their existing selection rules and
 cannot be combined with the adaptive source window. The default is recorded
 in the persistent task before execution; the task must still reach `READY`.
-Historical tasks without the new setting keep their recorded all-event or
-explicit-cut behavior. DR1 and the stack part of `scan_and_stack` are unchanged.
+Historical tasks keep their recorded selection. DR1 requests without window
+or explicit bounds keep the original fixed 20-degree half-width. For new DR1
+`--full-sky-events` requests, record bounds [-90, 90] to distinguish them from
+that historical setting. All-event DR1 fits use the existing abs(Dec) < 87
+degree sample. Joint stacks use all sample events unless the user supplies
+explicit cuts. Do not apply individual-source windows to the joint stack.
 
-Every individual result records `source_dec_window`, the actual declination
+Each new individual result records `source_dec_window`, the actual declination
 bounds, `event_counts_before_selection`, selected `event_counts`, retained
 fractions and `background_spatial_conditional_normalization`. Scientific review
 checks the requested minimum half-width, source-centered boundaries and the
-20% requirement separately for each dataset. A windowed fit can differ from
+20% requirement for each dataset. DR1 catalog reports store these records in
+`source_event_selections`, with an `event_selection_json` column in the source
+CSV. They record the independent stack selection in `stacking_event_selection`. A windowed fit can differ from
 an all-event fit: retaining 20% does not prove parameter bias or significance
 coverage. Any background trials for a windowed fit must repeat the same event
 selection and fit procedure; historical ensembles must not be relabeled.

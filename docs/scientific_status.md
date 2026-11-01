@@ -28,6 +28,15 @@ source modeling through its point-coordinate examples.
 
 ## Likelihood and detector assumptions
 
+For new DR1 and DR2 single-source analyses and individual catalog fits, use a
+source-centered declination window with a minimum half-width of 20 degrees.
+Expand it until each dataset includes at least 20% of its sample. DR1 keeps
+its abs(Dec) < 87 degree sample and background PDF normalization by the
+selected-event fraction. DR2 keeps its background PDF integral normalization.
+Joint stacks use all sample events unless the user supplies explicit cuts.
+Historical DR1 requests without the new window setting keep their fixed
+20-degree half-width. See [event selection](single_source_performance.md).
+
 DR2 uses a point-source Rayleigh point-spread function (PSF) and retains every
 selected source–event term, computing them in smaller blocks to limit memory
 within the recorded event selection. New individual fits use the adaptive
