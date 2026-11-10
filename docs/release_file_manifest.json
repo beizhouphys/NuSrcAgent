@@ -27,6 +27,11 @@
       "sha256": "a46a0a7005044f3d38f237adc7e32f2380f17aa7b4547907473c750dae46c1e1"
     },
     {
+      "path": ".claude/skills/nusrcagent/SKILL.md",
+      "bytes": 930,
+      "sha256": "512b50d4bfa005b8164561f93aa109307c3ccc33f647354913156bf3a49c29ff"
+    },
+    {
       "path": ".gitattributes",
       "bytes": 98,
       "sha256": "953d014dc776f514bee4656d4e164e10964084f0becb3eb4000b94d79a426311"
@@ -58,8 +63,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 23232,
-      "sha256": "49624c2212d5365e07fd6e4bb665940d50d29f9e86f91d791a1a425ff276f70f"
+      "bytes": 23270,
+      "sha256": "7297c21347b4c8dcf04b4c7ab87bc9b14ba897276b67fbc6f81d6811fc20ddc5"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
