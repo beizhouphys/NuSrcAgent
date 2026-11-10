@@ -195,12 +195,12 @@ request. If there is no preference or language cue, such as a bare
 `$nusrcagent` invocation, replies default to English. The language used to
 write project instructions is not treated as your language preference.
 
-After installation, open the project folder in Codex. The project provides
-the **NuSrcAgent skill**, a set of instructions that tells the
-assistant how to set up, run and check these analyses. For example, ask:
+After installation, start a local Claude Code session in the project folder and
+enter the request below. In Codex, use `$nusrcagent` with the same request. Both
+assistants follow the **NuSrcAgent skill** and call the same local Python commands.
 
 ```text
-$nusrcagent Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
+/nusrcagent Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
 with full14 DR2, time-integrated spatial+energy. Fit ns and Gamma.
 ```
 
@@ -234,7 +234,7 @@ saved and is not maximized again. See the [two-stage workflow](docs/single_sourc
 
 ## Minimal examples and outputs
 
-Codex is not required for the numerical fits. Follow the
+To run the numerical fits directly in a terminal, follow the
 [worked examples](docs/quickstart.md) for complete terminal commands:
 
 1. NGC 1068 single-source fit.
