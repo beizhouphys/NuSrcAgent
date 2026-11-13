@@ -25,15 +25,23 @@
   preliminary; failed reviews must not be reported as valid results.
 - Report the maximized likelihood statistic as `TS`. Analytic local p-values
   do not establish empirical significance or parameter coverage.
-- DR2 time-dependent single-source analysis and independent catalog scans use
-  explicit Gaussian/box settings, including the uniform-livetime background
-  assumption. Supplied t0/width are fixed unless explicitly requested as fit
-  seeds; omitted parameters require bounds/seeds/search settings before READY.
-  Time-dependent stacking awaits collaborator code. No time-dependent
-  background trials or time-integrated significance/flux formulas may run here.
-  See docs/time_dependent.md.
+- Always default new time-dependent requests to the merged
+  `per_source_catalog_windows` workflow: fixed per-source box windows,
+  single-source fits, scans, stacking and requested shared seasonal trials.
+  Read docs/time_dependent_catalog.md. Require explicit windows, detector phases
+  and the uniform-livetime background assumption before READY. Completed trials
+  provide empirical p-values and significances. Never silently fall back to
+  legacy Gaussian/box time searches for unsupported settings; explain the
+  limitation. New legacy requests require explicit `scope=legacy_time_profile`.
+  Existing saved tasks retain their recorded definitions. Never apply
+  time-integrated significance/flux formulas to time-dependent fits.
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
+- For completed fixed-window time-dependent background ensembles, use the
+  canonical result adapter and `scripts/plot_time_dependent_standard_report.py`.
+  Render only after all validation checks pass. Preserve the existing
+  NuSrcAgent task, authorization, review and Monte Carlo-interval rules; do not
+  apply this presentation path to time-integrated or legacy time-profile runs.
 
 ## Communication and notation
 

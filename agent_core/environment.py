@@ -16,6 +16,8 @@ PINNED_PACKAGES = {
     "reportlab": "5.0.0",
     "scipy": "1.18.0",
     "skyllh": "26.0.0",
+    "numba": "0.68.0",
+    "PyYAML": "6.0.3",
 }
 DR2_DATASET_NAMES = ("IC40", "IC59", "IC79", "IC86_I-XI")
 DR2_SEASON_NAMES = (

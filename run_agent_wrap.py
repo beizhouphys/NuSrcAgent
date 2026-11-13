@@ -11,11 +11,21 @@ from agent_core.cpu import configure_threads, positive_worker_count
 # Set numerical-library limits before importing analysis modules. Spawned scan
 # workers keep the single-thread environment inherited from their parent.
 if __name__ == "__main__" and any(command in sys.argv[1:] for command in
-                                  ("run", "dominance", "dr2-ra-scramble")):
+                                  ("run", "dominance", "dr2-ra-scramble", "td-background-trials")):
     _cpu_parser = argparse.ArgumentParser(add_help=False)
     _cpu_parser.add_argument("--workers", type=positive_worker_count, default=1)
+    _cpu_parser.add_argument("--task")
+    _cpu_parser.add_argument("--repo-root", default=".")
     _cpu_options, _ = _cpu_parser.parse_known_args()
-    configure_threads(1 if "dr2-empirical-scramble" in sys.argv[1:] else _cpu_options.workers)
+    _catalog_windows = False
+    if "run" in sys.argv[1:] and _cpu_options.task:
+        try:
+            from agent_core.task_state import load_task as _load_cpu_task
+            _cpu_task, _ = _load_cpu_task(_cpu_options.task, Path(_cpu_options.repo_root).resolve())
+            _catalog_windows = _cpu_task.get("parameters", {}).get("temporal", {}).get("value", {}).get("scope") == "per_source_catalog_windows"
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass  # The normal command reports malformed/missing tasks.
+    configure_threads(1 if _catalog_windows or "td-background-trials" in sys.argv[1:] or "dr2-empirical-scramble" in sys.argv[1:] else _cpu_options.workers)
 
 from agent_core.temporal import configure_temporal_task
 from agent_core.progress import timed_command, print_result
@@ -35,6 +45,27 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).expanduser().resolve()
     try:
+        if args.command == "td-background-trials":
+            from agent_core.time_dependent_trials import prepare, run, report, read_task
+            directory = Path(args.output_directory).expanduser().resolve()
+            if args.action == "prepare":
+                if not args.baseline_task or args.n_trials is None:
+                    raise ValueError("prepare requires --baseline-task and --n-trials")
+                result = prepare(repo_root, directory, args.baseline_task, args.n_trials,
+                    args.seed, args.workers, args.batch_size, args.request)
+            elif args.action in {"run", "resume"}:
+                if args.action == "resume" and (directory/"STOP").exists():
+                    (directory/"STOP").unlink()
+                result = run(repo_root, directory, args.max_batches)
+            elif args.action == "report":
+                result = report(repo_root, directory)
+            elif args.action == "stop":
+                result = read_task(directory)
+                (directory/"STOP").touch()
+            else:
+                result = read_task(directory)
+            print_result(result)
+            return 0
         if args.command == "install-inputs":
             from agent_core.input_install import install_inputs
             result = install_inputs(repo_root, args.data_sample, args.likelihood_mode,
@@ -328,6 +359,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Persistent, auditable wrapper for HE-neutrino analysis tasks.")
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    td = subparsers.add_parser("td-background-trials", help="Matched shared seasonal trials for reviewed fixed catalog windows.")
+    td.add_argument("--action", required=True, choices=["prepare", "run", "resume", "status", "stop", "report"])
+    td.add_argument("--output-directory", required=True)
+    td.add_argument("--baseline-task")
+    td.add_argument("--n-trials", type=int)
+    td.add_argument("--seed", type=int, default=1)
+    td.add_argument("--workers", type=positive_worker_count, default=1,
+                    help="Reference processes or cached-engine Numba threads; stored at prepare.")
+    td.add_argument("--batch-size", type=positive_worker_count, default=100)
+    td.add_argument("--max-batches", type=positive_worker_count)
+    td.add_argument("--request", default="")
 
     install = subparsers.add_parser("install-inputs", help="Download/extract the fixed project-provided IceCube and frozen PDF bundles and verify hashes.")
     install.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
@@ -494,8 +536,8 @@ def build_parser() -> argparse.ArgumentParser:
     spectrum_prepare.add_argument("--estimate-only", action="store_true", help="Calculate one preparation unit for a current measured ETA; retain it for the full preparation.")
     for command in (single, catalog):
         command.add_argument("--time-mode", choices=["time_integrated", "time_dependent"])
-        command.add_argument("--temporal-file", help="JSON time profile, MJD/UT1 convention, fixed values or explicit fit bounds/seeds/search settings.")
-    confirm.add_argument("--temporal-file", help="Resolve pending time-search settings using a complete JSON specification.")
+        command.add_argument("--temporal-file", help="JSON fixed per-source box windows, detector phases and MJD/UT1 convention. New time-dependent tasks default to the merged per_source_catalog_windows workflow. Legacy Gaussian/box searches require explicit scope=legacy_time_profile.")
+    confirm.add_argument("--temporal-file", help="Complete temporal settings; preserves the task's recorded workflow unless scope is explicitly changed.")
     return parser
 
 

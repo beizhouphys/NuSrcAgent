@@ -65,6 +65,10 @@ class AnalysisAgent:
                 result = (run_likelihood_backend(normalized, self.repo_root, workers=workers) if stacking_primary is None
                           else run_likelihood_backend(normalized, self.repo_root, stacking_primary=stacking_primary, workers=workers))
                 result["execution"] = execution_metadata(workers, normalized)
+                if result.get("temporal_scope") == "per_source_catalog_windows":
+                    result["execution"].update(engine=result["time_dependent_engine"]["engine"],
+                        trial_workers=result["time_dependent_engine"]["workers"],
+                        trial_threads=result["time_dependent_engine"]["threads"], scan_workers=0)
             with plan.phase('output generation'):
                 run_dir = write_run_artifacts(path, config, normalized, result, self.repo_root)
             with plan.phase('scientific review'):

@@ -54,7 +54,7 @@ jobs:
           assert not list(Path(".").glob("Tests*")), "Owner tests must not be shipped"
           modules = ["run_agent_wrap", "verify_private_alpha_setup"]
           for directory in ("agent_core", "analysis_backend"):
-              modules.extend(f"{directory}.{path.stem}" for path in sorted(Path(directory).glob("*.py")))
+              modules.extend(".".join(path.with_suffix("").parts) for path in sorted(Path(directory).rglob("*.py")))
           for name in modules:
               importlib.import_module(name)
           print(f"Imported {len(modules)} public runtime modules without loading data")
@@ -66,6 +66,7 @@ jobs:
           python run_agent_wrap.py --help
           python run_agent_wrap.py create-single --help
           python run_agent_wrap.py create-catalog --help
+          python run_agent_wrap.py td-background-trials --help
           python run_agent_wrap.py install-inputs --help
           python verify_private_alpha_setup.py --help
       - name: Inspect the small example catalog without running fits

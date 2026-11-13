@@ -1,9 +1,17 @@
-# DR2 time-dependent single-source analysis and catalog scans
+# Legacy Gaussian/box time searches
+
+New time-dependent requests default to the merged
+[fixed-window scan, stacking and shared-trial workflow](time_dependent_catalog.md).
+This legacy workflow requires explicit `"scope": "legacy_time_profile"` in new
+temporal JSON inputs. Existing saved tasks retain their original interpretation.
 
 Time-dependent analysis tests a source's emission with an explicit Gaussian
 or box arrival-time profile. A catalog scan fits every selected source
 independently, with its own ns, Gamma and temporal parameters. Time-dependent
-stacking awaits collaborator-provided code. DR1 remains unchanged.
+stacking uses the separate [fixed per-source window workflow](time_dependent_catalog.md).
+This guide describes the legacy Gaussian/box time-search workflow only; its search and
+calibration restrictions do not apply to the new fixed-window workflow. DR1
+remains unchanged.
 
 ## Scientific definition
 
@@ -87,6 +95,7 @@ not approved defaults for a researcher's source. A fixed Gaussian example is:
 
 ```json
 {
+  "scope": "legacy_time_profile",
   "profile": "gaussian",
   "time_format": "mjd",
   "time_scale": "ut1",
@@ -100,6 +109,7 @@ For a fitted t0 and width, replace the last two settings and add search:
 
 ```json
 {
+  "scope": "legacy_time_profile",
   "profile": "gaussian",
   "time_format": "mjd",
   "time_scale": "ut1",

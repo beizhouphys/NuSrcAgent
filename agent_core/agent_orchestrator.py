@@ -120,6 +120,8 @@ def build_analysis_payload(task: Dict[str, Any], repo_root: Path) -> Dict[str, A
             payload["analysis"][key] = parameters[key]["value"]
     if payload["analysis"]["time_mode"] == "time_dependent":
         payload["background"].update(method="none", n_trials=0)
+        if payload["analysis"]["temporal"].get("scope") == "per_source_catalog_windows":
+            payload["analysis"]["fit_procedure"] = parameters["fit_procedure"]["value"]
     return payload
 
 
