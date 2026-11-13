@@ -1,6 +1,6 @@
 ---
 name: nusrcagent
-description: Coordinate supported IceCube single-source searches, catalog scans and time-integrated stacking through persistent tasks and scientific review, including DR2 Gaussian/box time-dependent source searches.
+description: Coordinate supported IceCube single-source searches, catalog scans and stacking through persistent tasks and scientific review, including DR2 Gaussian/box searches and fixed-window time-dependent stacking with shared background trials.
 ---
 
 # NuSrcAgent
@@ -122,6 +122,14 @@ with commentary. Only a subsequent affirmative user reply authorizes stage 2;
 pass the actual reply with --flux-user-reply and report flux/figures in that
 later turn's final answer. This supersedes earlier automatic-continuation rules.
 
+For fixed-window time-dependent single-source, scan and joint-stack analyses,
+the first turn likewise ends with a FINAL ANSWER containing the reviewed
+observed ns/Gamma and TS, the unavailable-calibration statement and material
+warnings, followed by a question asking whether to run a fixed-count matched
+background ensemble. Only a subsequent explicit reply with an agreed trial
+count authorizes that second stage. Follow the analysis-specific contracts
+below; time-dependent tasks do not enter `AWAITING_FLUX`.
+
 ## Response language
 
 - Follow the user's explicit language request. Otherwise, honor an explicitly
@@ -174,12 +182,49 @@ from one dataset's pilot. Preparation does not maximize the LLH or start trials.
 A supplied non-PL shape is fixed; fit its normalization through ns, without
 reporting a fictitious PL Gamma. Preserve all existing primary/flux-stage gates.
 
-## Time-dependent DR2 single-source analysis and catalog scans
+## Time-dependent DR2 workflow selection
+
+Always use the newly merged workflow by default for time-dependent requests.
+Treat any request for a `spatial+energy+time` likelihood or analysis as a
+time-dependent request even when it does not separately say "time-dependent"
+or provide a scope; do not route it to the time-integrated spatial+energy
+workflow. Read `docs/time_dependent_catalog.md` first. New tasks default to
+`scope=per_source_catalog_windows`, including when the input omits scope.
+Use this workflow for single sources, scans, stacks or
+scan_and_stack. Preserve explicit catalog order, positive intrinsic weights,
+windows, detector phases, frozen PDFs and fitted/fixed Gamma. This scope uses
+`catalog_continuous_profile_v1`, not the optimizer defaults below. `--workers`
+sets cached-engine Numba threads or reference-engine trial processes; keep
+BLAS/OpenMP at one thread. Do not silently substitute engines or time searches.
+Only execute observed tasks after READY. Inspect artifact/scientific reviews.
+Use the time-dependent reporting stages under the joint-stack and single-source
+sections below; observed fits run zero trials and no flux stage.
+
+Missing windows or detector phases must be resolved before READY. Gaussian
+profiles or fitted time parameters are unsupported by this engine; explain
+that limitation rather than silently selecting the legacy workflow. Only an
+explicit request for the legacy engine should select `scope=legacy_time_profile`.
+Keep existing saved tasks on their recorded workflow.
+
+For `scope=per_source_catalog_windows`, also read
+[time-dependent-result-standard.md](references/time-dependent-result-standard.md).
+
+Use the same spectral-index notation as the time-integrated workflow in every
+human-facing time-dependent report and figure: plain text `Gamma` and the symbol
+`\Gamma`, defined by `dN/dE proportional to E^{-\Gamma}`. Keep `gamma`,
+`gamma_min`, `gamma_max` and related names unchanged in CLI options, Python
+interfaces and machine-readable artifacts; those fields store the positive
+Gamma value after the existing signed-exponent conversion.
+
+The following subsection applies only to explicitly requested legacy analyses.
+
+## Legacy Gaussian/box single-source searches and catalog scans
 
 Use the same public wrapper with `--time-mode time_dependent` and a complete
-`--temporal-file` JSON specification. Read `docs/time_dependent.md` first.
-Single sources and independent catalog scans are supported; time-dependent
-stacking and scan_and_stack await collaborator code and must not execute.
+`--temporal-file` JSON specification with `scope=legacy_time_profile`.
+Read `docs/time_dependent.md` first.
+Single sources and independent catalog scans are supported in this scope;
+stacking and scan_and_stack must use the fixed-window scope above instead.
 For multiple sources select `--catalog-operation scan`; do not request stacking
 weights. Coordinates and spectrum use the existing shared input layers.
 
@@ -201,8 +246,8 @@ Report ns, fitted/fixed Gamma, TS, t0 and Gaussian sigma_t or full box duration
 with units and modes. At ns=0 temporal parameters/Gamma are not measurements.
 P-values, significances and catalog-corrected quantities remain unavailable:
 never apply the time-integrated half-chi-square estimate, catalog-size correction
-or sqrt(TS) as a significance. No time-dependent trials are authorized; their
-scrambling method remains pending owner discussion, and future trials must
+or sqrt(TS) as a significance. No trials for this legacy time-search scope are
+implemented; future calibration must
 repeat the complete observed temporal/spectral/catalog search. These tasks
 execute zero trials and no time-integrated flux products; they finish after
 the primary result and review, without a flux-continuation question. Match any
@@ -418,7 +463,7 @@ checks; actual failed reviews must still block valid-result reporting.
 
 ## Catalog optimizer default safeguard
 
-For new DR2 catalog `scan` and individual fits in `scan_and_stack`, verify
+Except for `per_source_catalog_windows`, for new DR2 catalog `scan` and individual fits in `scan_and_stack`, verify
 `scan_fit_procedure=skyllh_lbfgs_v1` in the persistent task and analysis request.
 This field is recorded by the CLI's separate catalog-default helper; it must
 not depend on single-source flux-reporting or joint stacking defaults. The
@@ -445,7 +490,7 @@ speedups from a warm-cache benchmark. See `docs/stacking_performance.md`.
 
 ## Original SkyLLH optimizer
 
-For all newly created DR2 single-source, catalog-scan and joint stacking fits,
+Except for `per_source_catalog_windows`, for all newly created DR2 single-source, catalog-scan and joint stacking fits,
 use `fit_procedure=skyllh_lbfgs_v1`; individual catalog fits also record
 `scan_fit_procedure=skyllh_lbfgs_v1`. Do not add a Gamma-interval or
 interpolation-switch maximum search. Preserve the likelihood, PDFs, bounds,
@@ -457,6 +502,8 @@ substitution; create a new explicit request. Observed and corresponding trial
 fits must use the same supported procedure.
 
 ## Joint-stack two-stage intensity reporting
+
+### Time-integrated analysis
 
 For new DR2 time-integrated spatial+energy `stack` and joint `scan_and_stack`
 tasks, the wrapper records separate `stacking_flux` defaults: 95% limits for
@@ -504,7 +551,52 @@ TS > 9. Re-entering the primary
 stage or changing parameters while awaiting flux is rejected. See
 `docs/stacking_flux.md` for definitions, artifacts and the two commands.
 
+### Time-dependent analysis
+
+For new DR2 `spatial+energy+time` `stack` and `scan_and_stack` tasks, use the
+fixed-window `per_source_catalog_windows` workflow. The two reporting stages are
+the reviewed observed fit and, only after separate authorization, its matched
+fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
+
+1. Run the READY observed task normally. It performs the requested source fits
+   and/or joint stack with zero background trials, then completes review. Read
+   the observed source and stack results and both artifact/scientific reviews.
+   Write a FINAL ANSWER chat bubble with the weighting prescription and source
+   count, the leading observed source when a scan is present, and the applicable
+   source/stack best-fit ns, Gamma and TS. State that local, catalog post-trial
+   and stacking p-values/significances are unavailable from the observed-only
+   fit. Preserve every material warning and identify Gamma as unidentified when
+   ns=0. Ask whether to continue with matched shared seasonal background trials
+   and request an agreed fixed trial count if none has been supplied, then END
+   THIS TURN. A significance reminder or the initial analysis request does not
+   itself authorize trials.
+2. Only after the user explicitly authorizes the background stage with a fixed
+   count in a later turn, run `td-background-trials` from the reviewed baseline.
+   Import the observed fit without maximizing it again; repeat the recorded
+   source and stack hypotheses on each shared seasonal scramble and preserve the
+   index-to-seed mapping through pause/resume. Do not report a completed result
+   from an incomplete ensemble. After the requested count and all validation
+   checks pass, present the canonical table with the leading source, best fit,
+   add-one local p-value, Sidak result, empirical shared-trial maximum-TS result,
+   and weighted-stack empirical result when applicable. Report Monte Carlo
+   intervals and distinguish local, catalog-maximum and stacking probabilities.
+   These trials do not calibrate fitted time parameters.
+
+Use the canonical saved-result bundle and
+`scripts/plot_time_dependent_standard_report.py`; do not substitute an ad hoc
+plotter. Display the phase-labelled source p-values-over-time figure when a scan
+is present and the stacking background-TS histogram when a stack is present.
+For fitted Gamma, also display the validated likelihood contours for the
+empirical leading source and stack when applicable; a missing, nonfinite or
+MLE/TS-mismatched required surface fails the standard-result validation gate.
+Use the matched scrambled distribution as the null calibration and do not add a
+time-integrated asymptotic overlay. Include NuSrcAgent review status, requested
+and produced trial counts, seed uniqueness, index contiguity, material warnings,
+and links to the PNG/PDF figures and numerical artifacts.
+
 ## Single-source calculation and chat output in two stages
+
+### Time-integrated analysis
 
 For newly created single-source tasks, `run --task <task_id>` performs and
 reviews the primary LLH maximization first. The wrapper returns
@@ -551,6 +643,40 @@ recorded flow. Single-source modes with no supported/requested flux products
 finish after their primary stage; do not invent a flux calculation. Catalog
 individual-source scans retain their existing execution and optional flux switch.
 
+### Time-dependent analysis
+
+For a new DR2 `spatial+energy+time` single-source or scan-only request, use the
+fixed-window `per_source_catalog_windows` workflow. The two reporting stages are
+the reviewed observed fit and the separately authorized fixed-count background
+ensemble; there is no time-dependent flux continuation.
+
+1. Run the READY observed task and review its artifacts. In the first FINAL
+   ANSWER, report the source name (and the leading observed source for a catalog
+   scan), best-fit ns, Gamma and TS, fixed/fitted Gamma treatment, detector
+   phases and time-window definition, review status and every material warning.
+   State that p-values and significances are unavailable because the observed
+   fit ran zero trials; at ns=0, report Gamma as unidentified. Ask whether to
+   continue with matched shared seasonal background trials and request the fixed
+   trial count if it is not yet agreed, then END THIS TURN. Do not launch trials
+   merely because the answer explains that empirical calibration is required.
+2. In a later turn, only after explicit user authorization with the fixed count,
+   run `td-background-trials` from the reviewed observed baseline. For one source,
+   report the add-one empirical local p-value, exceedances/trials, one-sided
+   significance when finite, Monte Carlo intervals and the minimum resolvable
+   p-value. For a scan, additionally report the empirical shared-trial maximum-TS
+   post-trial result as primary and the Sidak approximation as secondary. State
+   validation, requested/produced counts, seed uniqueness and index contiguity,
+   and preserve all inherited warnings.
+
+After validation passes, use the canonical result bundle and standard renderer.
+Display the phase-labelled p-values-over-time figure for a catalog scan and the
+selected source background-TS histogram when produced. For fitted Gamma, display
+the validated likelihood contour for the source selected by the standard result
+(the only source for a standalone analysis or the empirical leading source for a
+scan). Link PNG/PDF figures and the machine-readable tables and NPZ files. Do not
+call likelihood-drop contours calibrated confidence regions, and do not use a
+time-integrated analytic significance formula for these fits.
+
 ## Single-source linear Gamma interpolation
 
 For new standalone DR2 spatial+energy single-source tasks, verify that the
@@ -568,11 +694,13 @@ maximum-consistency guard. Keep the existing first-final-answer/user-reply
 boundary for interactive flux execution. Do not proactively add interpolation
 switch diagnostics to normal results. See docs/single_source_linear_interpolation.md.
 
-## Flux/intensity figure line styles
+## Analysis figure line styles
 
-For single-source and joint stacking figures, use solid lines for results
-computed by the current analysis (upper limits, measured spectra and contour
-boundaries). Use dashed lines for all published reference spectra from IceCube
-or other authors. Preserve colors, markers, uncertainty bands and units. This
-is a rendering convention; do not rerun LLH fits or alter numerical results
-only to change line styles.
+For time-integrated and time-dependent single-source and joint stacking figures,
+use solid lines for results computed by the current analysis (upper limits,
+measured spectra and likelihood-contour boundaries). Use dashed lines for all
+published reference spectra from IceCube or other authors. Preserve the
+standard time-dependent renderer's defined colors, markers, phase shading,
+significance guides, uncertainty bands and units. This is a rendering
+convention; do not rerun LLH fits or alter numerical results only to change line
+styles.

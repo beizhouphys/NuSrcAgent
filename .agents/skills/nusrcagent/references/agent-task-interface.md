@@ -87,10 +87,16 @@ catalog-scan maximum. See the background-trial guide for interval conventions.
 
 ## Time-dependent primary results
 
-DR2 time-dependent tasks accept a complete `--temporal-file` at creation or
-confirmation, preserve fixed/fitted t0 and width settings, and require READY.
-Multi-source time-dependent requests select independent `scan`; stacking waits
-for collaborator code. `run` and `show` return `time_dependent_summary` with
-input-ordered ns/Gamma/TS/t0/width, calibration-unavailable fields and artifact
-paths. No flux continuation or background trials are enabled. See
-`docs/time_dependent.md` for the explicit time-search and background inputs.
+New DR2 time-dependent tasks default to `per_source_catalog_windows`, including
+when scope is omitted from `--temporal-file`. Require fixed per-source boxes,
+detector phases and explicit scientific assumptions before READY. Choose
+`scan`, `stack` or `scan_and_stack` for the requested catalog operation; the
+default catalog operation remains `scan`. `run` and `show` return
+`time_dependent_summary` with ns/Gamma/TS and artifact paths. Observed fits run
+zero trials and have unavailable significance, with no flux continuation.
+Requested `td-background-trials` follow-ups provide empirical local,
+catalog-maximum and stacking p-values/significances after a complete ensemble.
+See `docs/time_dependent_catalog.md` for commands and fixed-window calibration.
+The legacy Gaussian/box time-search workflow requires explicit
+`scope=legacy_time_profile` for new tasks; existing saved tasks retain their
+recorded interpretation. See `docs/time_dependent.md` only for legacy requests.

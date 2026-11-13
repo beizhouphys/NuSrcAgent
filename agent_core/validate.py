@@ -13,8 +13,10 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
     from agent_core.spectrum import validate_spectrum
     result.errors.extend(validate_spectrum(config.analysis.spectrum, config.stacking.spectral_indices[0],
         config.stacking.gamma_mode, config.analysis.gamma_bounds, root))
-    if config.analysis.fit_procedure != "skyllh_lbfgs_v1":
-        result.errors.append("analysis.fit_procedure must be skyllh_lbfgs_v1 in this runtime")
+    window_engine = config.analysis.time_mode == "time_dependent" and isinstance(config.analysis.temporal, dict) and config.analysis.temporal.get("scope") == "per_source_catalog_windows"
+    expected_procedure = "catalog_continuous_profile_v1" if window_engine else "skyllh_lbfgs_v1"
+    if config.analysis.fit_procedure != expected_procedure:
+        result.errors.append("analysis.fit_procedure must be " + expected_procedure + " for this scope")
     interpolation = config.analysis.signal_energy_gamma_interpolation
     if interpolation is not None:
         if interpolation not in {"linear_v1", "parabola_v1"}:
@@ -23,8 +25,8 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
             result.errors.append("Signal-energy Gamma interpolation requires DR2 spatial+energy analysis")
     scan_procedure = config.analysis.scan_fit_procedure
     if scan_procedure is not None:
-        if scan_procedure != "skyllh_lbfgs_v1":
-            result.errors.append("analysis.scan_fit_procedure must be skyllh_lbfgs_v1 in this runtime")
+        if scan_procedure != expected_procedure:
+            result.errors.append("analysis.scan_fit_procedure must be " + expected_procedure + " for this scope")
         if (config.data.sample != "icecube_public_ps_14yr_dr2"
                 or config.analysis.type != AnalysisType.CATALOG_STACKING
                 or config.analysis.catalog_operation not in {"scan", "scan_and_stack"}):
@@ -96,12 +98,23 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         result.errors.extend(temporal_errors(config.analysis.temporal))
         if config.data.sample != "icecube_public_ps_14yr_dr2":
             result.errors.append("Time-dependent analysis currently requires DR2")
-        if config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation != "scan":
-            result.errors.append("Time-dependent stacking awaits collaborator code; select catalog_operation=scan")
+        catalog_windows = window_engine
+        if catalog_windows:
+            if interpolation not in (None, "linear_v1"):
+                result.errors.append("Catalog-window engine requires linear-density Gamma interpolation")
+            if config.analysis.likelihood_mode != "spatial_energy" or config.analysis.spectrum:
+                result.errors.append("Catalog windows require spatial+energy and a power-law spectrum")
+            if any(getattr(config.background, key) is not None for key in ("source_dec_window_deg", "event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")):
+                result.errors.append("Catalog-window engine does not support additional event declination cuts")
+            engine = config.analysis.temporal.get("engine", "auto")
+            if (engine == "cached-fixed" and config.stacking.gamma_mode != "fixed") or (engine == "cached-free" and config.stacking.gamma_mode != "fitted"):
+                result.errors.append("Cached engine and Gamma mode disagree")
+        if not catalog_windows and config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation != "scan":
+            result.errors.append("Global-profile time searches require catalog_operation=scan; fixed-window stacking uses per_source_catalog_windows")
         if confidence is not None or limit_gammas or measurement_threshold is not None or stack_flux:
             result.errors.append("Time-integrated flux products cannot be used for a time-dependent fit")
         if config.background.n_trials != 0 or config.background.method != "none":
-            result.errors.append("Time-dependent background trials await owner approval; require method=none and n_trials=0")
+            result.errors.append("Observed time-dependent tasks require method=none and n_trials=0; request supported trials as a separate follow-up")
     elif config.analysis.temporal:
         result.errors.append("Temporal settings require time_mode=time_dependent")
     if config.analysis.time_mode != "time_dependent" and config.background.method != "ra_scramble":
@@ -132,6 +145,14 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         validate_single_source(config, result)
     if config.analysis.type == AnalysisType.CATALOG_STACKING:
         validate_catalog(config, result, root)
+    if result.ok and config.analysis.time_mode == "time_dependent" and config.analysis.temporal.get("scope") == "per_source_catalog_windows":
+        from agent_core.normalize import normalize_config
+        from analysis_backend.time_dependent.adapter import resolve_windows
+        try:
+            normalized = normalize_config(config, root, catalog_sources=result.catalog_sources)
+            resolve_windows(normalized)
+        except (ValueError, KeyError, TypeError) as exc:
+            result.errors.append("Invalid catalog windows: " + str(exc))
     return result
 
 

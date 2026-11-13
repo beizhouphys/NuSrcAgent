@@ -311,6 +311,16 @@ stop. Small regression ensembles do not establish precision significance or
 parameter coverage. Random-catalog generation is owner-only testing code;
 historical ensembles and their seed mappings remain unchanged.
 
+## Fixed-window time-dependent extension — 20261105
+
+The merged default time-dependent stacking/trial workflow is documented in
+[time_dependent_catalog.md](time_dependent_catalog.md), with integration evidence
+and remaining release gates in [time_dependent_merge.md](time_dependent_merge.md).
+The following dated record describes the legacy Gaussian/box time-search implementation,
+not the new fixed-window scope. Owner verification scripts remain outside the
+release checkout. CI now imports nested runtime packages and checks the shared
+trial command, but still does not claim real-data validation.
+
 ## DR2 time-dependent integration — 20261024
 
 DR2 time-dependent single-source analysis and independent catalog scans support

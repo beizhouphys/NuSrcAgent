@@ -45,6 +45,16 @@ cost adjustment and current-invocation-only estimates. No ETA changes optimizer
 stopping conditions. Empirical scrambling retains its separate `--workers`
 scheduler and one numerical thread per worker.
 
+## Fixed-window time-dependent engine
+
+The default time-dependent `per_source_catalog_windows` scope interprets `--workers N` as
+Numba threads for cached fixed/free-Gamma engines, or process workers for
+reference background trials. Reference observed fitting is serial. The public
+wrapper caps BLAS/OpenMP at one before numerical imports for these tasks;
+Numba parallelism supplies the cached-engine CPU budget. Trials retain their
+recorded budget on resume. This does not change the existing time-integrated
+CPU rules above. See [workflow and checkpoint details](time_dependent_catalog.md).
+
 ## Dominance and RA-scramble diagnostics
 
 ```bash

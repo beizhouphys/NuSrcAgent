@@ -14,9 +14,10 @@ then run the two [worked examples](docs/quickstart.md).
 
 The current version is `0.2.0`, a development version shared
 through a private repository. Input data and precomputed probability-density
-tables are provided automatically. DR2 time-dependent single-source analysis
-and catalog scans support explicit Gaussian/box profiles; time-dependent
-stacking awaits collaborator code.
+tables are provided automatically. New time-dependent requests default to the
+merged [fixed-window workflow](docs/time_dependent_catalog.md), supporting
+single-source fits, catalog scans, stacking and shared seasonal background
+trials with empirical p-values and significances.
 
 Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
 and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
@@ -66,7 +67,8 @@ substantial time, especially large catalog searches and repeated background fits
 | DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and Gamma |
 | DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance Gamma; no energy term |
 | DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
-| DR2 time-dependent | Single source and individual catalog scan | Gaussian/box profiles; explicit fixed parameters or time searches; stacking awaits collaborator code |
+| DR2 time-dependent per-source windows | Single source, catalog scan, stacking | Default time-dependent workflow; fixed boxes; fixed/fitted Gamma; shared trials and empirical significance |
+| DR2 legacy Gaussian/box time searches | Single source and individual catalog scan | Explicit legacy selection; fixed parameters or time searches; no calibrated trials |
 
 ### Data and analysis terminology
 
@@ -108,10 +110,10 @@ substantial time, especially large catalog searches and repeated background fits
   supplied spectrum overrides this default; this Gamma is not a measured source
   spectrum. Historical tasks keep their recorded spectrum settings.
 - **Time-dependent** analysis also uses event arrival times to test emission
-  over a specified or fitted time profile, for example a flare. This capability
-  supports DR2 single-source analysis and independent catalog scans with Gaussian
-  or box profiles. See the [time-dependent guide](docs/time_dependent.md) for
-  explicit search settings and the current calibration limits.
+  over a specified time profile, for example a flare. The default merged workflow
+  uses fixed per-source box windows for DR2 single-source fits, scans and stacking.
+  Matched shared trials provide empirical p-values and significances. See the
+  [time-dependent guide](docs/time_dependent_catalog.md) for settings and limits.
 - **Single source** analysis fits for a neutrino excess at one specified
   sky position.
 - **Individual catalog scan** fits each catalog source independently,
@@ -283,7 +285,9 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,
   not a measured spectrum.
 - Background trials can follow a reviewed DR2 single-source or stacking
-  analysis. Catalog-scan maxima and time-dependent trials remain unavailable.
+  analysis. That time-integrated workflow does not calibrate catalog-scan maxima
+  or time-dependent trials. The separate [fixed-window trial workflow](docs/time_dependent_catalog.md)
+  supports source-local, catalog-maximum and stacking calibration.
 
 See [scientific status](docs/scientific_status.md) and the
 [fixed scientific baseline](docs/release_scientific_baseline.md) before interpreting outputs.
