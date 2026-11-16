@@ -93,7 +93,7 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
             limit_values.extend(values)
             color, linestyle = styles[index % len(styles)]
             ax.plot(energy, values, color=color, ls=linestyle, lw=2.1,
-                    label=label_name + f" {100*limit['confidence_level']:g}% UL: " + rf"$s_\nu={gamma:g}$", zorder=4)
+                    label=label_name + f" {100*limit['confidence_level']:g}% UL: " + rf"$\Gamma={gamma:g}$", zorder=4)
             arrow = (4e5, 7e4, 2.5e4)[index % 3]
             value = arrow**2 * limit["phi0_upper_limit"] * (arrow / 1e5)**(-gamma)*source_factor
             ax.annotate("", xy=(arrow, value*.52), xytext=(arrow, value),
@@ -135,13 +135,13 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
                     band_confidence_level=None if ref["id"] == "diffuse_starting_tracks" else .68))
         ax.set_ylim(min(1e-10*source_factor, min(limit_values)*.4), max(9e-6*source_factor, max(limit_values)*1.5))
         ax.set_xlabel(r'$E_\nu\;[\mathrm{GeV}]$', fontsize=23, labelpad=9)
-        ax.set_ylabel(r'$E_\nu F_{E_\nu}\,(\nu_\mu+\bar\nu_\mu)\;[\mathrm{GeV\,cm^{-2}\,s^{-1}}]$', fontsize=20, labelpad=11)
+        ax.set_ylabel(r'$E_\nu^2\,\mathrm{d}F_{\nu_\mu+\bar\nu_\mu}/\mathrm{d}E_\nu\;[\mathrm{GeV\,cm^{-2}\,s^{-1}}]$', fontsize=20, labelpad=11)
         extra_labels = []
         if common_intensity:
-            ax.set_ylabel(r'$E_\nu I_{E_\nu}\,(\nu_\mu+\bar\nu_\mu)\;[\mathrm{GeV\,cm^{-2}\,s^{-1}\,sr^{-1}}]$', fontsize=20, labelpad=11)
+            ax.set_ylabel(r'$E_\nu^2\,\mathrm{d}I_{\nu_\mu+\bar\nu_\mu}/\mathrm{d}E_\nu\;[\mathrm{GeV\,cm^{-2}\,s^{-1}\,sr^{-1}}]$', fontsize=20, labelpad=11)
         if intensity_display and not common_intensity:
             intensity_axis = ax.secondary_yaxis("right", functions=(lambda value: value, lambda value: value))
-            intensity_axis.set_ylabel(r'$E_\nu I_{E_\nu}\,(\nu_\mu+\bar\nu_\mu)\;[\mathrm{GeV\,cm^{-2}\,s^{-1}\,sr^{-1}}]$', fontsize=16, labelpad=12)
+            intensity_axis.set_ylabel(r'$E_\nu^2\,\mathrm{d}I_{\nu_\mu+\bar\nu_\mu}/\mathrm{d}E_\nu\;[\mathrm{GeV\,cm^{-2}\,s^{-1}\,sr^{-1}}]$', fontsize=16, labelpad=12)
             intensity_axis.tick_params(which="both", direction="in", labelsize=12)
             extra_labels.append(intensity_axis.yaxis.label)
         ax.legend(loc="upper right", fontsize=10.2, frameon=True, framealpha=.93,
@@ -153,7 +153,7 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
             subtitle = r'Common intensity units per sr  |  $\nu_\mu+\bar\nu_\mu$  |  Published reference uncertainty bands'
         fig.text(.14, .915, subtitle, fontsize=13.5, color="#404040")
         foot = [
-            r'Diffuse is integrated over the full sky: $F_{E_\nu}=4\pi\,\mathrm{sr}\,I_{E_\nu}$; point-source fluxes are unchanged.',
+            r'Diffuse is integrated over the full sky: $\mathrm{d}F/\mathrm{d}E=4\pi\,\mathrm{sr}\times\mathrm{d}I/\mathrm{d}E$; point-source fluxes are unchanged.',
             'Reference shading: published bands. Source shading: 68.27% region envelope, not a simultaneous confidence band.',
             'NGC 1068 and 9.5 yr tracks: 68% bands. Starting tracks: band as in Fig. 17 [3]; CL not stated there.',
             'Source estimates use profile likelihood; confidence levels are stated in the legend.',
@@ -162,7 +162,7 @@ def plot_flux_limits(limits, source_name, output_stem, root, measurement=None, i
             '[2] IceCube, ApJ 928, 50 (2022), arXiv:2111.10299, Fig. 4.',
             '[3] IceCube, Phys. Rev. D 110, 022001 (2024), arXiv:2402.18026, Fig. 17.']
         if not include_ngc1068:
-            foot[0] = r'Diffuse flux is integrated over the full sky: $F_{E_\nu}=4\pi\,\mathrm{sr}\,I_{E_\nu}$.'
+            foot[0] = r'Diffuse flux is integrated over the full sky: $\mathrm{d}F/\mathrm{d}E=4\pi\,\mathrm{sr}\times\mathrm{d}I/\mathrm{d}E$.'
             foot[1] = 'Stack flux is the sum over the selected sources, with their recorded normalized intrinsic weights.'
             foot[2] = '9.5 yr tracks: 68% band. Starting tracks: band as in Fig. 17 [3]; CL not stated there.'
             foot = [line for line in foot if not line.startswith('[1]')]
@@ -200,28 +200,27 @@ def plot_flux_contours(measurement, source_name, output_stem, solid_angle=1.):
                          "pdf.fonttype": 42, "svg.fonttype": "none"}):
         fig, ax = plt.subplots(figsize=(7.8, 6.4))
         fig.subplots_adjust(left=.15, right=.96, bottom=.23, top=.89)
-        factor = measurement["pivot_energy_gev"]**2 / (1e-8 * solid_angle)
         for contour, color in zip(reversed(measurement["contours"]), ("#7752a5", "#d17c12")):
             lower, upper = contour["lower_branch"], contour["upper_branch"]
             points = lower+list(reversed(upper))
             label = f"{100*contour['confidence_level']:.2f}% joint CL"
             if contour["closed"]:
                 points += points[:1]
-                ax.fill([p["gamma"] for p in points], [p["phi0"]*factor for p in points], color=color, alpha=.12)
-                ax.plot([p["gamma"] for p in points], [p["phi0"]*factor for p in points], color=color, ls="-", label=label)
+                ax.fill([p["gamma"] for p in points], [p["phi0"]*1e14/solid_angle for p in points], color=color, alpha=.12)
+                ax.plot([p["gamma"] for p in points], [p["phi0"]*1e14/solid_angle for p in points], color=color, ls="-", label=label)
             else:
                 for index, branch in enumerate((lower, upper)):
-                    ax.plot([p["gamma"] for p in branch], [p["phi0"]*factor for p in branch], color=color, ls="-",
+                    ax.plot([p["gamma"] for p in branch], [p["phi0"]*1e14/solid_angle for p in branch], color=color, ls="-",
                             label=label+" (truncated)" if index == 0 else None)
-        ax.plot(measurement["gamma"], measurement["phi0_hat"]*factor, "k*", ms=12, label="Primary best fit")
-        ax.set_xlabel(r"$s_\nu$", fontsize=16)
-        ax.set_ylabel(r"$E_\nu F_{E_\nu}\ \mathrm{at}\ 1\,\mathrm{TeV}\ [10^{-8}\ \mathrm{GeV\,cm}^{-2}\,\mathrm{s}^{-1}]$", fontsize=15)
+        ax.plot(measurement["gamma"], measurement["phi0_hat"]*1e14/solid_angle, "k*", ms=12, label="Primary best fit")
+        ax.set_xlabel(r"$\Gamma$ in $\mathrm{d}\Phi/\mathrm{d}E\propto E^{-\Gamma}$", fontsize=16)
+        ax.set_ylabel(r"$\phi_{1\,\mathrm{TeV}}\ [10^{-14}\ \mathrm{GeV}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{s}^{-1}]$", fontsize=15)
         if solid_angle != 1.:
-            ax.set_ylabel(r"$E_\nu I_{E_\nu}\ \mathrm{at}\ 1\,\mathrm{TeV}\ [10^{-8}\ \mathrm{GeV\,cm}^{-2}\,\mathrm{s}^{-1}\,\mathrm{sr}^{-1}]$", fontsize=15)
+            ax.set_ylabel(r"$I_{1\,\mathrm{TeV}}\ [10^{-14}\ \mathrm{GeV}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{s}^{-1}\,\mathrm{sr}^{-1}]$", fontsize=15)
         ax.set_title(source_name+(": intensity and spectral index" if solid_angle != 1. else ": flux and spectral index"), pad=16)
         ax.tick_params(which="both", direction="in", top=True, right=True)
         ax.legend(frameon=False)
-        fig.text(.15, .105, "Joint regions use 2 degrees of freedom for normalization and spectral index.", fontsize=10)
+        fig.text(.15, .105, "Joint regions: 2 degrees of freedom; normalization and Gamma vary together.", fontsize=10)
         fig.text(.15, .075, "Profile-likelihood confidence regions; statistical uncertainty.", fontsize=10)
         fig.text(.15, .045, "TS > 9 is a reporting criterion.", fontsize=10)
         outputs = {}
@@ -233,40 +232,10 @@ def plot_flux_contours(measurement, source_name, output_stem, solid_angle=1.):
     return outputs
 
 
-def flux_measurement_notation(measurement):
-    """Report energy flux per logarithmic energy interval at the fit pivot."""
-    factor = measurement["pivot_energy_gev"]**2
-    return {
-        "s_nu": measurement["gamma"],
-        "e_f_e_hat_gev_cm2_s": measurement["phi0_hat"] * factor,
-        "spectral_intervals": [
-            dict(interval, parameter="e_f_e_gev_cm2_s",
-                 lower=interval["lower"] * factor, upper=interval["upper"] * factor)
-            if interval["parameter"] == "phi0" else dict(interval, parameter="s_nu")
-            for interval in measurement["intervals"]
-        ],
-    }
-
-
-def flux_limit_notation(limit):
-    return {
-        "s_nu": limit["gamma"],
-        "e_f_e_upper_limit_gev_cm2_s": limit["e2_dphi_de_upper_limit_gev_cm2_s"],
-    }
-
-
 def write_measurement_tables(folder, measurement, files):
     from agent_core.analysis_outputs import write_csv
     base = {k: v for k, v in measurement.items() if not isinstance(v, (dict, list))}
-    if measurement["reported"]:
-        notation = flux_measurement_notation(measurement)
-        intervals = notation.pop("spectral_intervals")
-        base.update(notation)
-        rows = [dict(base, **interval, reported_parameter=current["parameter"],
-                     reported_lower=current["lower"], reported_upper=current["upper"])
-                for interval, current in zip(measurement["intervals"], intervals)] or [base]
-    else:
-        rows = [base]
+    rows = [dict(base, **interval) for interval in measurement["intervals"]] or [base]
     if measurement.get("flux_scope") == "sum_of_source_fluxes":
         for row in rows:
             for bound in ("lower", "upper"):
@@ -278,17 +247,12 @@ def write_measurement_tables(folder, measurement, files):
     if not measurement["reported"]:
         return
     table = folder / "flux_measurement_profiles.csv"
-    factor = measurement["pivot_energy_gev"]**2
-    profiles = [dict(row, s_nu=row["gamma"], e_f_e_gev_cm2_s=row["phi0"] * factor)
-                for row in measurement["profiles"]]
-    write_csv(table, list(profiles[0]), profiles)
+    write_csv(table, list(measurement["profiles"][0]), measurement["profiles"])
     files["flux_measurement_profiles"] = str(table)
     if measurement["contours"]:
         rows = [dict(confidence_level=c["confidence_level"], dof=c["dof"], critical_q=c["critical_q"],
                      branch=branch, **point) for c in measurement["contours"]
                 for branch in ("lower_branch", "upper_branch") for point in c[branch]]
-        for row in rows:
-            row.update(s_nu=row["gamma"], e_f_e_gev_cm2_s=row["phi0"] * measurement["pivot_energy_gev"]**2)
         table = folder / "flux_measurement_contours.csv"
         write_csv(table, list(rows[0]), rows)
         files["flux_measurement_contours"] = str(table)
@@ -313,19 +277,14 @@ def write_flux_outputs(run_dir, normalized, result, root):
         folder.mkdir(parents=True, exist_ok=True)
         files = fit.setdefault("generated_files", {})
         if measurement is not None:
-            if measurement["reported"]:
-                measurement.update(flux_measurement_notation(measurement))
             write_measurement_tables(folder, measurement, files)
         limits = [item["flux_upper_limit"] for item in fits] if fits else [scalar]
         limits = [limit for limit in limits if limit is not None]
         rows = [{k: v for k, v in limit.items() if not isinstance(v, (dict, list))} for limit in limits]
-        for row, limit in zip(rows, limits):
-            limit.update(flux_limit_notation(limit))
-            row.update(flux_limit_notation(limit))
         table = folder / "flux_upper_limits.csv"
         if rows:
             write_csv(table, list(rows[0]), rows)
-        profile_rows = [dict(gamma=limit["gamma"], s_nu=limit["gamma"], **point) for limit in limits for point in limit["profile"]]
+        profile_rows = [dict(gamma=limit["gamma"], **point) for limit in limits for point in limit["profile"]]
         profile = folder / "upper_limit_profiles.csv"
         if profile_rows:
             write_csv(profile, list(profile_rows[0]), profile_rows)
@@ -345,10 +304,6 @@ def write_flux_outputs(run_dir, normalized, result, root):
         stem = "flux_upper_limits_95" if fits else "flux_measurement_spectrum"
         curves, outputs, hashes = plot_flux_limits(limits, name, figures / stem, root, measurement, include_ngc1068=not stack,
             diffuse_solid_angle=1. if stack else 4*math.pi, source_solid_angle=4*math.pi if stack else 1.)
-        for curve in curves:
-            intensity = curve["e2_flux_unit"].endswith("sr^-1")
-            curve.update(e_f_e_gev_cm2_s=None if intensity else curve["e2_flux"],
-                         e_i_e_gev_cm2_s_sr=curve["e2_flux"] if intensity else None)
         curve_path = folder / "spectrum_curves.csv"
         write_csv(curve_path, list(curves[0]), curves)
         files.update({"flux_spectrum_"+key: value for key, value in outputs.items()})
@@ -367,7 +322,7 @@ def write_flux_outputs(run_dir, normalized, result, root):
             source_energy_range_gev=[1e3, 1e7], source_range_meaning="power-law hypothesis display range; not a measured sensitive range",
             limits=[{k: v for k, v in limit.items() if k != "profile"} for limit in limits],
             measurement=None if measurement is None else {k: v for k, v in measurement.items() if k not in {"profiles", "contours"}},
-            measurement_band_meaning="sampled envelope of the 68.27% joint normalization–spectral index region, not a simultaneous confidence band. Fixed-index fits use a 1D interval",
+            measurement_band_meaning="sampled envelope of the 68.27% joint phi1TeV-Gamma region, not a simultaneous confidence band; fixed-Gamma uses its 1D interval",
             outputs_sha256={path: sha256_file(path) for path in artifact_paths})
         if stack:
             provenance.update(display_quantity="full_sky_average_intensity",

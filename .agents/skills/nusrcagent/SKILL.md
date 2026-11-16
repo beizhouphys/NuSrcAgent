@@ -74,7 +74,7 @@ After the first completed evaluation, always quote the supplied numerical ETA
 in chat as a rough fit-only estimate, even for a brand-new catalog. Do not
 replace it with repeated "unknown" because optimizer stopping time is uncertain.
 Explain that the workload begins with an uncalibrated reporting assumption:
-24 calls for fitted s_nu or 12 for fixed s_nu. This assumption expands when
+24 calls for fitted Gamma or 12 for fixed Gamma. This assumption expands when
 reached and never limits the optimizer. Current full-PDF and cached-call timings
 remain separate; a cached burst cannot replace the full-PDF rate. An overdue
 active call revises its assumed cost upward rather than suppressing ETA.
@@ -97,13 +97,13 @@ The primary and user-authorized flux turns each report their own duration.
 
 Single-source primary fits now expose the same evaluation ETA, labelled
 `single-source fit` / `single_source_fit_only`. Flux measurement ETA is split
-into normalization intervals, s_nu intervals, contour s_nu bounds and each
+into normalization intervals, Gamma intervals, contour Gamma bounds and each
 confidence contour. Read `completed_units`, `total_units` and
 `estimate_scope=current_profile_group_only`: quote the numerical ETA for that
 group, and identify later groups/fits/output/review as unestimated. Do not
 keep saying unknown once an evaluation sample supplies a rough estimate.
 Before the first completed endpoint, the estimate uses current evaluation
-costs with an explicit uncalibrated call assumption (96 for free-s_nu
+costs with an explicit uncalibrated call assumption (96 for free-Gamma
 normalization crossings, 12 for scalar crossings, 32 for contour slices).
 After a unit completes, the same group's measured unit durations replace
 that assumption. Never combine different group costs. Initial loading and
@@ -115,7 +115,7 @@ inputs. See `docs/task_timing.md`.
 ## Required first-turn result boundary
 
 For single-source and joint stacking analyses with supported/requested flux
-products, the first turn ends with a FINAL ANSWER containing the reviewed primary ns/s_nu, TS, p value and significance,
+products, the first turn ends with a FINAL ANSWER containing the reviewed primary ns/Gamma, TS, p value and significance,
 followed by a question asking whether to calculate flux products. Leave
 AWAITING_FLUX pending. Do not run flux in this turn or replace this final answer
 with commentary. Only a subsequent affirmative user reply authorizes stage 2;
@@ -132,22 +132,16 @@ later turn's final answer. This supersedes earlier automatic-continuation rules.
 - Do not infer a response-language preference from the language used to write
   `AGENTS.md`, skill instructions or other repository files.
 
-Use `s_nu` from the fit summary for spectral-index reporting. Quote
-point-source measurements as `E_nu F_(E_nu)` and catalog-average
-intensities as `E_nu I_(E_nu)` at the recorded pivot energy.
-
 ## Clarification policy
 
 Ask only about unresolved ambiguity that materially changes the spectrum,
 relative weights, source/event membership, fit hypotheses or trial family.
-The spectral index `s_nu` is defined by `dN/dE proportional to (E/E0)^(-s_nu)`.
-Pass an explicit `s_nu` through `--s-nu`. For a falling `E^-2.5`
-spectrum, use `--s-nu 2.5`. For a rising `E^2.5` spectrum, use
-`--s-nu -2.5`. Interpret legacy `gamma 2.5` as the falling spectrum and
-record the convention. Ask about bare `gamma +2.5` if the convention is
-unspecified. Use `--s-nu-mode fitted` when the user requests a fit and
-`--s-nu-bounds MIN MAX` to set explicit fit bounds. Prepare a missing
-response for the supplied spectrum.
+Interpret unsigned gamma 2.5 as E^-2.5 and record the convention.
+Pass CLI `--gamma -2.5`. Ask about a bare explicit positive sign.
+Preserve a power-law exponent explicitly defined by the user. CLI --gamma is
+the signed exponent; an explicit rising E^+2.5 maps to --gamma +2.5, while
+E^-Gamma with Gamma=+2.5 maps to --gamma -2.5. Prepare a missing response
+rather than reversing an exponent or rejecting it for its sign.
 A unique column identifying requested flux/relative weights may be used with
 recorded metadata. A common unknown multiplicative unit cancels in normalized
 weights. Do not invent absolute units or drop invalid rows.
@@ -178,7 +172,7 @@ with the returned scope and exclusions before continuing `prepare-spectrum`
 or `run`. A cache hit needs no new construction. Do not invent a whole-run ETA
 from one dataset's pilot. Preparation does not maximize the LLH or start trials.
 A supplied non-PL shape is fixed; fit its normalization through ns, without
-reporting a fictitious PL s_nu. Preserve all existing primary/flux-stage gates.
+reporting a fictitious PL Gamma. Preserve all existing primary/flux-stage gates.
 
 ## Time-dependent DR2 single-source analysis and catalog scans
 
@@ -200,11 +194,11 @@ temporal settings stays AWAITING_CONFIRMATION; complete it through
 `confirm --task <id> --temporal-file <complete.json>`. Run only after READY.
 
 The likelihood includes good-run interval normalization and time-dependent
-acceptance across all four DR2 datasets and uses the original SkyLLH ns/s_nu
+acceptance across all four DR2 datasets, retaining the original SkyLLH ns/Gamma
 maximization. Inspect `time_dependent_summary`, settings, search convergence,
 boundaries, detector fractions, input order, CSV/PNG/PDF and artifact reviews.
-Report ns, fitted/fixed s_nu, TS, t0 and Gaussian sigma_t or full box duration
-with units and modes. At ns=0 temporal parameters/s_nu are not measurements.
+Report ns, fitted/fixed Gamma, TS, t0 and Gaussian sigma_t or full box duration
+with units and modes. At ns=0 temporal parameters/Gamma are not measurements.
 P-values, significances and catalog-corrected quantities remain unavailable:
 never apply the time-integrated half-chi-square estimate, catalog-size correction
 or sqrt(TS) as a significance. No time-dependent trials are authorized; their
@@ -223,8 +217,9 @@ from time-search calibration, coverage or proof of a global maximum.
 2. Exactly one source selects single-source analysis. DR2 catalogs select
    `--catalog-operation stack|scan|scan_and_stack`; scan-only needs no weights.
    DR1 retains its existing scan+stack behavior.
-3. Approved DR2 defaults: full14 spatial+energy, fitted ns and s_nu, starting at 3. DR1 and DR2 spatial-only analyses use
-   fixed s_nu=2.5 for detector acceptance unless the user supplies another spectrum.
+3. Approved DR2 defaults: full14 spatial+energy, fitted ns and Gamma, seed
+   CLI -3.0 / SkyLLH 3.0. DR1 and DR2 spatial-only analyses use the fixed
+   acceptance exponent -2.5 unless the user supplies another spectrum.
    Historical tasks keep their recorded spectra. Select DR1 only when requested.
 4. Persist the request through `create-single` or `create-catalog`. Use
    `confirm` only for actual user answers. Run only tasks whose state is READY.
@@ -256,10 +251,10 @@ ordinary requests to use the bundled CSV.
 ## Follow-up analysis
 
 `inspect-catalog` inspects inputs. `dominance` and `review-dominance` examine
-source influence in a reviewed stack with a fitted spectral index. Delta TS from deleting sources
+source influence in a reviewed fitted-Gamma stack. Delta TS from deleting sources
 is not source-detection significance.
 
-`dr2-ra-scramble` is a fixed-s_nu smoke test, not empirical calibration.
+`dr2-ra-scramble` is a fixed-Gamma smoke test, not empirical calibration.
 For requested background trials following a reviewed DR2 time-integrated
 single-source analysis or stacking analysis, use the recorded primary task:
 
@@ -311,15 +306,15 @@ retains its recorded `--workers` scheduler setting and default.
 
 Report fitted quantities, TS, p-value and the corresponding significance together.
 Use the one-sided Gaussian convention `Z = Phi^-1(1 - p)` in sigma and label
-local/pre-trial versus post-trial and analytic versus empirical values. For ordinary local estimates, use half-chi-square dof=2 when s_nu is
-free (`gamma_mode=fitted`) and dof=1 when s_nu is fixed. With `TS > 0`, use
+local/pre-trial versus post-trial and analytic versus empirical values. For ordinary local estimates, use half-chi-square dof=2 when Gamma is
+free (`gamma_mode=fitted`) and dof=1 when Gamma is fixed. With `TS > 0`, use
 `p = 0.5 exp(-TS/2)` for dof=2 or `p = 0.5 erfc(sqrt(TS/2))` for dof=1.
 Always convert with `Z = Phi^-1(1-p)`; `Z = sqrt(TS)` applies only to dof=1.
 At `TS=0`, retain the reporting convention `p=0.5`, `Z=0`.
 Label both p-value and significance as estimates, record the dof and method,
 and do not claim empirical calibration or a verified asymptotic distribution
-for free s_nu. Do not apply these formulas to empirical or catalog-corrected
-p-values or to a search across several fixed-s_nu hypotheses.
+for free Gamma. Do not apply these formulas to empirical or catalog-corrected
+p-values or to a search across several fixed-Gamma hypotheses.
 Unavailable post-trial quantities must remain unavailable.
 
 For every analysis, immediately after reporting an estimated significance in
@@ -344,7 +339,7 @@ does not by itself establish a calibrated detection or publication readiness.
 
 Use TS after likelihood maximization. Distinguish analytic local approximations
 from empirically calibrated values and catalog-global quantities. Report the data
-sample, likelihood mode, source count, weights, fitted/fixed s_nu, ns, TS, p-value and one-sided significance,
+sample, likelihood mode, source count, weights, fitted/fixed Gamma, ns, TS, p-value and one-sided significance,
 review status, artifacts and limitations. Include signed relative difference
 before signed absolute difference in comparisons.
 
@@ -369,7 +364,7 @@ or explicit bounds keep their fixed 20-degree half-width.
 
 ## Fixed-spectrum flux upper limits and reference-spectrum figures
 
-New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit uses the requested spectral-index mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. Joint stacking uses the two-stage intensity reporting described below. DR1 and spatial-only analyses use their established flux procedures.
+New DR2 spatial+energy single-source tasks default to separate E^-2, E^-2.5 and E^-3 fits for preliminary one-sided 95% flux upper limits and a reference-spectrum figure. Record these defaults at task creation. The primary fit retains its requested Gamma mode. Use `--no-flux-upper-limits` if the user requests omission. Catalog scans require `--flux-upper-limits` to enable these extra fits and one figure per source; default scans omit them. For a request for a catalog flux-limit plot, enable this option and explain that large catalogs create many figures. Joint stacking has separate default flux outputs and two-stage intensity reporting, described below; DR1 and spatial-only results retain their existing procedures.
 
 Read `docs/flux_upper_limits.md` for units, profile threshold, confidence qualifications and reference provenance. Plot the source limits, NGC 1068 and both diffuse benchmarks in one panel using common flux units, with diffuse multiplied by exactly 4*pi sr and published uncertainty bands. Do not add NGC 4151. Preserve the starting-track band CL qualification. Describe the limits as asymptotic profile-likelihood estimates; follow the default reporting policy below. A curve represents one complete fixed power-law hypothesis; do not call it a differential energy-bin limit. Review every fixed fit and its tables/figures. No background trials are performed by this feature.
 
@@ -390,7 +385,7 @@ The table displays max(0, signed Gaussian Z), following paper Table I;
 the CSV retains signed Z and the nonnegative excess display separately.
 The Fig. 3-style histogram includes all selected sources and TS=0, uses
 sqrt(TS), width-0.25 bins, log counts and sqrt(N) errors, and has no normal
-fit. sqrt(TS) is not Gaussian significance for fitted s_nu. This source
+fit. sqrt(TS) is not Gaussian significance for fitted Gamma. This source
 correction does not calibrate the joint stack or extra search hypotheses.
 Preserve every material fit warning; failed review blocks numerical reporting.
 
@@ -400,11 +395,11 @@ For newly created DR2 spatial+energy single-source tasks, the wrapper records
 flux_measurement_ts_threshold=9 and the approved primary fit procedure.
 Report the primary-spectrum flux measurement only for strict TS > 9; TS=9
 and smaller do not trigger intervals or measurement figures. Retain existing
-fixed-spectrum upper limits. For a free spectral index, normalization intervals must profile
-s_nu with its s_nu-dependent detector yield; do not freeze the best-fit
-s_nu to rescale an ns error. Report 68.27% and 95% profile intervals, the
-best-fit spectrum, its 68.27% joint-region envelope and flux-s_nu contours.
-Fixed-index primary fits provide normalization intervals at that fixed spectrum.
+fixed-spectrum upper limits. Free-Gamma normalization intervals must profile
+Gamma with its Gamma-dependent detector yield; do not freeze the best-fit
+Gamma to rescale an ns error. Report 68.27% and 95% profile intervals, the
+best-fit spectrum, its 68.27% joint-region envelope and flux-Gamma contours.
+Fixed-Gamma primary fits provide normalization intervals at that fixed spectrum.
 Use TS, local p-value and one-sided significance together; TS > 9 is the
 reporting criterion, not a detection claim. Read docs/flux_measurements.md.
 
@@ -436,14 +431,14 @@ records, the flux-profile maximum-consistency guard and user-stopped tasks.
 ## Exact stacking cache workflow
 
 DR2 multi-source spatial+energy fits automatically use exact observed-energy
-interpolation lookups (16 MiB per dataset); stacks with a fitted spectral index also share a
+interpolation lookups (16 MiB per dataset); fitted-Gamma stacks also share a
 lossless spatial PDF cache (1 GiB compressed payload per fit). These are
 per-process budgets plus bookkeeping/temporary arrays, not total machine limits.
 They do not change scientific settings, fit procedures or CPU configuration.
 Keep the existing create/READY/run/review workflow and the requested CPU budget.
 New trials invalidate both caches; full budgets fall back to original formulas.
 When diagnosing performance, inspect both cache records under
-`working_set.datasets` in `report.yaml`, and compare PDF ratios, s_nu
+`working_set.datasets` in `report.yaml`, and compare PDF ratios, Gamma
 derivatives and complete fit/optimizer results against the unchanged request.
 Do not apply a scan's declination window to the joint stack or infer full-run
 speedups from a warm-cache benchmark. See `docs/stacking_performance.md`.
@@ -452,7 +447,7 @@ speedups from a warm-cache benchmark. See `docs/stacking_performance.md`.
 
 For all newly created DR2 single-source, catalog-scan and joint stacking fits,
 use `fit_procedure=skyllh_lbfgs_v1`; individual catalog fits also record
-`scan_fit_procedure=skyllh_lbfgs_v1`. Do not add a s_nu-interval or
+`scan_fit_procedure=skyllh_lbfgs_v1`. Do not add a Gamma-interval or
 interpolation-switch maximum search. Preserve the likelihood, PDFs, bounds,
 event selections and exact caches. Keep flux profiling and its maximum-consistency
 guard: a profile above the recorded primary maximum fails review; do not change
@@ -465,7 +460,7 @@ fits must use the same supported procedure.
 
 For new DR2 time-integrated spatial+energy `stack` and joint `scan_and_stack`
 tasks, the wrapper records separate `stacking_flux` defaults: 95% limits for
-s_nu=2, 2.5, 3; primary measured intensity only for strict TS > 9; two-stage
+Gamma=2, 2.5, 3; primary measured intensity only for strict TS > 9; two-stage
 reporting and catalog-total flux divided by exact 4*pi sr. Individual source
 scan limits retain their separate opt-in setting. Preserve historical tasks.
 
@@ -473,7 +468,7 @@ scan limits retain their separate opt-in setting. Preserve historical tasks.
    maximization and review, then returns AWAITING_FLUX. Read
    `stacking_stages.primary` and its review. Before starting any joint-stack
    flux calculation, write a FINAL ANSWER chat bubble with weighting/source count, best-fit
-   ns and s_nu, TS, local analytic p-value and one-sided significance, with
+   ns and Gamma, TS, local analytic p-value and one-sided significance, with
    estimate labels and every material warning. Failed primary review blocks
    reporting and continuation. Ask whether to continue with flux upper limits,
    applicable measurements and figures, then END THIS TURN at AWAITING_FLUX.
@@ -490,7 +485,7 @@ scan limits retain their separate opt-in setting. Preserve historical tasks.
    complete tables: the figure includes the three limits and two diffuse
    references even when TS <= 9. Only for primary TS > 9, also report measured
    intensity and 68.27%/95% profile intervals, add the measured spectrum and
-   shading, and show joint intensity and spectral-index contours when available.
+   shading, and show fitted-Gamma intensity-Gamma contours when available.
    TS=9 does not enable measurements; it still requires upper-limit figures.
 
 Use `I_catalog = sum_j Phi_j/(4*pi sr)` consistently for catalog curves and
@@ -513,12 +508,12 @@ stage or changing parameters while awaiting flux is rejected. See
 
 For newly created single-source tasks, `run --task <task_id>` performs and
 reviews the primary LLH maximization first. The wrapper returns
-`single_source_llh_summary`: best-fit ns and s_nu, TS, local p value and
-one-sided Gaussian significance, with s_nu convention and p-value method.
+`single_source_llh_summary`: best-fit ns and Gamma, TS, local p value and
+one-sided Gaussian significance, with Gamma convention and p-value method.
 **Report these values in the final answer chat bubble, ask whether the user
 wants flux upper limits/measurements and figures, and END THIS TURN.**
 A commentary progress message does not satisfy this first-stage result output. Identify the analytic p value/significance as estimates,
-and distinguish fixed s_nu (or spatial-only acceptance s_nu) from fitted s_nu.
+and distinguish fixed Gamma (or spatial-only acceptance Gamma) from fitted Gamma.
 Preserve any material review warnings. A failed primary review blocks reporting
 its numbers as valid and blocks the flux stage.
 
@@ -556,12 +551,12 @@ recorded flow. Single-source modes with no supported/requested flux products
 finish after their primary stage; do not invent a flux calculation. Catalog
 individual-source scans retain their existing execution and optional flux switch.
 
-## Single-source linear s_nu interpolation
+## Single-source linear Gamma interpolation
 
 For new standalone DR2 spatial+energy single-source tasks, verify that the
 wrapper records signal_energy_gamma_interpolation=linear_v1. Primary LLH
 maximization, flux profiling and fixed-spectrum upper-limit fits must all use
-the same two-node linear interpolation on the existing s_nu grid. Verify the
+the same two-node linear interpolation on the existing Gamma grid. Verify the
 result and per-dataset working-set metadata in both stages. A method mismatch
 blocks continuation and valid reporting; create a new task when changing the
 scientific definition. Do not relabel historical results or checkpoints.
