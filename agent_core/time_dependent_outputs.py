@@ -27,7 +27,7 @@ def fit_row(record):
     fit = record["fit"]
     temporal = fit["temporal"]
     return dict(source_number=record["source_number"], source_name=record["source_name"],
-        TS=fit["TS"], ns=fit["ns"], gamma=fit["gamma"], gamma_mode=fit["gamma_mode"],
+        TS=fit["TS"], ns=fit["ns"], s_nu=fit["gamma"], gamma=fit["gamma"], gamma_mode=fit["gamma_mode"],
         profile=temporal["settings"]["profile"], t0_mjd=temporal["t0_mjd"],
         width_days=temporal["width_days"], width_meaning=temporal["width_meaning"],
         t0_mode=temporal["t0_mode"], width_mode=temporal["width_mode"],
@@ -82,6 +82,7 @@ def write_time_dependent_artifacts(config_path, config, normalized, result, root
             plt.close(fig)
         plots.append(dict(source_number=record["source_number"], png=files[f"profile_{record['source_number']}_png"],
                           pdf=files[f"profile_{record['source_number']}_pdf"]))
+    result["s_nu"] = result.get("gamma")
     result["generated_files"] = files
     result["artifact_sha256"] = {key: sha256_file(path) for key, path in files.items()}
     result["time_dependent_summary"] = dict(source_count=len(rows), rows=rows, note=NOTE,
@@ -95,12 +96,12 @@ def write_time_dependent_artifacts(config_path, config, normalized, result, root
     write_yaml(run_dir/"report.yaml", report)
     write_yaml(run_dir/"provenance.yaml", build_provenance(config_path, normalized, root, config))
     lines = ["# Time-dependent source analysis", "", NOTE, "",
-        "| Source | ns | Gamma | TS | t0 (MJD, UT1) | Width (days) | Width meaning |",
+        "| Source | ns | s_nu | TS | t0 (MJD, UT1) | Width (days) | Width meaning |",
         "| --- | ---: | ---: | ---: | ---: | ---: | --- |"]
     for row in rows:
         gamma = "fixed shape" if row["gamma"] is None else f"{row['gamma']:.6g}"
         lines.append(f"| {row['source_name']} | {row['ns']:.6g} | {gamma} | {row['TS']:.6g} | {row['t0_mjd']:.9f} | {row['width_days']:.9g} | {row['width_meaning']} |")
-    lines += ["", "Gamma follows dN/dE proportional to E^(-Gamma), with the recorded fixed/fitted mode.",
+    lines += ["", "The spectral index s_nu follows dN/dE proportional to E^(-s_nu), with the recorded fixed/fitted mode.",
               "Time profiles show the intrinsic shape; the likelihood normalizes separately over each dataset's good-run intervals.",
               "The recorded seeded temporal search does not certify a unique global maximum.",
               "", "Review: [review.md](review.md).", ""]

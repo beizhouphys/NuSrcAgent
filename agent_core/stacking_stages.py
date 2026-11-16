@@ -124,9 +124,18 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
                             "e2_intensity_upper_limit_gev_cm2_s_sr")}
                         for fit in result.get("flux_upper_limit_fits", [])],
                     generated_files=result.get("generated_files", {}))
+                for limit in summary["upper_limits"]:
+                    limit.update(s_nu=limit["gamma"], e_i_e_upper_limit_gev_cm2_s_sr=limit["e2_intensity_upper_limit_gev_cm2_s_sr"])
                 measurement = result.get("flux_measurement", {})
                 if measurement.get("reported"):
+                    factor = measurement["pivot_energy_gev"]**2 / (4*math.pi)
                     summary["measurement"] = dict(
+                        s_nu=measurement["gamma"],
+                        e_i_e_hat_gev_cm2_s_sr=measurement["phi0_hat"] * factor,
+                        spectral_intervals=[dict(row, parameter="e_i_e_gev_cm2_s_sr",
+                            lower=row["lower"] * factor, upper=row["upper"] * factor)
+                            if row["parameter"] == "phi0" else dict(row, parameter="s_nu")
+                            for row in measurement["intervals"]],
                         intensity0_hat=measurement["intensity0_hat"], gamma=measurement["gamma"],
                         pivot_energy_gev=measurement["pivot_energy_gev"],
                         intensity0_unit=measurement["intensity0_unit"],
@@ -162,6 +171,7 @@ def chat_stages(task):
             output[name] = dict(stage["chat_summary"], status=stage["status"],
                                 review_status=stage["review_status"], warnings=stage.get("warnings", []))
             if name == "primary":
+                output[name]["s_nu"] = output[name].get("gamma")
                 output[name]["background_trial_note"] = background_trial_note(
                     output[name].get("pre_trial_significance"))
     if task.get("status") == "AWAITING_FLUX":
@@ -179,19 +189,19 @@ def stack_flux_markdown(result):
         "Catalog intensity is the sum of the selected source fluxes divided by 4*pi sr. "
         "Each source contributes its normalized intrinsic weight; detector acceptance is applied once. "
         "All quantities below are nu_mu+anti_nu_mu.", "",
-        "| Fixed Gamma | One-sided CL | Intensity limit at 100 TeV [GeV^-1 cm^-2 s^-1 sr^-1] | E^2 dI/dE at 100 TeV [GeV cm^-2 s^-1 sr^-1] |",
-        "| --- | --- | --- | --- |"]
+        "| Fixed s_nu | One-sided CL | E_nu I_(E_nu) at 100 TeV [GeV cm^-2 s^-1 sr^-1] |",
+        "| --- | --- | --- |"]
     for fit in result.get("flux_upper_limit_fits", []):
         limit = fit["flux_upper_limit"]
-        lines.append(f"| {limit['gamma']:g} | {100*limit['confidence_level']:g}% | {limit['intensity0_upper_limit']:.8g} | {limit['e2_intensity_upper_limit_gev_cm2_s_sr']:.8g} |")
+        lines.append(f"| {limit['gamma']:g} | {100*limit['confidence_level']:g}% | {limit['e2_intensity_upper_limit_gev_cm2_s_sr']:.8g} |")
     m = result.get("flux_measurement", {})
     if m.get("reported"):
-        lines.extend(["", "Primary-spectrum measured intensity at 1 TeV: "
-            f"`{m['intensity0_hat']:.8g} GeV^-1 cm^-2 s^-1 sr^-1`; Gamma = `{m['gamma']:.8g}`.",
+        lines.extend(["", "Primary-spectrum E_nu I_(E_nu) at 1 TeV: "
+            f"`{m['intensity0_hat']*m['pivot_energy_gev']**2:.8g} GeV cm^-2 s^-1 sr^-1`, s_nu = `{m['gamma']:.8g}`.",
             "", "| Parameter | CL | Profile interval |", "| --- | --- | --- |"])
         for row in m["intervals"]:
-            factor = 1/(4*math.pi) if row["parameter"] == "phi0" else 1.
-            parameter = "Intensity at 1 TeV [GeV^-1 cm^-2 s^-1 sr^-1]" if row["parameter"] == "phi0" else "Gamma"
+            factor = m["pivot_energy_gev"]**2/(4*math.pi) if row["parameter"] == "phi0" else 1.
+            parameter = "E_nu I_(E_nu) at 1 TeV [GeV cm^-2 s^-1 sr^-1]" if row["parameter"] == "phi0" else "s_nu"
             bound = " (bound reached)" if row['lower_at_boundary'] or row['upper_at_boundary'] else ""
             lines.append(f"| {parameter} | {100*row['confidence_level']:.4g}% | [{row['lower']*factor:.8g}, {row['upper']*factor:.8g}]{bound} |")
     else:

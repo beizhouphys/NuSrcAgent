@@ -12,6 +12,15 @@ current fits and optional fixed-spectrum upper limits; they do not enable the
 new measurement profiles or contours. Joint stacks use the separately recorded intensity workflow described below.
 DR1 and spatial-only analyses retain their current procedures. Existing tasks retain their recorded settings.
 
+The spectral index is `s_nu` in `dN/dE ∝ (E/E0)^(-s_nu)`.
+New exports use `s_nu`, `e_f_e_hat_gev_cm2_s` and `e_f_e_upper_limit_gev_cm2_s`. Reports
+use `E_nu F_(E_nu)` for energy flux per logarithmic energy interval.
+For a differential number flux `phi0` at the pivot, multiply by
+`pivot_energy_gev^2` to obtain that quantity in GeV cm^-2 s^-1.
+Stack intensity divides the summed flux by `4 pi sr`. Existing fields
+such as `gamma` and `phi0` keep their documented definitions for
+readers of saved results.
+
 ## Flux normalization and intervals
 
 The primary-spectrum normalization is
