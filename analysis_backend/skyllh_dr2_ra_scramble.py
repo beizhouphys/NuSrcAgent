@@ -78,16 +78,16 @@ def _write_markdown(path, state):
         "Status: **WARNING — fixed-Gamma smoke-test null trials, not a calibrated empirical p-value.**",
         "",
         f"Baseline: TS={state['baseline']['TS']:.6g}, ns={state['baseline']['ns']:.6g}, "
-        f"Gamma={state['baseline']['gamma_legacy']:.6g}, sources={state['baseline']['n_sources']}, "
+        f"s_nu={-state['baseline']['gamma_legacy']:.6g}, sources={state['baseline']['n_sources']}, "
         f"events={state['baseline']['n_events_total']}.",
         "",
         "Each selected RA is replaced independently by a uniform value in [0, 2pi). All declinations, "
         "event energies, angular errors, source weights, event rows, and sky cuts are preserved. "
         "The source and event streams in the combined mode are independent.",
-        f"Gamma is fixed to the unscrambled best fit ({state['baseline']['gamma_legacy']:.6g}); only ns is re-maximized. "
+        f"The spectral index s_nu is fixed to the unscrambled best fit ({-state['baseline']['gamma_legacy']:.6g}); only ns is re-maximized. "
         "This gives a conservative lower bound on the corresponding fitted-Gamma TS.",
         "",
-        "| Mode | Trial seed | Source seed | Event seed | TS | ns | Gamma |",
+        "| Mode | Trial seed | Source seed | Event seed | TS | ns | s_nu |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     rows = sorted(state["trials"].values(), key=lambda item: (SCRAMBLE_MODES.index(item["mode"]), item["trial_seed"]))
@@ -96,7 +96,7 @@ def _write_markdown(path, state):
         event_seed = "—" if row["event_ra_scramble_seed"] is None else row["event_ra_scramble_seed"]
         lines.append(
             f"| {row['mode']} | {row['trial_seed']} | {source_seed} | {event_seed} | "
-            f"{row['TS']:.6g} | {row['ns']:.6g} | {row['gamma_legacy']:.6g} |"
+            f"{row['TS']:.6g} | {row['ns']:.6g} | {-row['gamma_legacy']:.6g} |"
         )
     lines.extend(["", "## Per-mode summary", ""])
     for mode in SCRAMBLE_MODES:
@@ -208,7 +208,7 @@ def run_dr2_ra_scramble_diagnostic(repo_root, baseline_run_directory, output_dir
     state["status"] = "COMPLETED_WITH_WARNINGS" if all(state["checks"].values()) else "FAILED"
     state["scientific_cautions"] = [
         "This small trial ensemble is a diagnostic smoke test, not an empirical p-value calibration.",
-        "Gamma is fixed at the unscrambled best fit; each TS is a lower bound on a stable fitted-Gamma result.",
+        "The spectral index s_nu is fixed at the unscrambled best fit; each TS is a lower bound on a stable fitted-Gamma result.",
         "The fitted-Gamma energy-PDF discrepancy identified in the baseline review remains unresolved.",
         "A raw TS from different analyses cannot be converted to a universal sigma using sqrt(TS).",
     ]

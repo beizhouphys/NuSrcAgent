@@ -290,11 +290,11 @@ def fit_review(result, config):
         failures.append('optimizer did not converge')
     if (result['gamma_mode'] != config.get('gamma_mode', 'fitted') or
             result['background_pdf_version'] != config['background_pdf_version']):
-        failures.append('wrong Gamma mode or background version')
+        failures.append('wrong spectral-index mode or background version')
     if result['n_sources'] != config['n_sources'] or result['event_selection'] != config.get('expected_event_selection', 'all_events'):
         failures.append('wrong catalog size or event selection')
     if config.get('gamma_mode', 'fitted') == 'fitted' and min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
-        warnings.append('Gamma at fit boundary; not a precise spectral measurement')
+        warnings.append('Spectral index at a fit boundary')
     if abs(result['ns']-config['ns_max']) < 1e-5:
         warnings.append('ns at upper boundary')
     if 'fit_options' in config:
@@ -1572,7 +1572,7 @@ def write_snapshot_exports(out, result):
             '## Result', '',
             f"- Observed TS: `{observed['TS']:.12g}`",
             f"- Observed ns: `{observed['ns']:.12g}`",
-            f"- Observed Gamma: `{observed['gamma']}`",
+            f"- Observed s_nu: `{observed['gamma']}`",
             f"- Exceedances: `{stats['exceedances']}` of `{stats['n_trials']}`",
             f"- Empirical pre-trial p-value: `{stats['p_pre']:.12g}`",
             f"- Empirical post-trial p-value: `{stats['p_post']:.12g}`",

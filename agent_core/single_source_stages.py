@@ -147,6 +147,8 @@ def _save_primary(task, run, full_hash, task_dir):
     result = run.result
     task["single_source_llh_summary"] = dict(
         best_fit_ns=result.get("ns", result.get("best_fit_ns")),
+        s_nu=result.get("s_nu"),
+        spectral_index_convention="dN/dE proportional to (E/E0)^(-s_nu)",
         Gamma=result.get("gamma_legacy", result.get("gamma")),
         gamma_convention="fixed tabulated shape; no PL Gamma" if getattr(run.normalized, "spectrum", {}) else "dN/dE proportional to (E/E0)^Gamma",
         spectrum=getattr(run.normalized, "spectrum", {}),
@@ -244,6 +246,7 @@ def chat_stages(task):
             "with flux upper limits/measurement and figures, then end this turn. Wait for the user's reply before "
             "run --stage flux --task " + task["task_id"] + " --flux-user-reply '<actual user reply>'.")
     if task.get("stages", {}).get("flux", {}).get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
+        from agent_core.flux_outputs import flux_limit_notation, flux_measurement_notation
         result = load_simple_yaml((Path(task["artifacts"]["run_directory"]) / "report.yaml").read_text())["result"]
         flux = dict(generated_files=result.get("generated_files", {}))
         review = json.loads(Path(task["artifacts"]["review"]).read_text())
@@ -252,12 +255,16 @@ def chat_stages(task):
             flux["measurement"] = {k: v for k, v in result["flux_measurement"].items()
                 if k in {"reported", "gamma", "gamma_mode", "phi0_hat", "phi0_unit",
                          "pivot_energy_gev", "flavor", "intervals", "warnings"}}
+            if result["flux_measurement"]["reported"]:
+                flux["measurement"].update(flux_measurement_notation(result["flux_measurement"]))
         limit_fields = {"gamma", "confidence_level", "phi0_upper_limit", "phi0_unit",
                         "pivot_energy_gev", "flavor", "ns_upper_limit",
                         "e2_dphi_de_upper_limit_gev_cm2_s"}
-        flux["upper_limits"] = [{k: v for k, v in fit["flux_upper_limit"].items() if k in limit_fields}
+        flux["upper_limits"] = [dict({k: v for k, v in fit["flux_upper_limit"].items() if k in limit_fields},
+                                     **flux_limit_notation(fit["flux_upper_limit"]))
                                 for fit in result.get("flux_upper_limit_fits", [])]
         if "flux_upper_limit" in result:
-            flux["upper_limit"] = {k: v for k, v in result["flux_upper_limit"].items() if k in limit_fields}
+            flux["upper_limit"] = dict({k: v for k, v in result["flux_upper_limit"].items() if k in limit_fields},
+                                       **flux_limit_notation(result["flux_upper_limit"]))
         summary["single_source_flux_summary"] = flux
     return summary

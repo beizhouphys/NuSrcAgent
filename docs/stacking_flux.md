@@ -8,6 +8,15 @@ Individual-source scan limits retain their separate opt-in setting. DR1 and
 spatial-only tasks retain their existing procedures. Historical tasks are not
 silently converted to this workflow.
 
+The spectral index is `s_nu` in `dN/dE ∝ (E/E0)^(-s_nu)`. Reports
+use `E_nu F_(E_nu)` for energy flux per logarithmic energy interval.
+For a differential number flux `phi0` at the pivot, multiply by
+`pivot_energy_gev^2` to obtain that quantity in GeV cm^-2 s^-1.
+The stack plots use `E_nu I_(E_nu) = E_nu sum_j F_(E_nu,j)/(4 pi sr)`,
+with the corresponding `e_i_e` fields in the flux summary. Existing fields
+such as `gamma` and `phi0` keep their documented definitions for
+readers of saved results.
+
 ## Stage 1: maximize and report the likelihood
 
 Create the task through the public wrapper and require `READY`. Run it normally:

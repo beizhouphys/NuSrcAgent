@@ -190,7 +190,7 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None:
     y95 = linear_map(-3.84, delta_min, 0., bottom, height)
     c.line(left, y95, left+width, y95)
     c.setDash([])
-    draw_axes(c, left, bottom, width, height, "All-flavor energy flux at 100 TeV", "TS - TS(best fit)", "Stacking likelihood profiles")
+    draw_axes(c, left, bottom, width, height, "All-flavor E_nu F_(E_nu) at 100 TeV", "TS - TS(best fit)", "Stacking likelihood profiles")
     draw_log_ticks(c, left, bottom, width, decade_ticks(flux_min, flux_max), flux_min, flux_max, horizontal=True)
     draw_linear_ticks(c, left, bottom, height, delta_ticks(delta_min), delta_min, 0., horizontal=False)
     if not flux_values:
@@ -215,7 +215,7 @@ def plot_fig4(path: Path, curves: list[dict[str, object]]) -> None:
     c.setStrokeColor(colors.green)
     c.setDash([])
     draw_polyline(c, [(log_map(float(x), 1e4, 1e7, left, width), log_map(float(y), right_y_min, right_y_max, bottom, height)) for x, y in zip(energies, diffuse)])
-    draw_axes(c, left, bottom, width, height, "Neutrino energy [GeV]", "All-flavor energy flux", "95% CL stacking upper limits")
+    draw_axes(c, left, bottom, width, height, "Neutrino energy [GeV]", "All-flavor E_nu F_(E_nu)", "95% CL stacking upper limits")
     draw_log_ticks(c, left, bottom, width, [1e4, 1e5, 1e6, 1e7], 1e4, 1e7, horizontal=True)
     draw_log_ticks(c, left, bottom, height, decade_ticks(right_y_min, right_y_max), right_y_min, right_y_max, horizontal=False)
     if not valid_limit_curves:
