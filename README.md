@@ -63,8 +63,8 @@ substantial time, especially large catalog searches and repeated background fits
 
 | Data / mode | Implemented analysis | Status |
 | --- | --- | --- |
-| DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and s_nu |
-| DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance s_nu; no energy term |
+| DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and Gamma |
+| DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance Gamma; no energy term |
 | DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
 | DR2 time-dependent | Single source and individual catalog scan | Gaussian/box profiles; explicit fixed parameters or time searches; stacking awaits collaborator code |
 
@@ -100,11 +100,12 @@ substantial time, especially large catalog searches and repeated background fits
   The **energy term** is the likelihood's contribution from these probability
   densities, not a direct substitution of the energy proxy for neutrino energy.
 - **Spatial+energy** analysis uses both directional and energy information.
-  By default it fits the signal count `ns` and spectral index `s_nu`.
+  By default it fits the signal count `ns` and spectral index `Gamma`.
 - **Spatial-only** analysis omits the energy term. For DR1 and DR2, it assumes
   `dN/dE` proportional to `(E/E0)^(-2.5)` by default when calculating detector
-  acceptance with `s_nu=2.5` (`--s-nu 2.5`). The spectral index is fixed, not fitted. An explicitly
-  supplied spectrum overrides this default; this s_nu is not a measured source
+  acceptance: `Gamma=2.5` in the paper/SkyLLH convention, or `--gamma -2.5`
+  in the command interface. The spectral index is fixed, not fitted. An explicitly
+  supplied spectrum overrides this default; this Gamma is not a measured source
   spectrum. Historical tasks keep their recorded spectrum settings.
 - **Time-dependent** analysis also uses event arrival times to test emission
   over a specified or fitted time profile, for example a flare. This capability
@@ -125,14 +126,10 @@ substantial time, especially large catalog searches and repeated background fits
 - **ns** is the fitted total number of signal events in the selected data;
   it is not a flux by itself. In a stack it describes the total signal
   contribution from the catalog, not a separate count for every source.
-- **s_nu** is the spectral index in `dN/dE` proportional to
-  `(E/E0)^(-s_nu)`, where `E` is neutrino energy and `E0` is a reference energy.
-  Use `--s-nu 2.5` for a falling `E^-2.5` differential number spectrum.
-  When `ns=0`, the fit cannot determine `s_nu`.
-- **Energy flux per logarithmic energy interval** is `E_nu F_(E_nu)`,
-  where `F_(E_nu) = E_nu dN/(dE_nu dA dt)`. Point-source flux
-  measurements give this quantity at 1 TeV in GeV cm^-2 s^-1. Stack intensity
-  divides the summed flux by 4 pi sr and uses `E_nu I_(E_nu)`.
+- **Gamma** is the positive spectral index in `dN/dE` proportional to
+  `(E/E0)^(-Gamma)`, where `E` is neutrino energy and `E0` is a reference energy.
+  The command-line option `--gamma -2.5` denotes the spectrum with `Gamma=2.5`.
+  When `ns=0`, Gamma is not identifiable from the fit.
 - **TS** is the likelihood-ratio test statistic after maximization. A larger
   value favors the signal model relative to background alone; it is not itself
   a significance in sigma. See [interpretation cautions](#before-interpreting-a-result).
@@ -204,7 +201,7 @@ assistants follow the **NuSrcAgent skill** and call the same local Python comman
 
 ```text
 /nusrcagent Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
-with full14 DR2, time-integrated spatial+energy. Fit ns and s_nu.
+with full14 DR2, time-integrated spatial+energy. Fit ns and Gamma.
 ```
 
 The assistant records your source positions, spectrum and weighting choices,
@@ -226,7 +223,7 @@ are recorded. This applies to all currently supported analyses. The Python
 wrapper requires coordinates; name lookup is performed by the natural-language
 agent. See [coordinate input and conversion](docs/coordinates.md).
 
-For new single-source requests, the Agent first reports best-fit ns and s_nu,
+For new single-source requests, the Agent first reports best-fit ns and Gamma,
 TS, local p value and one-sided significance in a final answer after LLH review.
 It asks whether to continue and ends that turn. Only after the user replies does
 it continue the flux calculation and report upper limits
@@ -267,12 +264,12 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   approximation, not a measured background TS distribution. A source scan also
   requires accounting for the search over multiple sources before quoting a
   catalog-wide significance.
-- IC79 declination–energy residuals persist in the background PDFs; ns, s_nu and inferred
+- The background PDFs retain IC79 Dec–energy residuals; ns, Gamma and inferred
   flux may be biased. Hash verification establishes input identity, not scientific validity.
 - Report fitted quantities, TS, p-value and corresponding one-sided Gaussian
   significance in sigma, with local/post-trial and analytic/empirical labels.
   Ordinary local p-values and significances are estimates: use half-chi-square
-  dof=2 for free s_nu and dof=1 for fixed s_nu; empirical calibration is separate.
+  dof=2 for free Gamma and dof=1 for fixed Gamma; empirical calibration is separate.
   Zero background trials alone do not create a warning: an otherwise passing
   ordinary fit returns **COMPLETED**.
 - Whenever an estimated significance is reported, a more precise significance
@@ -283,7 +280,7 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   start trials or change the review status.
 - **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to
   be read in the report; results are preliminary. Failed reviews are not valid results.
-  At ns = 0, s_nu is unidentifiable. Spatial-only s_nu describes acceptance,
+  At ns = 0, Gamma is unidentifiable. Spatial-only Gamma describes acceptance,
   not a measured spectrum.
 - Background trials can follow a reviewed DR2 single-source or stacking
   analysis. Catalog-scan maxima and time-dependent trials remain unavailable.
@@ -326,20 +323,20 @@ p value and significance columns, an analytic independent-source catalog correct
 and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
 See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.
 
-New DR2 time-integrated spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and joint flux and spectral-index contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
+New DR2 time-integrated spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and free-Gamma flux–Gamma contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
 
 New catalog scans explicitly record the original SkyLLH optimizer separately
 from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).
 
 DR2 spatial+energy stacking reduces repeated PDF calculations with a lossless
-spatial PDF block cache (1 GiB shared per stack with a fitted spectral index) and exact observed-
+spatial PDF block cache (1 GiB shared per fitted-Gamma stack) and exact observed-
 energy interpolation lookups (16 MiB per dataset). Budgets apply per analysis
 process; CPU settings and scientific fit definitions retain their existing values.
 See [stacking performance and cache lifecycle](docs/stacking_performance.md).
 
-New DR2 time-integrated spatial+energy stacks report the primary ns, s_nu, TS, p-value and
+New DR2 time-integrated spatial+energy stacks report the primary ns, Gamma, TS, p-value and
 one-sided significance first. Continue the same task with `run --task <id>
---stage flux --flux-user-reply "<actual user reply>"` for default s_nu=2, 2.5, 3 upper limits and primary intensity
+--stage flux --flux-user-reply "<actual user reply>"` for default Gamma=2, 2.5, 3 upper limits and primary intensity
 measurements when TS > 9. The Agent ends the first turn with the primary result
 and asks whether to continue. After the user replies, it runs the flux stage with
 `--flux-user-reply "<actual user reply>"` and reports that stage in a new final answer. Upper-limit spectrum figures are generated and reported
@@ -347,7 +344,7 @@ regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
 Joint-stack figures use total flux / (4*pi sr),
 with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).
 
-New DR2 time-integrated spatial+energy standalone single-source tasks use two-node linear s_nu
+New DR2 time-integrated spatial+energy standalone single-source tasks use two-node linear Gamma
 interpolation for the signal energy PDF in both the primary fit and flux
 calculation. Catalog scan and joint stacking defaults retain their original
 quadratic interpolation. Optimizer, tolerances and the flux-profile consistency

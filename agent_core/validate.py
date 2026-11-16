@@ -63,10 +63,10 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         if config.analysis.type == AnalysisType.CATALOG_STACKING and (not limit_gammas or config.analysis.catalog_operation == "stack"):
             result.errors.append("Catalog flux upper limits require individual-source scan hypotheses")
         if not limit_gammas and config.stacking.gamma_mode != "fixed":
-            result.errors.append("A scalar flux upper limit requires a fixed spectral index")
+            result.errors.append("A scalar flux upper limit requires fixed Gamma")
     if limit_gammas:
         if confidence is None or len(set(limit_gammas)) != len(limit_gammas) or any(not math.isfinite(g) or not -6.1 <= g <= -0.9 for g in limit_gammas):
-            result.errors.append("Flux upper-limit hypotheses require a confidence level and distinct s_nu values in [0.9, 6.1]")
+            result.errors.append("Flux upper-limit Gamma hypotheses require a confidence level and unique negative exponents in [-6.1, -0.9]")
     if config.analysis.catalog_operation not in {"stack", "scan", "scan_and_stack"}:
         result.errors.append("analysis.catalog_operation must be stack, scan, or scan_and_stack")
     if config.data.sample == "icecube_public_ps_10yr" and config.analysis.catalog_operation != "scan_and_stack":
@@ -82,12 +82,12 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
     if config.data.sample == "icecube_public_ps_10yr" and config.analysis.likelihood_mode != "spatial_only":
         result.errors.append("the 10-year backend currently supports likelihood_mode='spatial_only' only")
     if config.analysis.likelihood_mode == "spatial_only" and config.stacking.gamma_mode != "fixed":
-        result.errors.append("A spatial-only analysis uses a fixed spectral index for detector acceptance")
+        result.errors.append("spatial-only analysis requires gamma_mode='fixed'; Gamma is used only for acceptance weights")
     if config.data.sample == "icecube_public_ps_14yr_dr2":
         if len(config.stacking.spectral_indices) != 1:
-            result.errors.append("DR2 requires one initial or fixed spectral index")
+            result.errors.append("the DR2 backend requires exactly one Gamma seed or fixed value")
         elif config.analysis.likelihood_mode == "spatial_energy" and config.stacking.gamma_mode == "fitted" and config.analysis.gamma_bounds is None and not -4.0 <= config.stacking.spectral_indices[0] <= -1.0:
-            result.errors.append("The default DR2 fit requires an initial s_nu in [1, 4]")
+            result.errors.append("the default DR2 fitted-Gamma range requires a seed in [-4, -1]")
 
     if config.analysis.time_mode not in {"time_integrated", "time_dependent"}:
         result.errors.append("analysis.time_mode must be time_integrated or time_dependent")
