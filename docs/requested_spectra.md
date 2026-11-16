@@ -7,6 +7,10 @@ An explicit positive command exponent means a rising dN/dE; no sign is reversed.
 A supplied non-PL spectrum is treated as a fixed shape. Signal-energy PDFs and
 detector acceptance use that same shape, including its specified energy support.
 
+To test a turbulent corona model, generate a neutrino spectrum with the model
+code and supply the energy and flux values as a table. Each table specifies
+one spectral shape for the likelihood fit.
+
 See the maintained [input and workflow reference](../.agents/skills/nusrcagent/references/requested-spectra.md)
 for commands, file format, ETA scope and limitations. A `prepare-spectrum`
 command never executes a fit or background trials. After the pilot the agent
