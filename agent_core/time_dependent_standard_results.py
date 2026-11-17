@@ -3,7 +3,7 @@
 This module is an output adapter only.  It never constructs or maximizes a
 likelihood and it never starts trials.  It converts NuSrcAgent's reviewed
 observed result and completed shared-trial shards into the artifact schema
-consumed by ``scripts/plot_time_dependent_standard_report.py``.
+consumed by ``agent_core/plot_time_dependent_standard_report.py``.
 """
 
 from __future__ import annotations
@@ -361,7 +361,7 @@ def _render(
     bundle: Path,
     leading_source: str | None,
 ) -> dict[str, Any]:
-    renderer = root / "scripts" / "plot_time_dependent_standard_report.py"
+    renderer = root / "agent_core" / "plot_time_dependent_standard_report.py"
     if not renderer.is_file():
         raise FileNotFoundError(f"missing standard renderer: {renderer}")
     uptime = root / "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime"

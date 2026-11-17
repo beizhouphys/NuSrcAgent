@@ -38,7 +38,7 @@
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
 - For completed fixed-window time-dependent background ensembles, use the
-  canonical result adapter and `scripts/plot_time_dependent_standard_report.py`.
+  canonical result adapter and `agent_core/plot_time_dependent_standard_report.py`.
   Render only after all validation checks pass. Preserve the existing
   NuSrcAgent task, authorization, review and Monte Carlo-interval rules; do not
   apply this presentation path to time-integrated or legacy time-profile runs.

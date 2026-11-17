@@ -9,6 +9,10 @@ scrambling, checkpointing, scientific review, or time-independent output.
 
 - An observed-only fit remains preliminary. Report its fitted quantities and
   unavailable empirical calibration through the existing NuSrcAgent artifacts.
+  For fitted Gamma, evaluate and validate the immutable observed likelihood for
+  the top three observed-TS sources (or all sources when fewer than three) and
+  the applicable stack, then render their contour figures before offering
+  background trials. This does not create the post-trial standard result bundle.
 - Start matched background trials only after the user explicitly requests them
   with an agreed fixed count.
 - Build the standard result bundle only after the full recorded ensemble is
@@ -33,7 +37,7 @@ The numerical bundle is produced by
 `agent_core.time_dependent_standard_results`; it does not repeat maximization
 or any background trial. For fitted Gamma it evaluates the immutable observed
 likelihood on the saved contour grid as specified below. Figures are rendered internally with
-`scripts/plot_time_dependent_standard_report.py`. The public analysis interface
+`agent_core/plot_time_dependent_standard_report.py`. The public analysis interface
 remains `run_agent_wrap.py`.
 
 The source timeline uses an explicitly recorded physical time anchor when one
@@ -45,9 +49,11 @@ time-dependent fits. The standard plots therefore use the matched scrambled
 distribution as their null calibration and omit analytic half-chi-square
 overlays unless a future reviewed workflow explicitly authorizes them.
 
-For a fitted-Gamma analysis, reconstruct the immutable reviewed observed
-likelihood after the shared trials identify the leading source. Evaluate and
-save the leading-source and applicable stacking surfaces before rendering. Each
+For a fitted-Gamma analysis, the observed stage reconstructs the immutable
+reviewed likelihood and saves surfaces for the top observed-TS sources and the
+applicable stack. After trials, the standard bundle may reconstruct the
+empirical leading-source and applicable stacking surfaces for its calibrated
+presentation. Each
 `*_likelihood_contour.npz` must contain `ns`, `gamma`, `log_lambda`,
 `minus_2_delta_log_likelihood`, `native_gamma`, phase selected/event counts,
 and the saved best-fit `ns`, Gamma and TS. Validate that the evaluated surface

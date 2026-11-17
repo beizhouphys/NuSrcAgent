@@ -80,6 +80,13 @@ measurement. Observed runs execute zero trials; significance remains unavailable
 until a matched trial ensemble is complete. No time-integrated p-value formula,
 flux limit or second flux stage is applied.
 
+For fitted Gamma, observed output generation evaluates the immutable likelihood
+on the numerical `ns`-Gamma grid for the three largest observed source TS values
+(or all sources when the catalog has fewer than three) and for the stack when
+applicable. It validates each surface against the saved MLE and TS, writes the
+NPZ surface in the run directory, and writes PNG/PDF contours under `figures/`.
+This output-only calculation does not run or authorize background trials.
+
 ## Workers, threads and cached background trials
 
 For cached engines, `--workers N` sets Numba threads (one process); reference
@@ -117,7 +124,7 @@ stopping. No significance report is generated from an incomplete ensemble.
 After a complete ensemble passes the baseline, fit, finite-value, requested
 count, unique-seed and contiguous-index checks, NuSrcAgent creates a canonical
 saved-result bundle below `<trial-output>/standard_results/` and renders it with
-`scripts/plot_time_dependent_standard_report.py`. This output-only conversion
+`agent_core/plot_time_dependent_standard_report.py`. This output-only conversion
 does not repeat likelihood maximization. It provides the local and shared-trial maximum-TS
 catalog results, the stacking result when requested, machine-readable observed
 and trial arrays, validation/provenance records, and applicable PNG/PDF figures.

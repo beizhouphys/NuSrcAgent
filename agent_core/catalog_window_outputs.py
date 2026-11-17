@@ -22,6 +22,110 @@ def result_rows(normalized, result):
     return rows
 
 
+def _has_stack(normalized):
+    if isinstance(normalized, dict):
+        analysis_type = normalized["analysis_type"]
+        catalog_operation = normalized["catalog_operation"]
+    else:
+        analysis_type = normalized.analysis_type
+        catalog_operation = normalized.catalog_operation
+    return (analysis_type != "single_source"
+            and catalog_operation in {"stack", "scan_and_stack"})
+
+
+def _write_observed_likelihood_contours(normalized, result, root, run_dir, figure_dir):
+    """Create reviewed-fit surfaces without running or depending on trials."""
+
+    if normalized.gamma_mode != "fitted":
+        return {}, {"status": "not_applicable_fixed_gamma", "sources": [], "stack": None}
+
+    from analysis_backend.time_dependent.adapter import prepare_analysis
+    from analysis_backend.time_dependent.surfaces import save_observed_likelihood_surface
+    from agent_core.plot_time_dependent_standard_report import plot_likelihood_surface
+
+    prepared = prepare_analysis(normalized, root, workers=1, build_engine=False)
+    expected = result["time_dependent_engine"]
+    for key in ("engine", "spectrum", "likelihood", "dataset_names", "input_sha256", "windows"):
+        if prepared.metadata[key] != expected[key]:
+            raise ValueError("observed contour reconstruction differs in " + key)
+
+    surface_dir = run_dir / "likelihood_contours"
+    plot_dir = figure_dir / "likelihood_contours"
+    surface_dir.mkdir(parents=True, exist_ok=True)
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    files, source_summaries = {}, []
+    ranked = sorted(
+        enumerate(result["source_results"]),
+        key=lambda pair: (-float(pair[1]["fit"]["TS"]), pair[0]),
+    )[:3]
+    for rank, (source_index, item) in enumerate(ranked, start=1):
+        stem_name = f"source_{int(item['source_number']):04d}_likelihood_contour"
+        surface_path = surface_dir / f"{stem_name}.npz"
+        surface = save_observed_likelihood_surface(
+            prepared.constructed,
+            surface_path,
+            item["fit"],
+            source_index=source_index,
+            source_name=str(item["source_name"]),
+            source_id=str(item["source_number"]),
+        )
+        plot_stem = plot_dir / stem_name
+        plot_likelihood_surface(
+            surface_path,
+            plot_stem,
+            f"Observed single-source likelihood surface: {item['source_name']}",
+            r"Single-source signal count $n_s$",
+            {"ns": item["fit"]["ns"], "gamma": item["fit"].get("gamma")},
+        )
+        prefix = f"source_contour_{rank}"
+        files.update({
+            f"{prefix}_npz": str(surface_path),
+            f"{prefix}_png": str(plot_stem.with_suffix(".png")),
+            f"{prefix}_pdf": str(plot_stem.with_suffix(".pdf")),
+        })
+        source_summaries.append({
+            "rank_by_observed_ts": rank,
+            "source_index": source_index,
+            "source_number": int(item["source_number"]),
+            "source_name": str(item["source_name"]),
+            "observed_ts": float(item["fit"]["TS"]),
+            "surface": surface,
+            "png": files[f"{prefix}_png"],
+            "pdf": files[f"{prefix}_pdf"],
+        })
+
+    stack_summary = None
+    if _has_stack(normalized):
+        fit = result["stack_result"]
+        surface_path = surface_dir / "stacking_likelihood_contour.npz"
+        surface = save_observed_likelihood_surface(
+            prepared.constructed,
+            surface_path,
+            fit,
+            source_index=None,
+        )
+        plot_stem = plot_dir / "stacking_likelihood_contour"
+        plot_likelihood_surface(
+            surface_path,
+            plot_stem,
+            "Observed time-dependent stacking likelihood surface",
+            r"Stacked signal count $n_s$",
+            {"ns": fit["ns"], "gamma": fit.get("gamma")},
+        )
+        files.update({
+            "stack_contour_npz": str(surface_path),
+            "stack_contour_png": str(plot_stem.with_suffix(".png")),
+            "stack_contour_pdf": str(plot_stem.with_suffix(".pdf")),
+        })
+        stack_summary = {
+            "observed_ts": float(fit["TS"]),
+            "surface": surface,
+            "png": files["stack_contour_png"],
+            "pdf": files["stack_contour_pdf"],
+        }
+    return files, {"status": "rendered", "sources": source_summaries, "stack": stack_summary}
+
+
 def write_artifacts(config_path, config, normalized, result, root):
     from agent_core.report import make_run_id, write_yaml, build_provenance
     from agent_core.analysis_outputs import write_csv
@@ -50,10 +154,19 @@ def write_artifacts(config_path, config, normalized, result, root):
         fig.savefig(path, dpi=170)
         files[suffix] = str(path)
     plt.close(fig)
+    contour_files, contour_summary = _write_observed_likelihood_contours(
+        normalized, result, root, run_dir, figure_dir
+    )
+    files.update(contour_files)
+    result["observed_likelihood_contours"] = contour_summary
     result["generated_files"] = files
     result["artifact_sha256"] = {key: sha256_file(path) for key, path in files.items()}
+    chat_default_figures = [item["png"] for item in contour_summary["sources"]]
+    if contour_summary["stack"] is not None:
+        chat_default_figures.append(contour_summary["stack"]["png"])
     result["time_dependent_summary"] = dict(source_count=len(normalized.sources), rows=rows,
-        results_csv=str(table), figures=files,
+        results_csv=str(table), figures=files, observed_likelihood_contours=contour_summary,
+        chat_default_figures=chat_default_figures,
         note="Fixed per-source boxes; conditional likelihood. Significance awaits matched shared background trials.")
     report = dict(schema_version=normalized.schema_version, run=dict(status="completed", backend=result["backend"]),
         analysis=dict(type=normalized.analysis_type, time_mode="time_dependent", sample=normalized.sample,
@@ -72,6 +185,13 @@ def write_artifacts(config_path, config, normalized, result, root):
         lines.append(f"| {row['name']} | {row['ns']:.7g} | {gamma} | {row['TS']:.7g} |")
     lines += ["", "Gamma is positive in E^(-Gamma). No time-integrated significance or flux formula is applied.",
               "See review.md before interpreting these results.", ""]
+    if contour_summary["status"] == "rendered":
+        lines += ["## Observed likelihood contours", ""]
+        for item in contour_summary["sources"]:
+            lines.append(f"- {item['source_name']} (observed TS rank {item['rank_by_observed_ts']}): {item['png']}")
+        if contour_summary["stack"] is not None:
+            lines.append(f"- Stacking analysis: {contour_summary['stack']['png']}")
+        lines.append("")
     (run_dir / "report.md").write_text("\n".join(lines))
     return run_dir
 
@@ -126,7 +246,45 @@ def review_artifacts(review, report, normalized, root):
             (normalized["gamma_mode"] == "fitted" and any(math.isclose(fit["gamma"], x, abs_tol=1e-6) for x in (lower, upper)))):
             add_check(review, f"catalog_boundary_{i}", "warning", "A fitted parameter is at its requested boundary", False)
     files, hashes = result.get("generated_files", {}), result.get("artifact_sha256", {})
-    artifacts = set(files) == set(hashes) == {"results", "png", "pdf"}
+    artifacts = set(files) == set(hashes) and {"results", "png", "pdf"}.issubset(files)
+    contour_summary = result.get("observed_likelihood_contours", {})
+    chat_default_figures = result.get("time_dependent_summary", {}).get("chat_default_figures", [])
+    if normalized["gamma_mode"] == "fitted":
+        expected_sources = sorted(
+            enumerate(records), key=lambda pair: (-float(pair[1]["fit"]["TS"]), pair[0])
+        )[:3]
+        actual_sources = contour_summary.get("sources", [])
+        artifacts = artifacts and contour_summary.get("status") == "rendered"
+        artifacts = artifacts and len(actual_sources) == len(expected_sources)
+        for rank, ((source_index, expected), actual) in enumerate(
+            zip(expected_sources, actual_sources), start=1
+        ):
+            prefix = f"source_contour_{rank}"
+            artifacts = artifacts and all(
+                f"{prefix}_{suffix}" in files for suffix in ("npz", "png", "pdf")
+            )
+            artifacts = artifacts and actual.get("source_index") == source_index
+            artifacts = artifacts and actual.get("source_number") == expected.get("source_number")
+            artifacts = artifacts and actual.get("source_name") == expected.get("source_name")
+            artifacts = artifacts and math.isclose(
+                float(actual.get("observed_ts", float("nan"))), float(expected["fit"]["TS"])
+            )
+        expected_stack = _has_stack(normalized)
+        artifacts = artifacts and (contour_summary.get("stack") is not None) == expected_stack
+        if expected_stack:
+            artifacts = artifacts and all(
+                f"stack_contour_{suffix}" in files for suffix in ("npz", "png", "pdf")
+            )
+        expected_chat_figures = [item.get("png") for item in actual_sources]
+        if expected_stack:
+            expected_chat_figures.append(contour_summary["stack"].get("png"))
+        artifacts = artifacts and chat_default_figures == expected_chat_figures
+    else:
+        artifacts = artifacts and contour_summary == {
+            "status": "not_applicable_fixed_gamma", "sources": [], "stack": None
+        }
+        artifacts = artifacts and not any("contour" in key for key in files)
+        artifacts = artifacts and chat_default_figures == []
     try:
         artifacts = artifacts and all(sha256_file(path) == hashes[key] for key, path in files.items())
         with Path(files["results"]).open() as stream:
