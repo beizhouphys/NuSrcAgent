@@ -124,11 +124,13 @@ later turn's final answer. This supersedes earlier automatic-continuation rules.
 
 For fixed-window time-dependent single-source, scan and joint-stack analyses,
 the first turn likewise ends with a FINAL ANSWER containing the reviewed
-observed ns/Gamma and TS, the unavailable-calibration statement and material
-warnings, followed by a question asking whether to run a fixed-count matched
-background ensemble. Only a subsequent explicit reply with an agreed trial
-count authorizes that second stage. Follow the analysis-specific contracts
-below; time-dependent tasks do not enter `AWAITING_FLUX`.
+observed ns/Gamma and TS, the required observed-TS source ranking, the
+unavailable-calibration statement, material warnings and the default observed-
+stage contour figures defined below. Show those figures before asking whether
+to run a fixed-count matched background ensemble. Only a subsequent explicit
+reply with an agreed trial count authorizes that second stage. Follow the
+analysis-specific contracts below; time-dependent tasks do not enter
+`AWAITING_FLUX`.
 
 ## Response language
 
@@ -192,16 +194,25 @@ workflow. Read `docs/time_dependent_catalog.md` first. New tasks default to
 `scope=per_source_catalog_windows`, including when the input omits scope.
 Use this workflow for single sources, scans, stacks or
 scan_and_stack. Preserve explicit catalog order, positive intrinsic weights,
-windows, detector phases, frozen PDFs and fitted/fixed Gamma. This scope uses
-`catalog_continuous_profile_v1`, not the optimizer defaults below. `--workers`
-sets cached-engine Numba threads or reference-engine trial processes; keep
-BLAS/OpenMP at one thread. Do not silently substitute engines or time searches.
-Only execute observed tasks after READY. Inspect artifact/scientific reviews.
-Use the time-dependent reporting stages under the joint-stack and single-source
-sections below; observed fits run zero trials and no flux stage.
+windows, user-requested detector phases and background-time model, frozen PDFs
+and fitted/fixed Gamma. When the request does not specify detector phases,
+default to the supported IceCube phases whose detector uptime has a non-empty
+overlap with at least one source window in the catalog; record the derived phase
+set and its overlap provenance. When the request does not specify a background-
+time model, default to `background_time_model=uniform_livetime`. An explicit
+user request overrides either default when supported; if it is unsupported,
+explain the limitation rather than substituting another setting. This scope
+uses `catalog_continuous_profile_v1`, not the optimizer defaults below.
+`--workers` sets cached-engine Numba threads or reference-engine trial processes;
+keep BLAS/OpenMP at one thread. Do not silently substitute engines or time
+searches. Only execute observed tasks after READY. Inspect artifact/scientific
+reviews. Use the time-dependent reporting stages under the joint-stack and
+single-source sections below; observed fits run zero trials and no flux stage.
 
-Missing windows or detector phases must be resolved before READY. Gaussian
-profiles or fitted time parameters are unsupported by this engine; explain
+Missing windows must be resolved before READY. Omitted detector phases or
+background-time model do not require clarification once these defaults have
+been recorded. Gaussian profiles or fitted time parameters are unsupported by
+this engine; explain
 that limitation rather than silently selecting the legacy workflow. Only an
 explicit request for the legacy engine should select `scope=legacy_time_profile`.
 Keep existing saved tasks on their recorded workflow.
@@ -215,6 +226,42 @@ human-facing time-dependent report and figure: plain text `Gamma` and the symbol
 `gamma_min`, `gamma_max` and related names unchanged in CLI options, Python
 interfaces and machine-readable artifacts; those fields store the positive
 Gamma value after the existing signed-exponent conversion.
+
+Every observed-only time-dependent result must include a compact source-fit
+table ranked by descending observed TS. Report exactly
+`min(10, N_sources)` rows, so a catalog with fewer than ten sources reports
+every source. Break equal-TS ties by the preserved input catalog order. Each row
+must identify the rank and source and give its best-fit ns and observed TS. For
+a fitted-Gamma analysis, also give the best-fit Gamma in every row; write
+`unidentified` when ns=0 rather than quoting an arbitrary optimizer value. For
+a fixed-Gamma analysis, state the common fixed Gamma once and omit a misleading
+best-fit-Gamma column. Apply this rule to scan, stack, `scan_and_stack` and
+standalone requests, including stack-only tasks for which the per-source fits
+are supporting diagnostics. Do not rank this observed-stage table by p-value,
+trial TS or post-trial significance.
+
+Use these default chat presentation rules for fixed-window time-dependent
+analyses unless the user asks for different artifacts:
+
+- Retain `time_dependent_ts.pdf` as an artifact, but do not display or link it
+  in chat by default.
+- Before asking whether to run background trials, display the validated
+  observed-likelihood contour PNG for the `min(3, N_sources)` sources with the
+  largest observed TS, ordered by observed TS with input order as the tie-break,
+  and the stacking contour PNG when a stack was fitted. These contours apply to
+  fitted-Gamma analyses; for fixed Gamma, state that a two-dimensional ns-Gamma
+  contour is not applicable. Constructing these output-only surfaces does not
+  authorize or require background trials and does not calibrate significance.
+- After a complete validated background ensemble, show a source summary table
+  for exactly the `min(3, N_sources)` sources with the largest empirical local
+  significance, ranked by increasing add-one local p-value with observed TS and
+  then input order as tie-breaks. Include the observed best fit, local p-value,
+  one-sided significance and Monte Carlo interval. Show a separate stacking
+  summary table when a stack was fitted. Also display the phase-labelled
+  p-value-versus-time plot and the applicable background-trial TS histogram;
+  show both source and stacking histograms when both hypotheses were fitted.
+  Do not substitute the observed-TS ranking for this post-trial local-
+  significance ranking.
 
 The following subsection applies only to explicitly requested legacy analyses.
 
@@ -562,14 +609,16 @@ fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
    and/or joint stack with zero background trials, then completes review. Read
    the observed source and stack results and both artifact/scientific reviews.
    Write a FINAL ANSWER chat bubble with the weighting prescription and source
-   count, the leading observed source when a scan is present, and the applicable
-   source/stack best-fit ns, Gamma and TS. State that local, catalog post-trial
-   and stacking p-values/significances are unavailable from the observed-only
-   fit. Preserve every material warning and identify Gamma as unidentified when
-   ns=0. Ask whether to continue with matched shared seasonal background trials
-   and request an agreed fixed trial count if none has been supplied, then END
-   THIS TURN. A significance reminder or the initial analysis request does not
-   itself authorize trials.
+   count, the required top-observed-TS source table defined above, the leading
+   observed source when a scan is present, and the applicable stack best-fit ns,
+   Gamma and TS. State that local, catalog post-trial and stacking
+   p-values/significances are unavailable from the observed-only fit. Preserve
+   every material warning and identify Gamma as unidentified when ns=0. Display
+   the default top-observed-TS source contours and stacking contour defined
+   above, then ask whether to continue with matched shared seasonal background
+   trials and request an agreed fixed trial count if none has been supplied.
+   END THIS TURN after the question. A significance reminder or the initial
+   analysis request does not itself authorize trials.
 2. Only after the user explicitly authorizes the background stage with a fixed
    count in a later turn, run `td-background-trials` from the reviewed baseline.
    Import the observed fit without maximizing it again; repeat the recorded
@@ -578,21 +627,24 @@ fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
    from an incomplete ensemble. After the requested count and all validation
    checks pass, present the canonical table with the leading source, best fit,
    add-one local p-value, Sidak result, empirical shared-trial maximum-TS result,
-   and weighted-stack empirical result when applicable. Report Monte Carlo
-   intervals and distinguish local, catalog-maximum and stacking probabilities.
-   These trials do not calibrate fitted time parameters.
+   and weighted-stack empirical result when applicable. Show the top-local-
+   significance source and stacking summary tables defined above, rather than
+   repeating the observed-TS ranking as the post-trial summary. Report Monte
+   Carlo intervals and distinguish local, catalog-maximum and stacking
+   probabilities. These trials do not calibrate fitted time parameters.
 
 Use the canonical saved-result bundle and
-`scripts/plot_time_dependent_standard_report.py`; do not substitute an ad hoc
-plotter. Display the phase-labelled source p-values-over-time figure when a scan
-is present and the stacking background-TS histogram when a stack is present.
-For fitted Gamma, also display the validated likelihood contours for the
-empirical leading source and stack when applicable; a missing, nonfinite or
-MLE/TS-mismatched required surface fails the standard-result validation gate.
+`agent_core/plot_time_dependent_standard_report.py`; do not substitute an ad hoc
+plotter. After trials, display the phase-labelled source p-values-over-time
+figure and the applicable source and stacking background-TS histograms as
+defined above. A missing, nonfinite or MLE/TS-mismatched required observed-stage
+contour surface fails the result validation gate.
 Use the matched scrambled distribution as the null calibration and do not add a
 time-integrated asymptotic overlay. Include NuSrcAgent review status, requested
 and produced trial counts, seed uniqueness, index contiguity, material warnings,
-and links to the PNG/PDF figures and numerical artifacts.
+and links to the PNG/PDF figures and numerical artifacts. Apply the shared
+time-integrated/time-dependent visual-style contract below to every generated
+figure.
 
 ## Single-source calculation and chat output in two stages
 
@@ -651,14 +703,16 @@ the reviewed observed fit and the separately authorized fixed-count background
 ensemble; there is no time-dependent flux continuation.
 
 1. Run the READY observed task and review its artifacts. In the first FINAL
-   ANSWER, report the source name (and the leading observed source for a catalog
-   scan), best-fit ns, Gamma and TS, fixed/fitted Gamma treatment, detector
-   phases and time-window definition, review status and every material warning.
-   State that p-values and significances are unavailable because the observed
-   fit ran zero trials; at ns=0, report Gamma as unidentified. Ask whether to
-   continue with matched shared seasonal background trials and request the fixed
-   trial count if it is not yet agreed, then END THIS TURN. Do not launch trials
-   merely because the answer explains that empirical calibration is required.
+   ANSWER, report the required top-observed-TS source table (one row for a
+   standalone source), the leading observed source for a catalog scan,
+   fixed/fitted Gamma treatment, detector phases and time-window definition,
+   review status and every material warning. State that p-values and
+   significances are unavailable because the observed fit ran zero trials; at
+   ns=0, report Gamma as unidentified. Display the default top-observed-TS
+   source contours defined above, then ask whether to continue with matched
+   shared seasonal background trials and request the fixed trial count if it is
+   not yet agreed. END THIS TURN after the question. Do not launch trials merely
+   because the answer explains that empirical calibration is required.
 2. In a later turn, only after explicit user authorization with the fixed count,
    run `td-background-trials` from the reviewed observed baseline. For one source,
    report the add-one empirical local p-value, exceedances/trials, one-sided
@@ -666,16 +720,17 @@ ensemble; there is no time-dependent flux continuation.
    p-value. For a scan, additionally report the empirical shared-trial maximum-TS
    post-trial result as primary and the Sidak approximation as secondary. State
    validation, requested/produced counts, seed uniqueness and index contiguity,
-   and preserve all inherited warnings.
+   preserve all inherited warnings, and show the top-local-significance source
+   summary table defined above, with best-fit Gamma included only when Gamma was
+   fitted.
 
 After validation passes, use the canonical result bundle and standard renderer.
-Display the phase-labelled p-values-over-time figure for a catalog scan and the
-selected source background-TS histogram when produced. For fitted Gamma, display
-the validated likelihood contour for the source selected by the standard result
-(the only source for a standalone analysis or the empirical leading source for a
-scan). Link PNG/PDF figures and the machine-readable tables and NPZ files. Do not
-call likelihood-drop contours calibrated confidence regions, and do not use a
-time-integrated analytic significance formula for these fits.
+Display the phase-labelled p-values-over-time figure and the applicable source
+background-trial TS histogram. Link the displayed figures and the machine-
+readable tables and NPZ files. Do not call likelihood-drop contours calibrated
+confidence regions, and do not use a time-integrated analytic significance
+formula for these fits. Apply the shared time-integrated/time-dependent visual-
+style contract below to every generated figure.
 
 ## Single-source linear Gamma interpolation
 
@@ -696,11 +751,30 @@ switch diagnostics to normal results. See docs/single_source_linear_interpolatio
 
 ## Analysis figure line styles
 
-For time-integrated and time-dependent single-source and joint stacking figures,
-use solid lines for results computed by the current analysis (upper limits,
-measured spectra and likelihood-contour boundaries). Use dashed lines for all
-published reference spectra from IceCube or other authors. Preserve the
-standard time-dependent renderer's defined colors, markers, phase shading,
-significance guides, uncertainty bands and units. This is a rendering
-convention; do not rerun LLH fits or alter numerical results only to change line
-styles.
+Use the time-integrated upper-limit and likelihood-contour figures as the visual
+style source for both time-integrated and time-dependent single-source and joint
+stacking figures. Reuse their white background, serif/STIX typography and math
+text, capital-Gamma labels, inward major/minor ticks on all sides, restrained
+axes and grid, clear stroke hierarchy, uncluttered frame-free legends and
+publication-scale spacing. Use solid lines for results computed by the current
+analysis and dashed lines for published reference spectra from IceCube or other
+authors.
+
+In particular, render time-dependent likelihood surfaces with the same
+time-integrated contour language: solid purple (`#7752a5`) and orange
+(`#d17c12`) contour boundaries where multiple contour families need
+distinguishing, low-alpha fills, and a black star for an identifiable best fit.
+At ns=0, show the full Gamma-independent ridge and label Gamma as unidentified
+instead of drawing an arbitrary star. Keep the time-dependent likelihood-drop
+statistic and requested numerical contour levels unchanged; matching the style
+does not turn them into calibrated confidence regions.
+
+For time-dependent p-value and background-TS figures, inherit the same
+typography, axes, tick, linewidth and current-analysis solid-series conventions
+from the upper-limit figure while retaining the plot-specific phase shading,
+significance guides, histogram encoding, observed-TS marker, uncertainty bands
+and units required by the standard time-dependent renderer. Extend
+`agent_core/plot_time_dependent_standard_report.py` to enforce this shared style
+rather than introducing an ad hoc plotter. This is a rendering convention; do
+not rerun likelihood fits, change statistical definitions or alter numerical
+results only to change figure styling.

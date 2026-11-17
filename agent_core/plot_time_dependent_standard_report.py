@@ -123,16 +123,31 @@ def safe_name(value: str) -> str:
 def apply_style() -> None:
     plt.rcParams.update(
         {
-            "font.size": 11,
+            "font.family": "serif",
+            "font.serif": ["STIXGeneral", "DejaVu Serif"],
+            "mathtext.fontset": "stix",
+            "font.size": 13,
             "axes.labelsize": 13,
-            "axes.titlesize": 14,
-            "xtick.labelsize": 10,
-            "ytick.labelsize": 10,
+            "axes.titlesize": 16,
+            "axes.linewidth": 1.05,
+            "xtick.labelsize": 12,
+            "ytick.labelsize": 12,
             "axes.facecolor": "white",
             "figure.facecolor": "white",
             "savefig.facecolor": "white",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "svg.fonttype": "none",
         }
     )
+
+
+def style_ticks(ax: plt.Axes) -> None:
+    """Match the major/minor tick hierarchy used by the flux figures."""
+
+    ax.tick_params(which="both", direction="in", top=True, right=True)
+    ax.tick_params(which="major", length=7, width=1)
+    ax.tick_params(which="minor", length=3.5, width=0.8)
 
 
 def validate_run(root: Path, summary: dict[str, Any], allow_unvalidated: bool) -> dict[str, Any]:
@@ -375,7 +390,7 @@ def plot_source_timeline(
         "Pre-trial",
         "Post-trial (empirical max-TS)" if post_trial == "empirical" else "Post-trial (Šidák)",
     )
-    colors = ("#3f536d", "#a24b3f")
+    colors = ("#7752a5", "#d17c12")
     y_min = floor / 1.8
     anchor_min = min(float(row["time_anchor_mjd"]) for row in rows)
     anchor_max = max(float(row["time_anchor_mjd"]) for row in rows)
@@ -425,14 +440,14 @@ def plot_source_timeline(
         ax.set_xlim(mjd_to_datetime(x_min_mjd), mjd_to_datetime(x_max_mjd))
         ax.set_ylabel(f"{label} $p$-value")
         ax.grid(axis="y", which="major", color="0.86", lw=0.6)
-        ax.tick_params(which="both", direction="in", top=True, right=True)
+        style_ticks(ax)
 
         right = ax.twinx()
         right.set_yscale("log")
         right.set_ylim(ax.get_ylim())
         right.set_yticks(SIGMA_P_VALUES, [rf"${int(value)}\sigma$" for value in SIGMA_LEVELS])
         right.set_ylabel("One-sided significance")
-        right.tick_params(which="both", direction="in")
+        style_ticks(right)
 
     axes[0].set_title(title)
     if x_min_mjd <= dataset_end_mjd <= x_max_mjd:
@@ -479,8 +494,8 @@ def plot_source_timeline(
     )
 
     output_stem.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_stem.with_suffix(".png"), dpi=220)
-    fig.savefig(output_stem.with_suffix(".pdf"))
+    fig.savefig(output_stem.with_suffix(".png"), dpi=220, facecolor="white", metadata={"Creator": "NuSrcAgent"})
+    fig.savefig(output_stem.with_suffix(".pdf"), facecolor="white", metadata={"Creator": "NuSrcAgent"})
     plt.close(fig)
 
     data_path = output_stem.with_name(f"{output_stem.name}_data.csv")
@@ -514,8 +529,8 @@ def plot_stacking_histogram(
     _, edges, _ = ax.hist(
         background_ts,
         bins=bins,
-        color="#496b8a",
-        edgecolor="#263b50",
+        color="#7752a5",
+        edgecolor="#4c3569",
         linewidth=0.45,
         alpha=0.82,
         label=f"Background ({len(background_ts):,} trials)",
@@ -527,13 +542,14 @@ def plot_stacking_histogram(
         ax.stairs(
             expected,
             edges,
-            color="#d28e28",
+            color="#404040",
             linewidth=2.0,
+            linestyle="--",
             label=r"Asymptotic $\frac{1}{2}\delta(0)+\frac{1}{2}\chi^2_1$",
         )
     ax.axvline(
         observed_ts,
-        color="#c33f35",
+        color="#d17c12",
         linewidth=2.4,
         label=rf"Observed TS = {observed_ts:.3f}",
     )
@@ -543,7 +559,7 @@ def plot_stacking_histogram(
     ax.set_ylabel("Trials per bin")
     ax.set_title(textwrap.fill(title, width=68))
     ax.grid(axis="y", which="major", color="0.86", linewidth=0.65)
-    ax.tick_params(which="both", direction="in", top=True, right=True)
+    style_ticks(ax)
     ax.legend(frameon=False, loc="upper right")
     annotation = (
         rf"$N_{{\rm bg}}(\mathrm{{TS}}\geq\mathrm{{TS}}_{{\rm obs}})"
@@ -556,8 +572,8 @@ def plot_stacking_histogram(
     ax.text(0.96, 0.62, annotation, transform=ax.transAxes, ha="right", va="top", fontsize=11)
 
     output_stem.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_stem.with_suffix(".png"), dpi=220)
-    fig.savefig(output_stem.with_suffix(".pdf"))
+    fig.savefig(output_stem.with_suffix(".png"), dpi=220, facecolor="white", metadata={"Creator": "NuSrcAgent"})
+    fig.savefig(output_stem.with_suffix(".pdf"), facecolor="white", metadata={"Creator": "NuSrcAgent"})
     plt.close(fig)
 
 
@@ -588,8 +604,8 @@ def plot_single_source_histogram(
     _, edges, _ = ax.hist(
         background_ts,
         bins=bins,
-        color="#496b8a",
-        edgecolor="#263b50",
+        color="#7752a5",
+        edgecolor="#4c3569",
         linewidth=0.45,
         alpha=0.82,
         label=f"Background ({n_trials:,} trials)",
@@ -602,13 +618,14 @@ def plot_single_source_histogram(
         ax.stairs(
             expected,
             edges,
-            color="#d28e28",
+            color="#404040",
             linewidth=2.0,
+            linestyle="--",
             label=r"Asymptotic $\frac{1}{2}\delta(0)+\frac{1}{2}\chi^2_1$",
         )
     ax.axvline(
         observed_ts,
-        color="#c33f35",
+        color="#d17c12",
         linewidth=2.4,
         label=rf"Observed TS = {observed_ts:.3f}",
     )
@@ -618,7 +635,7 @@ def plot_single_source_histogram(
     ax.set_ylabel("Trials per bin")
     ax.set_title(textwrap.fill(title, width=68))
     ax.grid(axis="y", which="major", color="0.86", linewidth=0.65)
-    ax.tick_params(which="both", direction="in", top=True, right=True)
+    style_ticks(ax)
     ax.legend(frameon=False, loc="upper right")
     annotation = (
         rf"$N_{{\rm bg}}(\mathrm{{TS}}\geq\mathrm{{TS}}_{{\rm obs}})={exceedances}$"
@@ -630,8 +647,8 @@ def plot_single_source_histogram(
     ax.text(0.96, 0.62, annotation, transform=ax.transAxes, ha="right", va="top", fontsize=11)
 
     output_stem.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_stem.with_suffix(".png"), dpi=220)
-    fig.savefig(output_stem.with_suffix(".pdf"))
+    fig.savefig(output_stem.with_suffix(".png"), dpi=220, facecolor="white", metadata={"Creator": "NuSrcAgent"})
+    fig.savefig(output_stem.with_suffix(".pdf"), facecolor="white", metadata={"Creator": "NuSrcAgent"})
     plt.close(fig)
 
     data_path = output_stem.with_name(f"{output_stem.name}_data.csv")
@@ -666,32 +683,42 @@ def plot_likelihood_surface(
         raise ValueError(f"surface shape in {surface_path} does not match ns/Gamma axes")
 
     apply_style()
-    fig, ax = plt.subplots(figsize=(8.4, 5.8), constrained_layout=True)
-    clipped = np.clip(delta, 0.0, 12.0)
-    mesh = ax.contourf(
-        ns_values,
-        gammas,
-        clipped,
-        levels=np.linspace(0.0, 12.0, 25),
-        cmap="viridis_r",
-        extend="max",
-    )
+    fig, ax = plt.subplots(figsize=(8.4, 6.4), constrained_layout=True)
     finite = delta[np.isfinite(delta)]
     available = [level for level in CONTOUR_LEVELS if finite.size and np.min(finite) <= level <= np.max(finite)]
     if available:
-        contours = ax.contour(
-            ns_values, gammas, delta, levels=available, colors="white", linewidths=1.0
+        boundary_colors = [
+            ("#7752a5", "#d17c12")[index % 2] for index in range(len(available))
+        ]
+        fill_levels = sorted(
+            set([max(0.0, float(np.min(finite))), *available])
         )
-        ax.clabel(contours, inline=True, fontsize=8.5, fmt=lambda value: f"{value:g}")
-    colorbar = fig.colorbar(mesh, ax=ax, pad=0.02)
-    colorbar.set_label(r"$-2\Delta\ln\mathcal{L}$")
+        if len(fill_levels) > 1:
+            ax.contourf(
+                ns_values,
+                gammas,
+                delta,
+                levels=fill_levels,
+                colors=boundary_colors[: len(fill_levels) - 1],
+                alpha=0.10,
+            )
+        contours = ax.contour(
+            ns_values,
+            gammas,
+            delta,
+            levels=available,
+            colors=boundary_colors,
+            linewidths=1.5,
+            linestyles="-",
+        )
+        ax.clabel(contours, inline=True, fontsize=9, fmt=lambda value: f"{value:g}")
 
     if np.isclose(best_ns, 0.0) and not np.isfinite(best_gamma):
         ax.plot(
             np.zeros_like(gammas),
             gammas,
-            color="#d13f36",
-            linewidth=3.0,
+            color="#7752a5",
+            linewidth=2.4,
             label=r"MLE ridge: $\hat n_s=0$, $\Gamma$ unidentified",
             zorder=5,
         )
@@ -701,9 +728,9 @@ def plot_likelihood_surface(
             [best_gamma],
             marker="*",
             s=180,
-            color="#d13f36",
-            edgecolor="white",
-            linewidth=0.8,
+            color="black",
+            edgecolor="black",
+            linewidth=0.5,
             label=rf"MLE: $\hat n_s={best_ns:.2f}$, $\hat\Gamma={best_gamma:.2f}$",
             zorder=6,
         )
@@ -712,9 +739,9 @@ def plot_likelihood_surface(
     ax.set_xlabel(axis_label)
     ax.set_ylabel(r"Spectral index $\Gamma$")
     ax.set_title(textwrap.fill(title, width=68))
-    ax.grid(color="white", alpha=0.20, linewidth=0.5)
-    ax.tick_params(which="both", direction="in", top=True, right=True)
-    ax.legend(frameon=True, facecolor="white", framealpha=0.90, loc="upper right")
+    ax.grid(color="0.88", alpha=0.65, linewidth=0.6)
+    style_ticks(ax)
+    ax.legend(frameon=False, loc="upper right")
     ax.text(
         0.98,
         0.04,
@@ -723,11 +750,11 @@ def plot_likelihood_surface(
         ha="right",
         va="bottom",
         fontsize=9,
-        color="white",
+        color="#4b4b4b",
     )
     output_stem.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_stem.with_suffix(".png"), dpi=220)
-    fig.savefig(output_stem.with_suffix(".pdf"))
+    fig.savefig(output_stem.with_suffix(".png"), dpi=220, facecolor="white", metadata={"Creator": "NuSrcAgent"})
+    fig.savefig(output_stem.with_suffix(".pdf"), facecolor="white", metadata={"Creator": "NuSrcAgent"})
     plt.close(fig)
 
 
