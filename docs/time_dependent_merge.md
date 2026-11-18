@@ -4,7 +4,7 @@ Integration branch: `time_dependent_merge`.
 
 The donor is `Codex_time-dependent-stacking_SkyLLH` at
 `5c70f58642a16363c777948f5ad170b5e43a1d41`. The integration preserves its
-conditional likelihood, fixed per-source box windows, shared seasonal
+conditional likelihood, fixed per-source box or Gaussian time profiles, shared seasonal
 fixed-count time/RA scrambles, and reference/cached fixed/free-Gamma engines.
 The existing NuSrcAgent time-integrated and Gaussian/box temporal search
 paths retain their scientific definitions.
@@ -95,7 +95,7 @@ background model was fabricated.
 
 The integration does not establish asymptotic calibration, coverage, sensitivity,
 discovery potential, global time-search significance or physical systematics.
-Only fixed per-source boxes have shared trials. Flux/fluence, continuous trials
+Only fixed per-source box or Gaussian profiles have shared trials. Flux/fluence, continuous trials
 and automatic recovery of orphan checkpoint shards remain outside this scope.
 The precomputed cached path received real-data wrapper verification; other
 explicit backend/phase configurations need their corresponding release checks.

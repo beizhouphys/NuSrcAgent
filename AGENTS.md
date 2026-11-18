@@ -26,7 +26,7 @@
 - Report the maximized likelihood statistic as `TS`. Analytic local p-values
   do not establish empirical significance or parameter coverage.
 - Always default new time-dependent requests to the merged
-  `per_source_catalog_windows` workflow: fixed per-source box windows,
+  `per_source_catalog_windows` workflow: fixed per-source box or Gaussian time profiles,
   single-source fits, scans, stacking and requested shared seasonal trials.
   Read docs/time_dependent_catalog.md. Require explicit windows, detector phases
   and the uniform-livetime background assumption before READY. Completed trials
@@ -37,7 +37,7 @@
   time-integrated significance/flux formulas to time-dependent fits.
 - Review source changes and perform relevant isolated verification before
   publication. No release tag or public availability is implied by this copy.
-- For completed fixed-window time-dependent background ensembles, use the
+- For completed fixed-profile time-dependent background ensembles, use the
   canonical result adapter and `agent_core/plot_time_dependent_standard_report.py`.
   Render only after all validation checks pass. Preserve the existing
   NuSrcAgent task, authorization, review and Monte Carlo-interval rules; do not

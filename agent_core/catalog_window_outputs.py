@@ -1,4 +1,4 @@
-"""Artifacts and independent review for the fixed-window catalog engine."""
+"""Artifacts and independent review for the fixed-profile catalog engine."""
 from pathlib import Path
 import csv
 import math
@@ -48,6 +48,8 @@ def _write_observed_likelihood_contours(normalized, result, root, run_dir, figur
     for key in ("engine", "spectrum", "likelihood", "dataset_names", "input_sha256", "windows"):
         if prepared.metadata[key] != expected[key]:
             raise ValueError("observed contour reconstruction differs in " + key)
+    if expected.get("time_profile") is not None and prepared.metadata["time_profile"] != expected["time_profile"]:
+        raise ValueError("observed contour reconstruction differs in time_profile")
 
     surface_dir = run_dir / "likelihood_contours"
     plot_dir = figure_dir / "likelihood_contours"
@@ -164,10 +166,11 @@ def write_artifacts(config_path, config, normalized, result, root):
     chat_default_figures = [item["png"] for item in contour_summary["sources"]]
     if contour_summary["stack"] is not None:
         chat_default_figures.append(contour_summary["stack"]["png"])
+    profile_label = "Gaussian" if normalized.temporal.get("profile") == "gaussian" else "box"
     result["time_dependent_summary"] = dict(source_count=len(normalized.sources), rows=rows,
         results_csv=str(table), figures=files, observed_likelihood_contours=contour_summary,
         chat_default_figures=chat_default_figures,
-        note="Fixed per-source boxes; conditional likelihood. Significance awaits matched shared background trials.")
+        note=f"Fixed per-source {profile_label} time profiles; conditional likelihood. Significance awaits matched shared background trials.")
     report = dict(schema_version=normalized.schema_version, run=dict(status="completed", backend=result["backend"]),
         analysis=dict(type=normalized.analysis_type, time_mode="time_dependent", sample=normalized.sample,
             likelihood_mode=normalized.likelihood_mode, n_sources=len(normalized.sources)), result=result,
@@ -178,7 +181,7 @@ def write_artifacts(config_path, config, normalized, result, root):
     provenance["normalized_sha256"] = sha256_file(run_dir / "config.normalized.yaml")
     provenance["time_dependent_input_sha256"] = result["time_dependent_engine"]["input_sha256"]
     write_yaml(run_dir / "provenance.yaml", provenance)
-    lines = ["# Fixed-window time-dependent analysis", "", result["time_dependent_summary"]["note"], "",
+    lines = ["# Fixed-profile time-dependent analysis", "", result["time_dependent_summary"]["note"], "",
              "| Hypothesis | ns | Gamma | TS |", "| --- | ---: | ---: | ---: |"]
     for row in rows:
         gamma = "unidentified" if row["gamma"] is None else f"{row['gamma']:.7g}"
@@ -208,6 +211,7 @@ def review_artifacts(review, report, normalized, root):
         and len(records) == len(sources) and len(sources) > 0
         and metadata.get("likelihood_family") == "skyllh_conditional"
         and metadata.get("dataset_names") == settings["datasets"]
+        and metadata.get("time_profile", {"type": "box"}).get("type") == settings.get("profile")
         and metadata.get("fit_procedure") == "catalog_continuous_profile_v1")
     windows = metadata.get("windows", [])
     valid = valid and len(windows) == len(sources)
@@ -217,13 +221,24 @@ def review_artifacts(review, report, normalized, root):
         valid = valid and all(window.get(key) == source[key] for key in ("name", "ra_deg", "dec_deg", "weight"))
         try:
             index = source["source_number"] - 1
-            expected = settings.get("windows", [])[index] if "windows" in settings else {
-                "start_mjd": float(source["metadata"][settings["window_columns"]["start"]]),
-                "stop_mjd": float(source["metadata"][settings["window_columns"]["stop"]])}
-            valid = valid and all(window[key] == expected[key] for key in ("start_mjd", "stop_mjd"))
+            if settings.get("profile") == "box":
+                expected = settings.get("windows", [])[index] if "windows" in settings else {
+                    "start_mjd": float(source["metadata"][settings["window_columns"]["start"]]),
+                    "stop_mjd": float(source["metadata"][settings["window_columns"]["stop"]])}
+                valid = valid and all(window[key] == expected[key] for key in ("start_mjd", "stop_mjd"))
+            else:
+                expected = settings.get("windows", [])[index] if "windows" in settings else {
+                    "center_mjd": float(source["metadata"][settings["window_columns"]["center"]]),
+                    "sigma_days": float(source["metadata"][settings["window_columns"]["sigma"]])}
+                tolerance = float(settings.get("tail_tolerance", 1e-12))
+                half_support = expected["sigma_days"] * math.sqrt(-2.0 * math.log(tolerance))
+                valid = valid and window["center_mjd"] == expected["center_mjd"]
+                valid = valid and window["sigma_days"] == expected["sigma_days"]
+                valid = valid and math.isclose(window["start_mjd"], expected["center_mjd"] - half_support)
+                valid = valid and math.isclose(window["stop_mjd"], expected["center_mjd"] + half_support)
         except (ValueError, KeyError, IndexError, TypeError):
             valid = False
-    add_check(review, "catalog_window_request", "pass" if valid else "fail", "Source order, weights, time windows and detector phases match the request", False)
+    add_check(review, "catalog_window_request", "pass" if valid else "fail", "Source order, weights, fixed time profiles and detector phases match the request", False)
     fits = [item["fit"] for item in records] + [result.get("stack_result", {})]
     for i, fit in enumerate(fits):
         ok = fit.get("fit_ok") is True

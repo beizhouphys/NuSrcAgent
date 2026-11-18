@@ -53,7 +53,7 @@ from .event_selection import SourceTimeSpatialBoxEventSelectionMethod
 from .phase import (
     PhaseExposureDetSigYieldBuilder,
     filter_catalog_selection_for_livetimes,
-    source_phase_exposure_fractions,
+    source_phase_profile_exposure_fractions,
 )
 from .precomputed import (
     BoundPrecomputedBackground,
@@ -314,10 +314,28 @@ def create_time_dependent_catalog_analysis(
         period_start_mjd=min(livetime.time_start for livetime in livetimes),
         period_end_mjd=max(livetime.time_stop for livetime in livetimes),
     )
-    selection = filter_catalog_selection_for_livetimes(selection, livetimes)
+    profile_type = config.catalog.time_profile.type
+    selection = filter_catalog_selection_for_livetimes(
+        selection,
+        livetimes,
+        profile_type=profile_type,
+        gaussian_tail_tolerance=config.catalog.time_profile.tail_tolerance,
+    )
     sources, time_centers, time_widths = selected_sources_to_arrays(selection.selected)
+    gaussian_sigmas = None
+    if profile_type == 'gaussian':
+        gaussian_sigmas = np.asarray(
+            [item.source.time_sigma_days for item in selection.selected], dtype=np.float64
+        )
+    time_kwargs = {
+        'profile_type': profile_type,
+        'gaussian_sigmas_days': gaussian_sigmas,
+        'gaussian_tail_tolerance': config.catalog.time_profile.tail_tolerance,
+    }
     exposure_by_dataset = {
-        dataset.name: source_phase_exposure_fractions(livetime, time_centers, time_widths)
+        dataset.name: source_phase_profile_exposure_fractions(
+            livetime, time_centers, time_widths, **time_kwargs
+        )
         for dataset, livetime in zip(datasets, livetimes, strict=True)
     }
     inactive = [name for name, fractions in exposure_by_dataset.items() if not np.any(fractions > 0)]
@@ -335,6 +353,7 @@ def create_time_dependent_catalog_analysis(
         livetimes_by_dataset=dict(zip((dataset.name for dataset in datasets), livetimes, strict=True)),
         time_centers_mjd=time_centers,
         time_widths_days=time_widths,
+        **time_kwargs,
     )
     model = create_catalog_analysis_model(
         cfg=cfg,
@@ -358,6 +377,7 @@ def create_time_dependent_catalog_analysis(
             livetime=livetime,
             time_centers_mjd=time_centers,
             time_widths_days=time_widths,
+            **time_kwargs,
             center_parameters=shared_center_parameters,
             width_parameters=shared_width_parameters,
         )
@@ -484,4 +504,3 @@ def create_time_dependent_catalog_analysis(
         precomputed_backgrounds=tuple(precomputed_backgrounds),
         precomputed_signal_grids=tuple(precomputed_signal_grids),
     )
-

@@ -12,6 +12,44 @@ AnalysisMode = Literal['single_source', 'stacking']
 PeriodSelection = Literal['window_overlap', 'anchor_inside']
 PDFBackend = Literal['skyllh', 'precomputed']
 LikelihoodFamily = Literal['skyllh_conditional']
+TimeProfileType = Literal['box', 'gaussian']
+
+
+@dataclass(frozen=True)
+class TimeProfileConfig:
+    """Fixed source-time profile used by the signal hypothesis."""
+
+    type: TimeProfileType = 'box'
+    center_mjd_column: str | None = None
+    sigma_days_column: str | None = None
+    tail_tolerance: float = 1e-12
+
+    @classmethod
+    def from_dict(cls, values: dict[str, Any] | None) -> TimeProfileConfig:
+        values = values or {}
+        profile_type = str(values.get('type', 'box'))
+        if profile_type not in ('box', 'gaussian'):
+            raise ValueError('time_profile.type must be box or gaussian')
+        columns = values.get('columns', {})
+        if not isinstance(columns, dict):
+            raise TypeError('time_profile.columns must be a mapping')
+        center = columns.get('center_mjd')
+        sigma = columns.get('sigma_days')
+        tolerance = float(values.get('tail_tolerance', 1e-12))
+        if not 0.0 < tolerance < 1.0:
+            raise ValueError('time_profile.tail_tolerance must lie strictly between zero and one')
+        if profile_type == 'gaussian':
+            missing = [name for name, value in (('center_mjd', center), ('sigma_days', sigma)) if not value]
+            if missing:
+                raise ValueError(f'time_profile.columns is missing required Gaussian mappings: {missing}')
+        elif center is not None or sigma is not None:
+            raise ValueError('time_profile.columns.center_mjd and sigma_days are only valid for Gaussian profiles')
+        return cls(
+            type=profile_type,  # type: ignore[arg-type]
+            center_mjd_column=None if center is None else str(center),
+            sigma_days_column=None if sigma is None else str(sigma),
+            tail_tolerance=tolerance,
+        )
 
 
 @dataclass(frozen=True)
@@ -142,18 +180,27 @@ class CatalogColumnConfig:
     ra_deg: str
     dec_deg: str
     weight: str
-    time_start_mjd: str
-    time_end_mjd: str
+    time_start_mjd: str | None = None
+    time_end_mjd: str | None = None
     time_anchor_mjd: str | None = None
 
     @classmethod
-    def from_dict(cls, values: dict[str, Any]) -> CatalogColumnConfig:
-        required = ('source_id', 'name', 'ra_deg', 'dec_deg', 'weight', 'time_start_mjd', 'time_end_mjd')
+    def from_dict(
+        cls,
+        values: dict[str, Any],
+        time_profile: TimeProfileConfig | None = None,
+    ) -> CatalogColumnConfig:
+        time_profile = time_profile or TimeProfileConfig()
+        required = ['source_id', 'name', 'ra_deg', 'dec_deg', 'weight']
+        if time_profile.type == 'box':
+            required.extend(('time_start_mjd', 'time_end_mjd'))
         missing = [key for key in required if not values.get(key)]
         if missing:
             raise ValueError(f'catalog.columns is missing required mappings: {missing}')
         return cls(
-            **{key: str(values[key]) for key in required},
+            **{key: str(values[key]) for key in ('source_id', 'name', 'ra_deg', 'dec_deg', 'weight')},
+            time_start_mjd=None if values.get('time_start_mjd') is None else str(values['time_start_mjd']),
+            time_end_mjd=None if values.get('time_end_mjd') is None else str(values['time_end_mjd']),
             time_anchor_mjd=(None if values.get('time_anchor_mjd') is None else str(values['time_anchor_mjd'])),
         )
 
@@ -196,9 +243,16 @@ class CatalogConfig:
     label: str | None = None
     selection: CatalogSelectionConfig = field(default_factory=CatalogSelectionConfig)
     delimiter: str = ','
+    time_profile: TimeProfileConfig = field(default_factory=TimeProfileConfig)
 
     @classmethod
-    def from_dict(cls, values: dict[str, Any], base_dir: Path) -> CatalogConfig:
+    def from_dict(
+        cls,
+        values: dict[str, Any],
+        base_dir: Path,
+        time_profile: TimeProfileConfig | None = None,
+    ) -> CatalogConfig:
+        time_profile = time_profile or TimeProfileConfig()
         path = Path(values['path']).expanduser()
         if not path.is_absolute():
             path = (base_dir / path).resolve()
@@ -207,10 +261,11 @@ class CatalogConfig:
             raise ValueError('catalog.delimiter must be exactly one character')
         return cls(
             path=path,
-            columns=CatalogColumnConfig.from_dict(values['columns']),
+            columns=CatalogColumnConfig.from_dict(values['columns'], time_profile=time_profile),
             label=None if values.get('label') is None else str(values['label']),
             selection=CatalogSelectionConfig.from_dict(values.get('selection')),
             delimiter=delimiter,
+            time_profile=time_profile,
         )
 
 
@@ -326,6 +381,10 @@ class CatalogAnalysisConfig:
     background: BackgroundTrialsConfig = field(default_factory=BackgroundTrialsConfig)
     single_source: str | None = None
 
+    @property
+    def time_profile(self) -> TimeProfileConfig:
+        return self.catalog.time_profile
+
     @classmethod
     def from_dict(cls, values: dict[str, Any], base_dir: Path | None = None) -> CatalogAnalysisConfig:
         if base_dir is None:
@@ -337,11 +396,12 @@ class CatalogAnalysisConfig:
         if mode == 'single_source' and not single_source:
             raise ValueError('single_source must be specified when mode is single_source')
         dataset = DatasetConfig.from_dict(values['dataset'], base_dir=base_dir)
+        time_profile = TimeProfileConfig.from_dict(values.get('time_profile'))
         return cls(
             mode=mode,  # type: ignore[arg-type]
             single_source=None if single_source is None else str(single_source),
             dataset=dataset,
-            catalog=CatalogConfig.from_dict(values['catalog'], base_dir=base_dir),
+            catalog=CatalogConfig.from_dict(values['catalog'], base_dir=base_dir, time_profile=time_profile),
             pdfs=PDFConfig.from_dict(values.get('pdfs'), dataset_names=dataset.names, base_dir=base_dir),
             spectrum=SpectrumConfig.from_dict(values.get('spectrum')),
             likelihood=LikelihoodConfig.from_dict(values.get('likelihood')),
@@ -358,4 +418,3 @@ def load_analysis_config(path: str | Path) -> CatalogAnalysisConfig:
     if not isinstance(values, dict):
         raise TypeError('analysis configuration must contain a YAML mapping')
     return CatalogAnalysisConfig.from_dict(values, base_dir=path.parent)
-

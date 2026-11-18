@@ -165,10 +165,10 @@ Gaussian significances, with Monte Carlo intervals. These quantities become
 available after the requested trial ensemble completes; observed fits alone
 report them as unavailable. Time-integrated analytic formulas do not apply.
 
-Supply explicit windows and detector phases before READY. Omitted scope is
-recorded as `per_source_catalog_windows`. Gaussian profiles and fitted time
-parameters do not trigger an automatic fallback. The
-[legacy Gaussian/box time-search workflow](time_dependent.md) remains available
+Supply explicit fixed box or Gaussian profile parameters and detector phases
+before READY. Omitted scope is recorded as `per_source_catalog_windows`.
+Fixed Gaussian profiles are supported; fitted time parameters do not trigger
+an automatic fallback. The [legacy fitted-time Gaussian/box workflow](time_dependent.md) remains available
 through explicit `scope=legacy_time_profile`; it supports independent source
 fits but has no stacking or calibrated trials. Existing tasks keep their
 recorded workflow.

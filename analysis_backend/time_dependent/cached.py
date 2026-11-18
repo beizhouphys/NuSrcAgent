@@ -9,7 +9,7 @@ from numba import njit, prange
 
 from .analysis import ConstructedCatalogAnalysis
 from .optimized import OptimizedCatalogFit, OptimizedCatalogTrials, ProfileFit
-from .phase import source_phase_exposure_fractions
+from .phase import source_phase_profile_integrals
 from .seeds import trial_seed
 
 
@@ -32,6 +32,8 @@ class FixedGammaTrialCache:
     source_dec: np.ndarray
     source_start: np.ndarray
     source_stop: np.ndarray
+    source_sigma: np.ndarray
+    gaussian_profile: bool
     source_dra_half: np.ndarray
     phase_event_counts: np.ndarray
     phase_yields: np.ndarray
@@ -155,6 +157,8 @@ def _evaluate_coordinates(
     source_dec,
     source_start,
     source_stop,
+    source_sigma,
+    gaussian_profile,
     source_dra_half,
     event_offsets,
     event_counts,
@@ -191,6 +195,8 @@ def _evaluate_coordinates(
                 event = candidate_events[pair]
                 if times[event] < source_start[source] or times[event] > source_stop[source]:
                     continue
+                if gaussian_profile and times[event] >= source_stop[source]:
+                    continue
                 dra = abs(ras[event] - source_ra[source])
                 dra = min(dra, 2.0 * np.pi - dra)
                 if dra >= source_dra_half[source]:
@@ -211,7 +217,12 @@ def _evaluate_coordinates(
                     * (psi / sigma_sq)
                     * np.exp(-0.5 * psi**2 / sigma_sq)
                 )
-                ratio = candidate_base_ratio[pair] * spatial
+                time_shape = 1.0
+                if gaussian_profile:
+                    center = 0.5 * (source_start[source] + source_stop[source])
+                    delta_time = times[event] - center
+                    time_shape = np.exp(-0.5 * (delta_time / source_sigma[source]) ** 2)
+                ratio = candidate_base_ratio[pair] * spatial * time_shape
                 ratios[used] = ratio
                 phases[used] = phase
                 used += 1
@@ -275,6 +286,8 @@ def _simulate_cached_batch(
     source_dec,
     source_start,
     source_stop,
+    source_sigma,
+    gaussian_profile,
     source_dra_half,
     event_counts,
     phase_yields,
@@ -311,6 +324,8 @@ def _simulate_cached_batch(
             source_dec,
             source_start,
             source_stop,
+            source_sigma,
+            gaussian_profile,
             source_dra_half,
             event_offsets,
             event_counts,
@@ -338,6 +353,11 @@ def build_fixed_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fi
     )
     source_stop = np.asarray(
         [item.source.time_end_mjd for item in constructed.selection.selected], dtype=np.float64
+    )
+    gaussian_profile = config.catalog.time_profile.type == 'gaussian'
+    source_sigma = np.asarray(
+        [0.0 if item.source.time_sigma_days is None else item.source.time_sigma_days for item in constructed.selection.selected],
+        dtype=np.float64,
     )
     angle = np.deg2rad(config.likelihood.event_selection_angle_deg)
     dec_minus = np.maximum(-np.pi / 2.0, source_dec - angle)
@@ -400,11 +420,14 @@ def build_fixed_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fi
         grl_offsets.append(grl_offsets[-1] + len(starts))
 
         response_bins = grid.declination_bins(source_dec)
-        overlaps = source_phase_exposure_fractions(
+        overlaps = source_phase_profile_integrals(
             livetime,
             0.5 * (source_start + source_stop),
             source_stop - source_start,
-        ) * float(livetime.livetime)
+            profile_type=config.catalog.time_profile.type,
+            gaussian_sigmas_days=(source_sigma if gaussian_profile else None),
+            gaussian_tail_tolerance=config.catalog.time_profile.tail_tolerance,
+        )
         for source in range(n_sources):
             candidate_offsets[phase, source] = pair_offset
             if overlaps[source] <= 0.0 or phase_yields[phase, source] <= 0.0:
@@ -439,6 +462,8 @@ def build_fixed_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fi
         source_dec=source_dec,
         source_start=source_start,
         source_stop=source_stop,
+        source_sigma=source_sigma,
+        gaussian_profile=gaussian_profile,
         source_dra_half=source_dra_half,
         phase_event_counts=np.diff(event_offsets).astype(np.int64),
         phase_yields=phase_yields,
@@ -466,6 +491,8 @@ class CachedPrecomputedFixedGammaEngine:
             self.cache.source_dec,
             self.cache.source_start,
             self.cache.source_stop,
+            self.cache.source_sigma,
+            self.cache.gaussian_profile,
             self.cache.source_dra_half,
             self.cache.event_offsets,
             self.cache.phase_event_counts,
@@ -542,6 +569,8 @@ class CachedPrecomputedFixedGammaEngine:
             self.cache.source_dec,
             self.cache.source_start,
             self.cache.source_stop,
+            self.cache.source_sigma,
+            self.cache.gaussian_profile,
             self.cache.source_dra_half,
             self.cache.phase_event_counts,
             self.cache.phase_yields,

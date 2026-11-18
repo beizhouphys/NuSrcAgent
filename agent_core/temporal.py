@@ -81,10 +81,12 @@ def catalog_window_errors(settings):
     errors = []
     allowed = {"scope", "profile", "time_format", "time_scale", "background_time_model",
                "windows", "window_columns", "datasets", "engine", "gamma_grid_step",
-               "event_selection_angle_deg", "ns_max", "pdf_backend"}
+               "event_selection_angle_deg", "ns_max", "pdf_backend", "tail_tolerance"}
     if set(settings) - allowed:
         errors.append("Unknown catalog temporal settings: " + ", ".join(sorted(set(settings)-allowed)))
-    for key, value in {"profile": "box", "time_format": "mjd", "time_scale": "ut1",
+    if settings.get("profile") not in {"box", "gaussian"}:
+        errors.append("Catalog time profiles require explicit profile=box or gaussian")
+    for key, value in {"time_format": "mjd", "time_scale": "ut1",
                        "background_time_model": "uniform_livetime"}.items():
         if settings.get(key) != value:
             errors.append(f"Catalog windows require explicit {key}={value}")
@@ -110,22 +112,37 @@ def catalog_window_errors(settings):
         errors.append("ns_max must include the preserved ns_seed=1")
     if finite(settings.get("event_selection_angle_deg", 10.)) and settings.get("event_selection_angle_deg", 10.) > 180:
         errors.append("event_selection_angle_deg must not exceed 180")
+    tolerance = settings.get("tail_tolerance", 1e-12)
+    if not finite(tolerance) or not 0 < tolerance < 1:
+        errors.append("tail_tolerance must be finite and strictly between zero and one")
+    if settings.get("profile") == "box" and "tail_tolerance" in settings:
+        errors.append("tail_tolerance is only valid for Gaussian time profiles")
     windows, columns = settings.get("windows"), settings.get("window_columns")
     if (windows is None) == (columns is None):
         errors.append("Supply exactly one of windows or window_columns")
     elif columns is not None:
-        if not isinstance(columns, dict) or set(columns) != {"start", "stop"} or not all(isinstance(x, str) and x for x in columns.values()):
-            errors.append("window_columns must map start and stop to catalog column names")
+        expected_columns = {"start", "stop"} if settings.get("profile") == "box" else {"center", "sigma"}
+        if not isinstance(columns, dict) or set(columns) != expected_columns or not all(isinstance(x, str) and x for x in columns.values()):
+            errors.append("window_columns must map " + " and ".join(sorted(expected_columns)) + " to catalog column names")
     else:
         if not isinstance(windows, list) or not windows:
             errors.append("windows must be a nonempty list in source input order")
         else:
             for row in windows:
-                if (not isinstance(row, dict) or set(row) != {"name", "start_mjd", "stop_mjd"}
-                    or not isinstance(row.get("name"), str) or not row["name"]
-                    or not finite(row.get("start_mjd")) or not finite(row.get("stop_mjd"))
-                    or row["stop_mjd"] <= row["start_mjd"]):
-                    errors.append("Each window requires a source name and finite start_mjd < stop_mjd")
+                if settings.get("profile") == "box":
+                    invalid = (not isinstance(row, dict) or set(row) != {"name", "start_mjd", "stop_mjd"}
+                        or not isinstance(row.get("name"), str) or not row["name"]
+                        or not finite(row.get("start_mjd")) or not finite(row.get("stop_mjd"))
+                        or row["stop_mjd"] <= row["start_mjd"])
+                    message = "Each box window requires a source name and finite start_mjd < stop_mjd"
+                else:
+                    invalid = (not isinstance(row, dict) or set(row) != {"name", "center_mjd", "sigma_days"}
+                        or not isinstance(row.get("name"), str) or not row["name"]
+                        or not finite(row.get("center_mjd")) or not finite(row.get("sigma_days"))
+                        or row["sigma_days"] <= 0)
+                    message = "Each Gaussian profile requires a source name, finite center_mjd and positive sigma_days"
+                if invalid:
+                    errors.append(message)
     return errors
 
 
