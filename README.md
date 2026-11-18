@@ -15,7 +15,7 @@ then run the two [worked examples](docs/quickstart.md).
 The current version is `0.2.0`, a development version shared
 through a private repository. Input data and precomputed probability-density
 tables are provided automatically. New time-dependent requests default to the
-merged [fixed-window workflow](docs/time_dependent_catalog.md), supporting
+merged [fixed-profile workflow](docs/time_dependent_catalog.md), supporting
 single-source fits, catalog scans, stacking and shared seasonal background
 trials with empirical p-values and significances.
 
@@ -67,7 +67,7 @@ substantial time, especially large catalog searches and repeated background fits
 | DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits ns and Gamma |
 | DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance Gamma; no energy term |
 | DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
-| DR2 time-dependent per-source windows | Single source, catalog scan, stacking | Default time-dependent workflow; fixed boxes; fixed/fitted Gamma; shared trials and empirical significance |
+| DR2 time-dependent per-source profiles | Single source, catalog scan, stacking | Default time-dependent workflow; fixed box or Gaussian time PDFs; fixed/fitted Gamma; shared trials and empirical significance |
 | DR2 legacy Gaussian/box time searches | Single source and individual catalog scan | Explicit legacy selection; fixed parameters or time searches; no calibrated trials |
 
 ### Data and analysis terminology
@@ -111,7 +111,7 @@ substantial time, especially large catalog searches and repeated background fits
   spectrum. Historical tasks keep their recorded spectrum settings.
 - **Time-dependent** analysis also uses event arrival times to test emission
   over a specified time profile, for example a flare. The default merged workflow
-  uses fixed per-source box windows for DR2 single-source fits, scans and stacking.
+  uses fixed per-source box or Gaussian time PDFs for DR2 single-source fits, scans and stacking.
   Matched shared trials provide empirical p-values and significances. See the
   [time-dependent guide](docs/time_dependent_catalog.md) for settings and limits.
 - **Single source** analysis fits for a neutrino excess at one specified

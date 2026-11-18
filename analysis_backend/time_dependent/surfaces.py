@@ -1,4 +1,4 @@
-"""Observed ``(n_s, Gamma)`` likelihood surfaces for fixed-window analyses.
+"""Observed ``(n_s, Gamma)`` likelihood surfaces for fixed-profile analyses.
 
 The production fit stores only the maximum.  This module reconstructs the
 same immutable observed likelihood and evaluates it on a plotting grid without

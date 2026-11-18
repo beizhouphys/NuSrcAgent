@@ -34,6 +34,9 @@ class CatalogSourceRecord:
     time_start_mjd: float | None
     time_end_mjd: float | None
     time_anchor_mjd: float | None
+    time_profile_type: str
+    time_sigma_days: float | None
+    time_tail_tolerance: float
     metadata: dict[str, str]
 
     @property
@@ -171,11 +174,16 @@ def _required_columns(config: CatalogConfig) -> set[str]:
         columns.ra_deg,
         columns.dec_deg,
         columns.weight,
-        columns.time_start_mjd,
-        columns.time_end_mjd,
         *config.selection.required_true_fields,
         *config.selection.required_false_fields,
     }
+    if config.time_profile.type == 'box':
+        assert columns.time_start_mjd is not None and columns.time_end_mjd is not None
+        required.update((columns.time_start_mjd, columns.time_end_mjd))
+    else:
+        assert config.time_profile.center_mjd_column is not None
+        assert config.time_profile.sigma_days_column is not None
+        required.update((config.time_profile.center_mjd_column, config.time_profile.sigma_days_column))
     if columns.time_anchor_mjd is not None:
         required.add(columns.time_anchor_mjd)
     return required
@@ -208,9 +216,23 @@ def load_catalog(config: CatalogConfig) -> tuple[CatalogSourceRecord, ...]:
             ra_deg = _finite_float(row, columns.ra_deg, row_number)
             dec_deg = _finite_float(row, columns.dec_deg, row_number)
             weight = _optional_finite_float(row, columns.weight, row_number)
-            time_start = _optional_finite_float(row, columns.time_start_mjd, row_number)
-            time_end = _optional_finite_float(row, columns.time_end_mjd, row_number)
+            if config.time_profile.type == 'box':
+                time_start = _optional_finite_float(row, columns.time_start_mjd, row_number)
+                time_end = _optional_finite_float(row, columns.time_end_mjd, row_number)
+                time_sigma = None
+            else:
+                assert config.time_profile.center_mjd_column is not None
+                assert config.time_profile.sigma_days_column is not None
+                time_center = _finite_float(row, config.time_profile.center_mjd_column, row_number)
+                time_sigma = _finite_float(row, config.time_profile.sigma_days_column, row_number)
+                if time_sigma <= 0.0:
+                    raise ValueError(f'row {row_number}: Gaussian time sigma must be positive')
+                half_support = time_sigma * math.sqrt(-2.0 * math.log(config.time_profile.tail_tolerance))
+                time_start = time_center - half_support
+                time_end = time_center + half_support
             anchor = _optional_finite_float(row, columns.time_anchor_mjd, row_number)
+            if config.time_profile.type == 'gaussian' and anchor is None:
+                anchor = time_center
 
             if not 0.0 <= ra_deg < 360.0:
                 raise ValueError(f'row {row_number}: RA must satisfy 0 <= RA < 360 deg')
@@ -232,6 +254,9 @@ def load_catalog(config: CatalogConfig) -> tuple[CatalogSourceRecord, ...]:
                     time_start_mjd=time_start,
                     time_end_mjd=time_end,
                     time_anchor_mjd=anchor,
+                    time_profile_type=config.time_profile.type,
+                    time_sigma_days=time_sigma,
+                    time_tail_tolerance=config.time_profile.tail_tolerance,
                     metadata={key: (value or '') for key, value in row.items()},
                 )
             )
@@ -283,7 +308,19 @@ def _observable_fraction(source: CatalogSourceRecord, period_start_mjd: float, p
         raise ValueError(f'source {source.source_id!r} has no complete time window')
     overlap_start = max(source.time_start_mjd, period_start_mjd)
     overlap_end = min(source.time_end_mjd, period_end_mjd)
-    return max(0.0, overlap_end - overlap_start) / source.time_width_days
+    if overlap_end <= overlap_start:
+        return 0.0
+    if source.time_profile_type == 'box':
+        return (overlap_end - overlap_start) / source.time_width_days
+    if source.time_sigma_days is None:
+        raise ValueError(f'Gaussian source {source.source_id!r} has no time sigma')
+    center = source.time_center_mjd
+    scale = math.sqrt(2.0) * source.time_sigma_days
+    numerator = math.erf((overlap_end - center) / scale) - math.erf((overlap_start - center) / scale)
+    denominator = math.erf((source.time_end_mjd - center) / scale) - math.erf(
+        (source.time_start_mjd - center) / scale
+    )
+    return numerator / denominator
 
 
 def select_catalog_sources(
@@ -357,4 +394,3 @@ def selected_sources_to_arrays(
         np.asarray([item.source.time_center_mjd for item in selected], dtype=np.float64),
         np.asarray([item.source.time_width_days for item in selected], dtype=np.float64),
     )
-

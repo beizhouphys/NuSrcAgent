@@ -51,7 +51,7 @@ def prepare(root, directory, baseline_task, n_trials, seed, workers, batch_size,
         raise ValueError("Baseline review failed")
     normalized = load_simple_yaml((run_dir/"config.normalized.yaml").read_text())
     if normalized.get("temporal", {}).get("scope") != "per_source_catalog_windows":
-        raise ValueError("Shared seasonal trials currently require fixed per-source box windows")
+        raise ValueError("Shared seasonal trials require fixed per-source time profiles")
     observed = load_simple_yaml((run_dir/"report.yaml").read_text())["result"]
     if observed["time_dependent_engine"].get("code_identity") != code_identity(root):
         raise ValueError("Observed fit code or numerical packages differ from the current runtime; create a new baseline")
@@ -153,6 +153,8 @@ def run(root, directory, max_batches=None):
         for key in ("engine", "spectrum", "likelihood", "dataset_names", "input_sha256", "windows"):
             if prepared.metadata[key] != expected[key]:
                 raise ValueError("Observed and trial construction differ: " + key)
+        if expected.get("time_profile") is not None and prepared.metadata["time_profile"] != expected["time_profile"]:
+            raise ValueError("Observed and trial construction differ: time_profile")
         task["status"] = "RUNNING"
         write_json(directory/"task.json", task)
         start, initial, batches = monotonic(), task["completed"], 0

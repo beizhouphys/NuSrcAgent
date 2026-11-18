@@ -10,7 +10,7 @@ from numba import njit, prange
 from .analysis import ConstructedCatalogAnalysis
 from .cached import _scramble_coordinates
 from .optimized import OptimizedCatalogFit, OptimizedCatalogTrials, ProfileFit
-from .phase import source_phase_exposure_fractions
+from .phase import source_phase_profile_integrals
 from .seeds import trial_seed
 
 
@@ -35,6 +35,8 @@ class FreeGammaTrialCache:
     source_dec: np.ndarray
     source_start: np.ndarray
     source_stop: np.ndarray
+    source_sigma: np.ndarray
+    gaussian_profile: bool
     source_dra_half: np.ndarray
     source_response_bin: np.ndarray
     source_time_factor: np.ndarray
@@ -353,6 +355,8 @@ def _evaluate_coordinates_free(
     source_dec,
     source_start,
     source_stop,
+    source_sigma,
+    gaussian_profile,
     source_dra_half,
     source_response_bin,
     source_time_factor,
@@ -393,6 +397,8 @@ def _evaluate_coordinates_free(
                 event = candidate_events[pair]
                 if times[event] < source_start[source] or times[event] > source_stop[source]:
                     continue
+                if gaussian_profile and times[event] >= source_stop[source]:
+                    continue
                 dra = abs(ras[event] - source_ra[source])
                 dra = min(dra, 2.0 * np.pi - dra)
                 if dra >= source_dra_half[source]:
@@ -418,6 +424,10 @@ def _evaluate_coordinates_free(
                     * event_inverse_background[event]
                     * source_time_factor[phase, source]
                 )
+                if gaussian_profile:
+                    center = 0.5 * (source_start[source] + source_stop[source])
+                    delta_time = times[event] - center
+                    scale *= np.exp(-0.5 * (delta_time / source_sigma[source]) ** 2)
                 selected_events.append(event)
                 selected_scales.append(scale)
                 selected_phases.append(phase)
@@ -547,6 +557,8 @@ def _simulate_free_gamma_batch(
     source_dec,
     source_start,
     source_stop,
+    source_sigma,
+    gaussian_profile,
     source_dra_half,
     source_response_bin,
     source_time_factor,
@@ -593,6 +605,8 @@ def _simulate_free_gamma_batch(
             source_dec,
             source_start,
             source_stop,
+            source_sigma,
+            gaussian_profile,
             source_dra_half,
             source_response_bin,
             source_time_factor,
@@ -649,6 +663,11 @@ def build_free_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fre
     )
     source_stop = np.asarray(
         [item.source.time_end_mjd for item in constructed.selection.selected], dtype=np.float64
+    )
+    gaussian_profile = config.catalog.time_profile.type == 'gaussian'
+    source_sigma = np.asarray(
+        [0.0 if item.source.time_sigma_days is None else item.source.time_sigma_days for item in constructed.selection.selected],
+        dtype=np.float64,
     )
     angle = np.deg2rad(config.likelihood.event_selection_angle_deg)
     dec_minus = np.maximum(-np.pi / 2.0, source_dec - angle)
@@ -747,11 +766,14 @@ def build_free_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fre
         grl_offsets.append(grl_offsets[-1] + len(starts))
 
         source_response_bin[phase] = grid.declination_bins(source_dec)
-        overlaps = source_phase_exposure_fractions(
+        overlaps = source_phase_profile_integrals(
             livetime,
             0.5 * (source_start + source_stop),
             source_stop - source_start,
-        ) * float(livetime.livetime)
+            profile_type=config.catalog.time_profile.type,
+            gaussian_sigmas_days=(source_sigma if gaussian_profile else None),
+            gaussian_tail_tolerance=config.catalog.time_profile.tail_tolerance,
+        )
         active = overlaps > 0.0
         source_time_factor[phase, active] = float(livetime.livetime) / overlaps[active]
         for source in range(n_sources):
@@ -782,6 +804,8 @@ def build_free_gamma_trial_cache(constructed: ConstructedCatalogAnalysis) -> Fre
         source_dec=source_dec,
         source_start=source_start,
         source_stop=source_stop,
+        source_sigma=source_sigma,
+        gaussian_profile=gaussian_profile,
         source_dra_half=source_dra_half,
         source_response_bin=source_response_bin,
         source_time_factor=source_time_factor,
@@ -817,6 +841,8 @@ class CachedPrecomputedFreeGammaEngine:
             self.cache.source_dec,
             self.cache.source_start,
             self.cache.source_stop,
+            self.cache.source_sigma,
+            self.cache.gaussian_profile,
             self.cache.source_dra_half,
             self.cache.source_response_bin,
             self.cache.source_time_factor,
@@ -911,6 +937,8 @@ class CachedPrecomputedFreeGammaEngine:
             self.cache.source_dec,
             self.cache.source_start,
             self.cache.source_stop,
+            self.cache.source_sigma,
+            self.cache.gaussian_profile,
             self.cache.source_dra_half,
             self.cache.source_response_bin,
             self.cache.source_time_factor,

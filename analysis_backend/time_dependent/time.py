@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from skyllh.core.backgroundpdf import BackgroundTimePDF
-from skyllh.core.flux_model import BoxTimeFluxProfile
+from skyllh.core.flux_model import BoxTimeFluxProfile, TimeFluxProfile
 from skyllh.core.livetime import Livetime
 from skyllh.core.parameters import Parameter
 from skyllh.core.pdfratio import PDFRatio, SigOverBkgPDFRatio
-from .compat import SignalTimePDF
+from .compat import GaussianTimeFluxProfile, SignalTimePDF
 
 if TYPE_CHECKING:
     from .analysis import CatalogAnalysisModel
@@ -21,11 +21,11 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class SourceTimePDFComponents:
-    """Objects used to evaluate source-specific box time PDFs."""
+    """Objects used to evaluate source-specific fixed time PDFs."""
 
     center_parameters: tuple[Parameter, ...]
     width_parameters: tuple[Parameter, ...]
-    profile: BoxTimeFluxProfile
+    profile: TimeFluxProfile
     signal_pdf: SignalTimePDF
     background_pdf: BackgroundTimePDF
     ratio: PDFRatio
@@ -37,6 +37,9 @@ def create_source_time_pdf_components(
     time_centers_mjd: Sequence[float],
     time_widths_days: Sequence[float],
     *,
+    profile_type: str = 'box',
+    gaussian_sigmas_days: Sequence[float] | None = None,
+    gaussian_tail_tolerance: float = 1e-12,
     center_parameters: Sequence[Parameter] | None = None,
     width_parameters: Sequence[Parameter] | None = None,
 ) -> SourceTimePDFComponents:
@@ -51,17 +54,32 @@ def create_source_time_pdf_components(
         raise ValueError('source time parameters must be finite')
     if np.any(widths <= 0):
         raise ValueError('source time-window widths must be positive')
+    if profile_type not in ('box', 'gaussian'):
+        raise ValueError('profile_type must be box or gaussian')
+    if not 0.0 < gaussian_tail_tolerance < 1.0:
+        raise ValueError('gaussian_tail_tolerance must lie strictly between zero and one')
+    if profile_type == 'gaussian':
+        if gaussian_sigmas_days is None:
+            raise ValueError('gaussian_sigmas_days is required for Gaussian time profiles')
+        scales = np.asarray(gaussian_sigmas_days, dtype=np.float64)
+        if scales.shape != (n_sources,) or not np.all(np.isfinite(scales)) or np.any(scales <= 0.0):
+            raise ValueError('Gaussian time sigmas must contain one finite positive value per source')
+    else:
+        if gaussian_sigmas_days is not None:
+            raise ValueError('gaussian_sigmas_days is only valid for Gaussian time profiles')
+        scales = widths
 
     if (center_parameters is None) != (width_parameters is None):
         raise ValueError('center_parameters and width_parameters must be provided together')
     if center_parameters is None:
         centers_params = []
         widths_params = []
-        for source_idx, (source, center, width) in enumerate(zip(model.sources, centers, widths, strict=True)):
+        for source_idx, (source, center, scale) in enumerate(zip(model.sources, centers, scales, strict=True)):
             center_parameter = Parameter(name=f't0_src_{source_idx}', initial=center, isfixed=True)
-            width_parameter = Parameter(name=f'tw_src_{source_idx}', initial=width, isfixed=True)
+            scale_name = 'tw' if profile_type == 'box' else 'sigma_t'
+            width_parameter = Parameter(name=f'{scale_name}_src_{source_idx}', initial=scale, isfixed=True)
             model.pmm.map_param(center_parameter, models=source, model_param_names='t0')
-            model.pmm.map_param(width_parameter, models=source, model_param_names='tw')
+            model.pmm.map_param(width_parameter, models=source, model_param_names=scale_name)
             centers_params.append(center_parameter)
             widths_params.append(width_parameter)
     else:
@@ -70,7 +88,12 @@ def create_source_time_pdf_components(
         if len(centers_params) != n_sources or len(widths_params) != n_sources:
             raise ValueError('reused time parameter arrays must match the number of sources')
 
-    profile = BoxTimeFluxProfile(t0=centers[0], tw=widths[0], cfg=model.analysis.cfg)
+    if profile_type == 'box':
+        profile: TimeFluxProfile = BoxTimeFluxProfile(t0=centers[0], tw=widths[0], cfg=model.analysis.cfg)
+    else:
+        profile = GaussianTimeFluxProfile(
+            t0=centers[0], sigma_t=scales[0], tol=gaussian_tail_tolerance, cfg=model.analysis.cfg
+        )
     signal_pdf = SignalTimePDF(
         cfg=model.analysis.cfg,
         pmm=model.pmm,

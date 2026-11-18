@@ -110,7 +110,7 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
             if (engine == "cached-fixed" and config.stacking.gamma_mode != "fixed") or (engine == "cached-free" and config.stacking.gamma_mode != "fitted"):
                 result.errors.append("Cached engine and Gamma mode disagree")
         if not catalog_windows and config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation != "scan":
-            result.errors.append("Global-profile time searches require catalog_operation=scan; fixed-window stacking uses per_source_catalog_windows")
+            result.errors.append("Global-profile time searches require catalog_operation=scan; fixed-profile stacking uses per_source_catalog_windows")
         if confidence is not None or limit_gammas or measurement_threshold is not None or stack_flux:
             result.errors.append("Time-integrated flux products cannot be used for a time-dependent fit")
         if config.background.n_trials != 0 or config.background.method != "none":

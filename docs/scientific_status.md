@@ -18,9 +18,9 @@ The [README support table](../README.md#what-analyses-can-i-run) distinguishes
 implemented paths from the approved first-release target.
 
 New DR2 time-dependent requests default to the merged
-[fixed per-source window workflow](time_dependent_catalog.md), supporting
+[fixed per-source profile workflow](time_dependent_catalog.md), supporting
 single-source fits, scans, stacking and fixed-count shared seasonal background
-trials. Completed trials provide empirical source-local, catalog-maximum and
+trials for fixed box or Gaussian signal-time PDFs. Completed trials provide empirical source-local, catalog-maximum and
 stacking p-values and significances with Monte Carlo intervals. It does not
 calibrate fitted time parameters or provide flux/fluence inference.
 The [legacy Gaussian/box time-search workflow](time_dependent.md) requires

@@ -194,10 +194,10 @@ workflow. Read `docs/time_dependent_catalog.md` first. New tasks default to
 `scope=per_source_catalog_windows`, including when the input omits scope.
 Use this workflow for single sources, scans, stacks or
 scan_and_stack. Preserve explicit catalog order, positive intrinsic weights,
-windows, user-requested detector phases and background-time model, frozen PDFs
+fixed box or Gaussian time profiles, user-requested detector phases and background-time model, frozen PDFs
 and fitted/fixed Gamma. When the request does not specify detector phases,
 default to the supported IceCube phases whose detector uptime has a non-empty
-overlap with at least one source window in the catalog; record the derived phase
+overlap with at least one source profile's finite support in the catalog; record the derived phase
 set and its overlap provenance. When the request does not specify a background-
 time model, default to `background_time_model=uniform_livetime`. An explicit
 user request overrides either default when supported; if it is unsupported,
@@ -209,12 +209,13 @@ searches. Only execute observed tasks after READY. Inspect artifact/scientific
 reviews. Use the time-dependent reporting stages under the joint-stack and
 single-source sections below; observed fits run zero trials and no flux stage.
 
-Missing windows must be resolved before READY. Omitted detector phases or
+Missing fixed time-profile parameters must be resolved before READY. Omitted detector phases or
 background-time model do not require clarification once these defaults have
-been recorded. Gaussian profiles or fitted time parameters are unsupported by
-this engine; explain
-that limitation rather than silently selecting the legacy workflow. Only an
-explicit request for the legacy engine should select `scope=legacy_time_profile`.
+been recorded. Fixed Gaussian profiles are supported by this engine with one
+center MJD and positive sigma in days per source; fixed boxes retain start/stop
+MJD. Fitted time parameters remain unsupported here. Explain that limitation
+rather than silently selecting the legacy workflow. Only an explicit request
+for a fitted-time legacy search should select `scope=legacy_time_profile`.
 Keep existing saved tasks on their recorded workflow.
 
 For `scope=per_source_catalog_windows`, also read
@@ -240,7 +241,7 @@ standalone requests, including stack-only tasks for which the per-source fits
 are supporting diagnostics. Do not rank this observed-stage table by p-value,
 trial TS or post-trial significance.
 
-Use these default chat presentation rules for fixed-window time-dependent
+Use these default chat presentation rules for fixed-profile time-dependent
 analyses unless the user asks for different artifacts:
 
 - Retain `time_dependent_ts.pdf` as an artifact, but do not display or link it
@@ -271,7 +272,7 @@ Use the same public wrapper with `--time-mode time_dependent` and a complete
 `--temporal-file` JSON specification with `scope=legacy_time_profile`.
 Read `docs/time_dependent.md` first.
 Single sources and independent catalog scans are supported in this scope;
-stacking and scan_and_stack must use the fixed-window scope above instead.
+stacking and scan_and_stack must use the fixed-profile scope above instead.
 For multiple sources select `--catalog-operation scan`; do not request stacking
 weights. Coordinates and spectrum use the existing shared input layers.
 
@@ -601,7 +602,7 @@ stage or changing parameters while awaiting flux is rejected. See
 ### Time-dependent analysis
 
 For new DR2 `spatial+energy+time` `stack` and `scan_and_stack` tasks, use the
-fixed-window `per_source_catalog_windows` workflow. The two reporting stages are
+fixed-profile `per_source_catalog_windows` workflow. The two reporting stages are
 the reviewed observed fit and, only after separate authorization, its matched
 fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
 
@@ -698,7 +699,7 @@ individual-source scans retain their existing execution and optional flux switch
 ### Time-dependent analysis
 
 For a new DR2 `spatial+energy+time` single-source or scan-only request, use the
-fixed-window `per_source_catalog_windows` workflow. The two reporting stages are
+fixed-profile `per_source_catalog_windows` workflow. The two reporting stages are
 the reviewed observed fit and the separately authorized fixed-count background
 ensemble; there is no time-dependent flux continuation.
 

@@ -1,4 +1,4 @@
-"""NuSrcAgent adapter for fixed catalog windows and shared trial engines.
+"""NuSrcAgent adapter for fixed catalog time profiles and shared trial engines.
 
 Positive Gamma is used internally; NuSrcAgent supplies the signed exponent.
 Execution resources do not enter the scientific request.
@@ -6,6 +6,7 @@ Execution resources do not enter the scientific request.
 from __future__ import annotations
 
 import csv
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import tempfile
@@ -20,7 +21,7 @@ from .cached_free import CachedPrecomputedFreeGammaEngine
 from .optimized import OptimizedSharedScrambleEngine
 from .config import (CatalogAnalysisConfig, CatalogConfig, CatalogColumnConfig,
                      DatasetConfig, SpectrumConfig, LikelihoodConfig, PDFConfig,
-                     PrecomputedPhasePDFConfig)
+                     PrecomputedPhasePDFConfig, TimeProfileConfig)
 from .precomputed import file_sha256
 
 
@@ -35,6 +36,7 @@ class PreparedAnalysis:
 
 def resolve_windows(normalized):
     settings = normalized.temporal
+    profile = settings.get("profile", "box")
     supplied = settings.get("windows")
     if supplied is not None and len(supplied) != len(normalized.sources):
         raise ValueError("Exactly one time window is required per source")
@@ -44,17 +46,32 @@ def resolve_windows(normalized):
             row = supplied[index]
             if row["name"] != source.name:
                 raise ValueError("Window names/order must match the normalized catalog exactly")
-            start, stop = row["start_mjd"], row["stop_mjd"]
+            if profile == "box":
+                start, stop = row["start_mjd"], row["stop_mjd"]
+            else:
+                center, sigma = row["center_mjd"], row["sigma_days"]
         else:
             columns = settings["window_columns"]
-            start, stop = (float(source.metadata[columns[key]]) for key in ("start", "stop"))
+            if profile == "box":
+                start, stop = (float(source.metadata[columns[key]]) for key in ("start", "stop"))
+            else:
+                center, sigma = (float(source.metadata[columns[key]]) for key in ("center", "sigma"))
+        if profile == "gaussian":
+            tolerance = float(settings.get("tail_tolerance", 1e-12))
+            if not np.isfinite([center, sigma]).all() or sigma <= 0:
+                raise ValueError(f"Invalid Gaussian time profile for {source.name}")
+            half_support = sigma * math.sqrt(-2.0 * math.log(tolerance))
+            start, stop = center - half_support, center + half_support
         if not np.isfinite([start, stop]).all() or stop <= start:
             raise ValueError(f"Invalid time window for {source.name}")
         if not np.isfinite(source.weight) or source.weight <= 0:
             raise ValueError("Catalog-window engine requires strictly positive source weights")
-        rows.append(dict(source_id=str(source.source_number), name=source.name,
-                         ra_deg=source.ra_deg, dec_deg=source.dec_deg, weight=source.weight,
-                         start_mjd=float(start), stop_mjd=float(stop)))
+        output = dict(source_id=str(source.source_number), name=source.name,
+                      ra_deg=source.ra_deg, dec_deg=source.dec_deg, weight=source.weight,
+                      start_mjd=float(start), stop_mjd=float(stop))
+        if profile == "gaussian":
+            output.update(center_mjd=float(center), sigma_days=float(sigma))
+        rows.append(output)
     return rows
 
 
@@ -78,6 +95,7 @@ def prepare_analysis(
         raise ValueError("workers must be a positive integer")
     root = Path(root).resolve()
     settings = normalized.temporal
+    profile_type = settings.get("profile", "box")
     windows = resolve_windows(normalized)
     cfg = Config()
     data_base = root / "data_input/IceCube_data_released"
@@ -131,9 +149,20 @@ def prepare_analysis(
             writer = csv.DictWriter(stream, fieldnames=list(windows[0]))
             writer.writeheader()
             writer.writerows(windows)
+        time_profile = TimeProfileConfig(
+            type=profile_type,
+            center_mjd_column="center_mjd" if profile_type == "gaussian" else None,
+            sigma_days_column="sigma_days" if profile_type == "gaussian" else None,
+            tail_tolerance=float(settings.get("tail_tolerance", 1e-12)),
+        )
+        catalog_columns = CatalogColumnConfig(
+            "source_id", "name", "ra_deg", "dec_deg", "weight",
+            "start_mjd" if profile_type == "box" else None,
+            "stop_mjd" if profile_type == "box" else None,
+        )
         config = CatalogAnalysisConfig(mode="stacking",
             dataset=DatasetConfig("IceTracks-DR2", tuple(settings["datasets"]), base_path=data_base, sub_path_fmt=sub_path),
-            catalog=CatalogConfig(catalog, CatalogColumnConfig("source_id", "name", "ra_deg", "dec_deg", "weight", "start_mjd", "stop_mjd")),
+            catalog=CatalogConfig(catalog, catalog_columns, time_profile=time_profile),
             pdfs=PDFConfig(backend=backend, phases=phases),
             spectrum=SpectrumConfig(gamma=gamma, fit_gamma=normalized.gamma_mode == "fitted",
                 gamma_min=lower, gamma_max=upper, gamma_grid_step=settings.get("gamma_grid_step", .1)),
@@ -156,6 +185,7 @@ def prepare_analysis(
         spectrum=asdict(config.spectrum), likelihood=asdict(config.likelihood),
         dataset_names=[ds.name for ds in datasets], input_sha256=hashes,
         fit_procedure="catalog_continuous_profile_v1", gamma_interpolation="linear_density",
+        time_profile=asdict(config.time_profile),
         background_trial_method="seasonal_time_scrambling", event_count="fixed_per_phase",
         shared_realization=True, workers=1 if cached else int(workers), threads=int(workers) if cached else 1,
         windows=windows)

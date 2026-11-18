@@ -359,7 +359,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Persistent, auditable wrapper for HE-neutrino analysis tasks.")
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    td = subparsers.add_parser("td-background-trials", help="Matched shared seasonal trials for reviewed fixed catalog windows.")
+    td = subparsers.add_parser("td-background-trials", help="Matched shared seasonal trials for reviewed fixed catalog time profiles.")
     td.add_argument("--action", required=True, choices=["prepare", "run", "resume", "status", "stop", "report"])
     td.add_argument("--output-directory", required=True)
     td.add_argument("--baseline-task")
@@ -536,7 +536,7 @@ def build_parser() -> argparse.ArgumentParser:
     spectrum_prepare.add_argument("--estimate-only", action="store_true", help="Calculate one preparation unit for a current measured ETA; retain it for the full preparation.")
     for command in (single, catalog):
         command.add_argument("--time-mode", choices=["time_integrated", "time_dependent"])
-        command.add_argument("--temporal-file", help="JSON fixed per-source box windows, detector phases and MJD/UT1 convention. New time-dependent tasks default to the merged per_source_catalog_windows workflow. Legacy Gaussian/box searches require explicit scope=legacy_time_profile.")
+        command.add_argument("--temporal-file", help="JSON fixed per-source box or Gaussian time profiles, detector phases and MJD/UT1 convention. New time-dependent tasks default to the merged per_source_catalog_windows workflow. Fitted-time legacy searches require explicit scope=legacy_time_profile.")
     confirm.add_argument("--temporal-file", help="Complete temporal settings; preserves the task's recorded workflow unless scope is explicitly changed.")
     return parser
 

@@ -1,4 +1,4 @@
-"""Canonical saved-result bundle for reviewed fixed-window time-dependent trials.
+"""Canonical saved-result bundle for reviewed fixed-profile time-dependent trials.
 
 This module is an output adapter only.  It never constructs or maximizes a
 likelihood and it never starts trials.  It converts NuSrcAgent's reviewed
@@ -201,13 +201,13 @@ def _source_manifest(
     normalized: dict[str, Any], observed: dict[str, Any]
 ) -> dict[str, Any]:
     windows = observed["time_dependent_engine"]["windows"]
+    profile = observed["time_dependent_engine"].get("time_profile", {"type": "box"})
     if len(windows) != len(normalized["sources"]):
         raise ValueError("source window count does not match normalized catalog")
     selected = []
     for index, (source, window) in enumerate(zip(normalized["sources"], windows, strict=True)):
         start, stop = float(window["start_mjd"]), float(window["stop_mjd"])
-        selected.append(
-            {
+        selected_item = {
                 "source_index": index,
                 "source_id": _source_id(source, index),
                 "name": _source_name(source, index),
@@ -216,13 +216,23 @@ def _source_manifest(
                 "weight": float(source.get("weight", 1.0)),
                 "time_start_mjd": start,
                 "time_end_mjd": stop,
-                "time_anchor_mjd": 0.5 * (start + stop),
-                "time_anchor_definition": "fixed_window_midpoint",
+                "time_anchor_mjd": float(window.get("center_mjd", 0.5 * (start + stop))),
+                "time_anchor_definition": (
+                    "fixed_gaussian_center" if profile.get("type") == "gaussian" else "fixed_window_midpoint"
+                ),
+                "time_profile": profile.get("type", "box"),
             }
-        )
+        if profile.get("type") == "gaussian":
+            selected_item["time_sigma_days"] = float(window["sigma_days"])
+            selected_item["time_tail_tolerance"] = float(profile["tail_tolerance"])
+        selected.append(selected_item)
     return {
-        "selection_method": "NuSrcAgent reviewed fixed per-source catalog windows",
-        "time_anchor_definition": "fixed_window_midpoint unless an explicit physical anchor is added to the recorded request",
+        "selection_method": "NuSrcAgent reviewed fixed per-source time profiles",
+        "time_anchor_definition": (
+            "fixed Gaussian center" if profile.get("type") == "gaussian"
+            else "fixed window midpoint unless an explicit physical anchor is added to the recorded request"
+        ),
+        "time_profile": profile,
         "selected": selected,
     }
 
@@ -459,6 +469,8 @@ def _write_likelihood_surfaces(
             raise ValueError(
                 "observed likelihood-surface reconstruction differs in " + key
             )
+    if expected.get("time_profile") is not None and prepared.metadata["time_profile"] != expected["time_profile"]:
+        raise ValueError("observed likelihood-surface reconstruction differs in time_profile")
 
     saved = []
     if leading is not None:
@@ -530,7 +542,7 @@ def finalize_time_dependent_results(
     if task.get("completed") != requested:
         raise ValueError("standard results require the complete requested trial ensemble")
     if normalized.get("temporal", {}).get("scope") != "per_source_catalog_windows":
-        raise ValueError("standard results apply only to fixed per-source catalog windows")
+        raise ValueError("standard results apply only to fixed per-source time profiles")
 
     trials = _merge_trials(chunks)
     observed_arrays = _observed_arrays(normalized, observed)
@@ -606,7 +618,12 @@ def finalize_time_dependent_results(
         "dataset_names": observed["time_dependent_engine"]["dataset_names"],
         "input_sha256": observed["time_dependent_engine"]["input_sha256"],
         "spectral_model": spectrum,
-        "time_window_definition": "fixed per-source box windows",
+        "time_window_definition": (
+            "fixed per-source Gaussian profiles"
+            if observed["time_dependent_engine"].get("time_profile", {}).get("type") == "gaussian"
+            else "fixed per-source box windows"
+        ),
+        "time_profile": observed["time_dependent_engine"].get("time_profile", {"type": "box"}),
         "source_weight_prescription": weight_label,
         "scrambling_method": immutable["method"],
         "engine": observed["time_dependent_engine"]["engine"],

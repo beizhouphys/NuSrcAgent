@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 import numpy as np
+from scipy.special import erf
 
 from skyllh.core.dataset import Dataset, DatasetData
 from skyllh.core.detsigyield import DetSigYield, DetSigYieldBuilder
@@ -43,9 +44,73 @@ def source_phase_exposure_fractions(
     return overlap / phase_livetime
 
 
+def source_phase_profile_integrals(
+    livetime: Livetime,
+    time_centers_mjd: Sequence[float],
+    time_widths_days: Sequence[float],
+    *,
+    profile_type: str = 'box',
+    gaussian_sigmas_days: Sequence[float] | None = None,
+    gaussian_tail_tolerance: float = 1e-12,
+) -> np.ndarray:
+    """Integrate each fixed signal-time profile over detector uptime."""
+
+    centers = np.asarray(time_centers_mjd, dtype=np.float64)
+    widths = np.asarray(time_widths_days, dtype=np.float64)
+    if centers.ndim != 1 or widths.shape != centers.shape:
+        raise ValueError('source centers and widths must be same-length vectors')
+    if np.any(~np.isfinite(centers)) or np.any(~np.isfinite(widths)) or np.any(widths <= 0):
+        raise ValueError('source centers must be finite and widths must be finite and positive')
+    if profile_type == 'box':
+        return source_phase_exposure_fractions(livetime, centers, widths) * float(livetime.livetime)
+    if profile_type != 'gaussian':
+        raise ValueError('profile_type must be box or gaussian')
+    if gaussian_sigmas_days is None:
+        raise ValueError('gaussian_sigmas_days is required for Gaussian time profiles')
+    sigmas = np.asarray(gaussian_sigmas_days, dtype=np.float64)
+    if sigmas.shape != centers.shape or np.any(~np.isfinite(sigmas)) or np.any(sigmas <= 0):
+        raise ValueError('Gaussian time sigmas must be finite, positive and match source centers')
+    if not 0.0 < gaussian_tail_tolerance < 1.0:
+        raise ValueError('gaussian_tail_tolerance must lie strictly between zero and one')
+
+    half_support = sigmas * np.sqrt(-2.0 * np.log(gaussian_tail_tolerance))
+    support_start = centers - half_support
+    support_stop = centers + half_support
+    intervals = livetime.uptime_mjd_intervals_arr
+    lower = np.maximum(support_start[:, np.newaxis], intervals[np.newaxis, :, 0])
+    upper = np.minimum(support_stop[:, np.newaxis], intervals[np.newaxis, :, 1])
+    active = upper > lower
+    scale = np.sqrt(2.0) * sigmas[:, np.newaxis]
+    prefactor = np.sqrt(np.pi / 2.0) * sigmas[:, np.newaxis]
+    integrals = prefactor * (
+        erf((upper - centers[:, np.newaxis]) / scale)
+        - erf((lower - centers[:, np.newaxis]) / scale)
+    )
+    return np.sum(np.where(active, integrals, 0.0), axis=1)
+
+
+def source_phase_profile_exposure_fractions(
+    livetime: Livetime,
+    time_centers_mjd: Sequence[float],
+    time_widths_days: Sequence[float],
+    **kwargs,
+) -> np.ndarray:
+    """Return profile integrals divided by total phase livetime."""
+
+    phase_livetime = float(livetime.livetime)
+    if phase_livetime <= 0.0:
+        raise ValueError('phase livetime must be positive')
+    return source_phase_profile_integrals(
+        livetime, time_centers_mjd, time_widths_days, **kwargs
+    ) / phase_livetime
+
+
 def filter_catalog_selection_for_livetimes(
     selection: CatalogSelectionResult,
     livetimes: Sequence[Livetime],
+    *,
+    profile_type: str = 'box',
+    gaussian_tail_tolerance: float = 1e-12,
 ) -> CatalogSelectionResult:
     """Exclude bounding-period matches whose windows contain no detector on-time."""
 
@@ -54,10 +119,13 @@ def filter_catalog_selection_for_livetimes(
     for item in selection.selected:
         source = item.source
         fractions = [
-            source_phase_exposure_fractions(
+            source_phase_profile_exposure_fractions(
                 livetime,
                 [source.time_center_mjd],
                 [source.time_width_days],
+                profile_type=profile_type,
+                gaussian_sigmas_days=(None if profile_type == 'box' else [source.time_sigma_days]),
+                gaussian_tail_tolerance=gaussian_tail_tolerance,
             )[0]
             for livetime in livetimes
         ]
@@ -122,11 +190,22 @@ class PhaseExposureDetSigYieldBuilder(DetSigYieldBuilder):
         livetimes_by_dataset: dict[str, Livetime],
         time_centers_mjd: Sequence[float],
         time_widths_days: Sequence[float],
+        *,
+        profile_type: str = 'box',
+        gaussian_sigmas_days: Sequence[float] | None = None,
+        gaussian_tail_tolerance: float = 1e-12,
     ):
         super().__init__(cfg=base.cfg)
         self.base = base
         local_fractions = {
-            name: source_phase_exposure_fractions(livetime, time_centers_mjd, time_widths_days)
+            name: source_phase_profile_exposure_fractions(
+                livetime,
+                time_centers_mjd,
+                time_widths_days,
+                profile_type=profile_type,
+                gaussian_sigmas_days=gaussian_sigmas_days,
+                gaussian_tail_tolerance=gaussian_tail_tolerance,
+            )
             for name, livetime in livetimes_by_dataset.items()
         }
         phase_livetimes = {name: float(livetime.livetime) for name, livetime in livetimes_by_dataset.items()}
@@ -151,4 +230,3 @@ class PhaseExposureDetSigYieldBuilder(DetSigYieldBuilder):
             raise KeyError(f'no phase exposure configured for dataset {dataset.name!r}')
         base = self.base.construct_detsigyield(dataset=dataset, data=data, shg=shg, ppbar=ppbar)
         return PhaseExposureDetSigYield(base, self.exposure_by_dataset[dataset.name])
-

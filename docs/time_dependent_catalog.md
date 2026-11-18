@@ -1,18 +1,18 @@
-# Fixed-window time-dependent analysis
+# Fixed-profile time-dependent analysis
 
 This is the default workflow for new time-dependent requests. It supports DR2
 spatial+energy power-law single-source fits, independent catalog scans, joint
 stacking and shared background trials with empirical p-values and significances.
 The wrapper records `scope=per_source_catalog_windows` when scope is omitted,
-including in later confirmations of these tasks. Windows, detector phases and
+including in later confirmations of these tasks. Time-profile parameters, detector phases and
 scientific assumptions still need explicit settings before READY.
 
-Gaussian profiles and fitted time parameters remain unsupported here; such
-requests do not automatically switch engines. The
-[legacy Gaussian/box workflow](time_dependent.md) requires explicit
-`scope=legacy_time_profile` in new requests. Existing saved tasks retain their
-recorded workflow. Time-integrated analysis remains the default when no
-time-dependent analysis is requested.
+This workflow supports fixed per-source box and Gaussian signal-time PDFs.
+Fitted time parameters remain unsupported here and do not automatically switch
+engines. The [legacy fitted-time Gaussian/box workflow](time_dependent.md)
+requires explicit `scope=legacy_time_profile` in new requests. Existing saved
+tasks retain their recorded workflow. Time-integrated analysis remains the
+default when no time-dependent analysis is requested.
 
 ## Scientific request
 
@@ -33,20 +33,47 @@ Supply a temporal JSON file, for example for two catalog sources named a and b:
 }
 ```
 
+For fixed Gaussian profiles, replace `profile` and the per-source rows:
+
+```json
+{
+  "scope": "per_source_catalog_windows",
+  "profile": "gaussian",
+  "time_format": "mjd",
+  "time_scale": "ut1",
+  "background_time_model": "uniform_livetime",
+  "datasets": ["IC86_I-XI"],
+  "tail_tolerance": 1e-12,
+  "windows": [
+    {"name": "a", "center_mjd": 58050, "sigma_days": 10},
+    {"name": "b", "center_mjd": 58070, "sigma_days": 20}
+  ]
+}
+```
+
 Choose detector phases explicitly (`IC40`, `IC59`, `IC79`, `IC86_I-XI`, or
 supported individual IC86 seasons). Do not include overlapping pooled and
-individual seasons. Each selected phase must have active sources; windows
-outside all selected uptime are rejected, not silently pruned. Windows must
+individual seasons. Each selected phase must have active sources; box windows
+or finite Gaussian supports outside all selected uptime are rejected, not
+silently pruned. Rows must
 match normalized catalog names and order exactly. Alternatively supply
 `"window_columns": {"start": "start_mjd", "stop": "stop_mjd"}` instead of
-`windows`, referencing preserved CSV metadata. Start/stop are fixed, not seeds.
+`windows` for a box, or
+`"window_columns": {"center": "peak_mjd", "sigma": "sigma_days"}` for a
+Gaussian, referencing preserved CSV metadata. Start/stop and center/sigma are
+fixed, not seeds. `sigma_days` must be finite and positive. The optional
+Gaussian `tail_tolerance` must lie strictly between zero and one and defaults to
+`1e-12`; it defines finite support where the unnormalized profile reaches that
+relative tail value. The Gaussian is normalized over detector uptime.
 
 Coordinates use the shared coordinate layer. Intrinsic source weights must be
 strictly positive and are normalized by NuSrcAgent; detector acceptance is
 applied separately by the likelihood. CLI `--gamma -2` means the positive
 internal index Gamma=2 in E^(-Gamma); `--gamma-mode fitted` fits Gamma within the
 recorded bounds. The numerical procedure is `catalog_continuous_profile_v1`.
-Signal/background time densities are normalized over detector uptime. The
+Signal/background time densities are normalized over detector uptime. Gaussian
+detector-phase acceptance uses the exact truncated-profile integral over good
+runs, while box acceptance retains the existing overlap calculation. The
 conditional likelihood, phase event counts, acceptance, source weights, angular
 selection and linear-density Gamma interpolation retain the donor definitions.
 
@@ -65,14 +92,14 @@ are unsupported here.
 Use the sole public wrapper, in the installed runtime environment:
 
 ```bash
-python run_agent_wrap.py create-catalog --request "fixed-window scan and stack" \
+python run_agent_wrap.py create-catalog --request "fixed-profile scan and stack" \
   --catalog sources.csv --name-column name --ra-column ra_deg --dec-column dec_deg \
   --catalog-operation scan_and_stack --weight-mode uniform --gamma -2 \
   --time-mode time_dependent --temporal-file windows.json
 python run_agent_wrap.py run --task <READY_task_id> --workers 4
 ```
 
-Use `create-single` with a one-source window for a single-source task, or select
+Use `create-single` with a one-source fixed profile for a single-source task, or select
 `--catalog-operation scan|stack`. Review must pass before interpreting results.
 Outputs include normalized settings, input hashes, source/stack TS, ns, Gamma,
 fit diagnostics, CSV, PNG/PDF and independent review. Gamma at ns=0 is not a
@@ -135,8 +162,9 @@ the canonical likelihood-contour NPZ files before plotting. Surface evaluation
 does not use the background trials and does not refit the parameters. A required
 surface that is missing or fails this consistency check blocks the polished
 standard result. Fixed-Gamma runs have no two-dimensional `ns`-Gamma surface.
-The source-time display records a physical anchor when supplied and otherwise
-uses the fixed-window midpoint. NuSrcAgent retains the scrambled distribution as
+The source-time display uses the fixed Gaussian center, or records a physical
+anchor when supplied for a box and otherwise uses the fixed-window midpoint.
+NuSrcAgent retains the scrambled distribution as
 the time-dependent null calibration and does not add time-integrated asymptotic
 significance formulas. Incomplete or failed ensembles retain diagnostics but do
 not receive the polished standard presentation.
