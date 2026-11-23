@@ -8,6 +8,10 @@ using IceCube public point-source data. You can describe an analysis in natural
 language to an AI assistant, or run the same analysis directly from a terminal.
 The numerical results come from the likelihood code, not from the language model.
 
+The analysis accepts researcher-supplied source lists and catalogs; no source
+population or observing band has a privileged role. The bundled catalog below
+provides a worked example.
+
 The tool assumes basic familiarity with physics/astronomy; familiarity with
 AI or software architecture is not required. Start with installation below,
 then run the two [worked examples](docs/quickstart.md).
@@ -29,7 +33,8 @@ substantial time, especially large catalog searches and repeated background fits
 
 1. **Estimated time remaining during calculation.** Progress updates report a
    rough estimate of time remaining (ETA) from work completed in the current run.
-   Single-source fits, joint stacks, catalog scans and flux calculations report
+   Single-source analyses, stacking analyses, catalog-wide single-source analyses
+   and flux calculations report
    the relevant fit or stage; an estimate for one stage excludes later stages
    that have not been timed. Before a usable timing sample, the estimate is
    pending. Optimizer call counts are uncertain, so the ETA is approximate and
@@ -40,7 +45,7 @@ substantial time, especially large catalog searches and repeated background fits
 2. **Number of workers and CPU budget.** Add `--workers N` to
    `run --task <task_id>` to select computing resources (default 1). Independent
    catalog fits use N worker processes with one numerical-library thread each.
-   For one single-source or joint stacking fit, the same option sets the
+   For one single-source analysis or stacking analysis, the same option sets the
    numerical-library thread budget. More workers can require more memory;
    speedup depends on the calculation. The choice is recorded with the run and
    preserves the scientific settings. Pass it again for a user-authorized flux
@@ -117,8 +122,8 @@ substantial time, especially large catalog searches and repeated background fits
 - **Individual catalog scan** fits each catalog source independently,
   producing one result per source rather than a joint detection of the catalog.
 - **Stacking** analysis tests the catalog's combined emission using specified
-  relative source weights, a total signal count and a common spectral index.
-  Detector acceptance is applied separately, so equal intrinsic source weights
+  relative source weighting factors, a total signal count and a common spectral index.
+  Detector acceptance is applied separately, so equal intrinsic source weighting factors
   do not imply equal expected detected signal counts.
 
 ### What do the fitted quantities mean?
@@ -248,10 +253,12 @@ The guide includes observed numerical references from the local clean-install
 checks. DR2 produces numerical reports/tables, catalog sqrt(TS) PDF/PNG figures,
 and the documented single-source flux-limit figures; no Excel workbook is generated.
 
-## Radio-bright AGN catalog for testing
+## Example catalog: radio-bright AGN
 
-The 3386-source RFC 2019c radio-bright AGN catalog is
-included in [data_input/sources/](data_input/sources/README.md), with column definitions,
+The 3386-source RFC 2019c radio-bright AGN catalog is one example for
+inspection, single-source analysis and stacking analysis. It is not a default
+source population or a required input; researchers select their own source
+lists, catalogs and weighting schemes. This example is included in [data_input/sources/](data_input/sources/README.md), with column definitions,
 selection and attribution. The CSV retains full stored coordinate precision,
 X-band flux density and source identifiers; it supports uniform or radio-flux
 weighting. This small table comes with the Git clone, separately from the IceCube bundles.
