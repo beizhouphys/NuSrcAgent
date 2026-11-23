@@ -24,7 +24,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
     ns_hat, gamma_hat = float(ns_hat), float(gamma_hat)
     ns_min, ns_max = map(float, ns_bounds)
     if ns_min != 0 or not 0 <= ns_hat <= ns_max:
-        raise ValueError("Flux profile requires the recorded nonnegative ns bounds")
+        raise ValueError("Flux profile requires the recorded nonnegative n bounds")
     yields, evaluations = {}, {}
     progress = ProfileProgress()
 
@@ -65,7 +65,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
     if not result["reported"]:
         return result
     if ns_hat <= 0 or ns_hat >= ns_max:
-        raise ValueError("Cannot construct a flux measurement at the ns fit boundary")
+        raise ValueError("Cannot construct a flux measurement at the n fit boundary")
 
     def q(value):
         delta = 2*(best-value)
@@ -138,7 +138,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                         boundary = trial in (gamma_lo, gamma_hi)
                     row = function(trial)
                     if row is None:
-                        raise ValueError("Flux confidence crossing unavailable inside the recorded ns bounds")
+                        raise ValueError("Flux confidence crossing unavailable inside the recorded n bounds")
                     if row["q"] >= target:
                         root = float(brentq(lambda x: function(x)["q"]-target,
                                              min(previous, trial), max(previous, trial), xtol=1e-7))
@@ -192,7 +192,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                             while crossing(high) < 0 and high < ns_max:
                                 high = min(ns_max, peak+2*(high-peak))
                             if crossing(high) < 0:
-                                raise ValueError("Joint flux contour unavailable inside the recorded ns bounds")
+                                raise ValueError("Joint flux contour unavailable inside the recorded n bounds")
                             high_ns = float(brentq(crossing, peak, high, xtol=1e-7))
                         for branch, ns in ((lower_branch, low_ns), (upper_branch, high_ns)):
                             branch.append(dict(gamma=gamma, phi0=ns/yield_at(gamma), ns=ns,

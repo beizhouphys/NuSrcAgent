@@ -35,7 +35,10 @@ def _write_csv(path, rows):
     if not rows:
         return
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        fit_columns = ("n", "s", "cumulative_n", "cumulative_s")
+        fieldnames = [key for key in rows[0] if key not in fit_columns]
+        fieldnames.extend(key for key in fit_columns if key in rows[0])
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -196,6 +199,8 @@ def _fit_summary(result, removed_numbers, label):
         "ns": float(result["ns"]),
         "gamma_skyllh": float(result["gamma"]),
         "gamma_legacy": float(result["gamma_legacy"]),
+        "n": float(result["ns"]),
+        "s": float(result["gamma"]),
         "pre_trial_p_analytic": estimate["pre_trial_p"],
         "pre_trial_significance_estimate": estimate["pre_trial_significance"],
         "p_value_method": estimate["p_value_method"],
@@ -265,6 +270,9 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
         "individual_refits": [],
         "cumulative_refits": [],
     }
+    state["baseline"].update(n=state["baseline"]["ns"], s=state["baseline"]["gamma"])
+    for item in state["individual_refits"] + state["cumulative_refits"]:
+        item.update(n=item["ns"], s=item["gamma_skyllh"])
     state["candidate_count"] = int(candidate_count)
     state["top_n"] = int(top_n)
     state["execution"] = dict(worker_budget=workers, individual_refit_workers=workers,
@@ -331,6 +339,7 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
         row = dict(item)
         cumulative = cumulative_by_rank[int(item["dominance_rank"])]
         row.update({"cumulative_TS": cumulative["TS"], "marginal_ts_drop": cumulative["marginal_ts_drop"], "cumulative_ts_drop": cumulative["cumulative_ts_drop"], "cumulative_ns": cumulative["ns"], "cumulative_gamma_skyllh": cumulative["gamma_skyllh"], "cumulative_gamma_legacy": cumulative["gamma_legacy"]})
+        row.update(cumulative_n=cumulative["n"], cumulative_s=cumulative["s"])
         top_rows.append(row)
     _write_csv(out / "top10_dominance.csv", top_rows)
     _write_csv(out / "cumulative_removal.csv", sorted(state["cumulative_refits"], key=lambda item: int(item["n_removed"])))

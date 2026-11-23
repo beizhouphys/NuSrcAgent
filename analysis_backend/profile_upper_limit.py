@@ -56,7 +56,7 @@ def _invert_upper_profile(log_likelihood_ratio, ns_hat, ns_max, confidence):
     while crossing(upper) < 0 and upper < ns_max:
         upper = min(ns_max, ns_hat + 2.0 * (upper - ns_hat))
     if crossing(upper) < 0:
-        raise ValueError("Upper limit does not cross the threshold inside the recorded ns bounds")
+        raise ValueError("Upper limit does not cross the threshold inside the recorded n bounds")
     root = float(brentq(crossing, ns_hat, upper, xtol=1e-9, rtol=1e-12))
     q_root = 2.0 * (best - evaluate(root))
     return {

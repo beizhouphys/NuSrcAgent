@@ -140,7 +140,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         if any(abs(gamma - float(bound)) < 1e-5 for bound in gamma_bounds):
             add_check(review, "dr2_gamma_boundary", "warning", "spectral index at fit boundary; not a precise spectral measurement", False)
     if ns_hat is not None and isinstance(ns_bounds, list) and len(ns_bounds) == 2 and abs(ns_hat - float(ns_bounds[1])) < 1e-5:
-        add_check(review, "dr2_ns_upper_boundary", "warning", "ns at upper boundary", False)
+        add_check(review, "dr2_ns_upper_boundary", "warning", "n at upper fit boundary", False)
     requested_abs_cut = finite_float(normalized.get("event_abs_dec_max_deg"))
     requested_dec_min = finite_float(normalized.get("event_dec_min_deg"))
     requested_dec_max = finite_float(normalized.get("event_dec_max_deg"))
@@ -290,7 +290,7 @@ def review_flux_upper_limit(review, result, normalized):
         valid = valid and limit.get(field) == result.get(field)
     add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
     if ns_upper is not None and finite_float(result.get("ns")) is not None and result["ns"] <= 1e-5:
-        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit has ns at the physical zero boundary", False)
+        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit is near the physical boundary n = 0", False)
     if normalized.get("_flux_suite_member"):
         return
     files = result.get("generated_files", {})
