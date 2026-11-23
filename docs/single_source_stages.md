@@ -7,10 +7,10 @@ so the Agent can report it in a final answer and wait for the user to continue.
 1. Create and confirm the task as usual. Once READY, run
    `.venv/bin/python run_agent_wrap.py run --task <task_id>`.
    This step maximizes LLH and reviews the fit and its saved artifacts. Read
-   `single_source_llh_summary`, then send best-fit ns, Gamma, TS, local p value
+   `single_source_llh_summary`, then send best-fit n, spectral index, TS, local p value
    and one-sided significance in a final answer chat bubble. Ask whether to
    continue with flux upper limits/measurements and figures, then end the turn. The summary states the spectral
-   exponent convention and whether Gamma was fitted or fixed; p value and
+   exponent convention and whether spectral index was fitted or fixed; p value and
    significance retain the approved analytic estimate and its recorded method.
 2. Leave AWAITING_FLUX pending until the user replies to continue. Only then run
    `.venv/bin/python run_agent_wrap.py run --stage flux --task <task_id> --flux-user-reply "<actual user reply>"`.
@@ -23,9 +23,9 @@ The first-stage request contains no flux calculation. The complete scientific
 request is separately hashed in the task and primary checkpoint. The flux stage
 reconstructs the same LLH at the recorded primary best fit, checks that its value
 reproduces TS, and performs the original requested flux calculations. It does
-not repeat primary maximization or replace its best-fit ns, Gamma, TS, optimizer
+not repeat primary maximization or replace its best-fit n, spectral index, TS, optimizer
 status, bounds or procedure. Fixed-spectrum upper-limit hypotheses still require
-their own ns fits; those belong to the second stage.
+their own fits for n; those belong to the second stage.
 
 The existing strict TS > 9 measurement rule, 95% limits for exponents -2, -2.5,
 -3, reference spectra and figure style are unchanged. See
@@ -57,16 +57,16 @@ products complete after the primary fit and report that stage alone.
 
 ## Verification of the execution change
 
-Fixed-Gamma NGC 1068 completed both stages, including three fixed-spectrum
+Fixed-index NGC 1068 completed both stages, including three fixed-spectrum
 limits, primary normalization intervals and the spectrum figure. A default
-fitted-Gamma low-TS source produced limits without a reported measurement, and
+fitted-index low-TS source produced limits without a reported measurement, and
 a small catalog scan plus stack retained its existing reviewed behavior.
-Comparing the one-call and two-stage fixed-Gamma results gave signed relative
+Comparing the one-call and two-stage fixed-index results gave signed relative
 difference 0 and signed absolute difference 0 for all 22 checked fit, limit and
 interval quantities. These comparisons verify the execution change without
 changing the scientific definitions.
 
 New standalone DR2 spatial+energy single-source tasks record linear_v1 for the
-signal-energy Gamma interpolation. Primary and flux calculations share it;
+signal-energy spectral-index interpolation. Primary and flux calculations share it;
 continuation with a different recorded method is rejected. See
 [single-source interpolation](single_source_linear_interpolation.md).

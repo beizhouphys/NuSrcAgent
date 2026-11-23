@@ -3,7 +3,7 @@
 Each source is fitted independently. The time-dependent detector yield is
 the steady yield times integral(profile over uptime) / integrated livetime.
 An outer bounded, explicitly seeded Powell search profiles the original
-SkyLLH ns/Gamma maximization; no background trials or flux fits run here.
+SkyLLH n and s maximization; no background trials or flux fits run here.
 """
 from __future__ import annotations
 
@@ -176,7 +176,7 @@ class TemporalController:
             raise ValueError("Temporal search has no profile with nonzero detector acceptance")
         ts, parameters, status, t0, width = best
         self.set_profile(t0, width)
-        # Restore all SkyLLH services to the recorded maximum, including Gamma.
+        # Restore all SkyLLH services to the recorded maximum, including spectral index.
         floating = np.array([parameters[name] for name in analysis.pmm.global_paramset.floating_params_name_list])
         analysis.llhratio.evaluate(floating)
         self.metadata = dict(settings=settings, t0_mjd=t0, width_days=width,

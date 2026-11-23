@@ -2,9 +2,9 @@
 
 New DR2 spatial+energy single-source tasks report the requested primary fit and,
 by default, three additional fits at fixed spectra E^-2, E^-2.5 and E^-3. Each
-additional fit gives a one-sided 95% flux upper limit. The positive index Gamma
-in E^-Gamma corresponds to wrapper exponents -2, -2.5 and -3. These hypotheses
-are separate from a freely fitted Gamma in the primary analysis.
+additional fit gives a one-sided 95% flux upper limit. The power-law spectral index s
+in E^-s corresponds to wrapper exponents -2, -2.5 and -3. These hypotheses
+are separate from a freely fitted spectral index in the primary analysis.
 
 Use `--no-flux-upper-limits` with `create-single` to omit these additional fits
 and figures. Catalog scans omit them by default; add `--flux-upper-limits` to
@@ -17,29 +17,29 @@ records retain their original settings; new defaults are recorded at creation.
 
 ## Statistical and flux definitions
 
-At each fixed Gamma the existing likelihood is maximized over nonnegative ns.
+At each fixed spectral index the existing likelihood is maximized over nonnegative n.
 The upper crossing satisfies
 
-`2 [ln L(ns_hat, Gamma) - ln L(ns_upper, Gamma)] = Phi^-1(0.95)^2 = 2.705543454095404`.
+`2 [ln L(n_hat, s) - ln L(n_upper, s)] = Phi^-1(0.95)^2 = 2.705543454095404`.
 
-The code brackets this crossing above ns_hat inside the recorded fit bounds.
+The code brackets this crossing above n_hat inside the recorded fit bounds.
 An absent crossing, non-finite likelihood, unconverged fit or inconsistency with
-the fixed-Gamma maximum is a failure, never a substituted flux limit. Profiles
+the fixed-index maximum is a failure, never a substituted flux limit. Profiles
 save the evaluated points. A zero-signal best fit is explicitly marked in review.
 
 The reported point-source flux is
 
-`dPhi_(nu_mu+anti_nu_mu)/dE = phi100 (E / 100 TeV)^(-Gamma)`.
+`phi_(nu_mu+anti_nu_mu)(E) = phi100 (E / 100 TeV)^(-s)`.
 
 `phi100` has units GeV^-1 cm^-2 s^-1. The detector yield uses the same public
 DR2 effective areas, livetimes and declination interpolation as the fit. With
 the fit's unit-normalization yield Y1 at 1 TeV, the yield for phi100 is
-`Y100 = Y1 * 100^Gamma`, and `phi100_upper = ns_upper / Y100`.
+`Y100 = Y1 * 100^s`, and `phi100_upper = n_upper / Y100`.
 At 100 TeV, the energy flux is `1e10 * phi100_upper` in GeV cm^-2 s^-1, or
 `1e7 * phi100_upper` in TeV cm^-2 s^-1. There is no factor of three or sr^-1.
 
 These are preliminary asymptotic limits. Actual 95% coverage, especially near
-the physical ns=0 boundary, has not been established. Detector and PDF systematic
+the physical n=0 boundary, has not been established. Detector and PDF systematic
 uncertainties are excluded. The three hypotheses do not establish a joint
 confidence band or a calibrated test across spectral hypotheses. No background
 trials are added by this feature. Existing declination windows and frozen PDFs
@@ -49,7 +49,7 @@ are reused between fits.
 ## Figure and files
 
 The single-panel logarithmic spectrum figure uses solid lines for all results
-computed by the current analysis: red Gamma=2, blue Gamma=2.5 and green Gamma=3
+computed by the current analysis: red s=2, blue s=2.5 and green s=3
 upper-limit curves with downward arrows, and the primary measured spectrum when
 reported. Published reference spectra from IceCube or other authors use dashed
 lines: NGC 1068 in black and the two diffuse benchmarks in purple and cyan.
@@ -59,7 +59,7 @@ Source curves display complete power-law hypotheses from 1 TeV to 10 PeV;
 this display interval is not a measured sensitive range or a set of independent
 energy-bin limits. Reference curves are restricted to their published energy ranges.
 
-The y axis is E^2 dF/dE [GeV cm^-2 s^-1], for nu_mu+anti_nu_mu. Diffuse intensity
+The y axis shows E^2 phi(E) in GeV cm^-2 s^-1 for nu_mu+anti_nu_mu. Diffuse intensity
 is multiplied by exactly 4*pi sr to show the full-sky integrated isotropic flux.
 This is an explicit integration convention; it does not describe a point-source
 aperture or directly compare emission per solid angle.
@@ -70,13 +70,13 @@ verification. Runtime does not download papers, extract figures or depend on
 owner tests. The reference data were adopted byte-identically from the reviewed
 plotting workflow, rather than estimated by combining marginal parameter errors.
 
-- [NGC 1068](https://arxiv.org/abs/2406.06684), Table 2 and Fig. 2: Gamma=3.1,
+- [NGC 1068](https://arxiv.org/abs/2406.06684), Table 2 and Fig. 2: s=3.1,
   phi1TeV=4.02e-11 TeV^-1 cm^-2 s^-1, 0.7–15 TeV; published 68% statistical band.
 - [9.5-year diffuse tracks](https://arxiv.org/abs/2111.10299), Fig. 4:
-  phi100TeV=1.44e-18 GeV^-1 cm^-2 s^-1 sr^-1, Gamma=2.37, 15 TeV–5 PeV;
+  phi100TeV=1.44e-18 GeV^-1 cm^-2 s^-1 sr^-1, s=2.37, 15 TeV–5 PeV;
   published 68% single-power-law band.
 - [10.3-year starting tracks](https://arxiv.org/abs/2402.18026), Fig. 17:
-  per-flavor phi100TeV=1.68e-18 GeV^-1 cm^-2 s^-1 sr^-1, Gamma=2.58,
+  per-flavor phi100TeV=1.68e-18 GeV^-1 cm^-2 s^-1 sr^-1, s=2.58,
   3–550 TeV. Under the stated equal-flavor assumption this supplies the muon
   flavor. The band confidence level is not explicit in that figure caption;
   the plot preserves that qualification.
@@ -91,7 +91,7 @@ CSV contents, file hashes, plotted spectra, common units and diffuse conversion.
 
 ## Single-source measurement workflow, 2026-10-19
 
-New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
+New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-index joint contours alongside the existing fixed-spectrum upper limits. Catalog scans keep their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
 
 ## Joint-stack limits
 

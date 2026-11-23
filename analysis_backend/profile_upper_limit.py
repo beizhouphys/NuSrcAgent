@@ -24,7 +24,7 @@ def _invert_upper_profile(log_likelihood_ratio, ns_hat, ns_max, confidence):
     """Find the upper crossing above the constrained scalar maximum.
 
     ``log_likelihood_ratio`` returns ln(L(ns)/L(0)). The fixed-spectrum
-    mixture likelihood is concave in ns; no Gamma optimization occurs here.
+    mixture likelihood is concave in n; no spectral index optimization occurs here.
     Failure to cross inside the recorded bounds is an error, never a limit.
     """
     ns_hat, ns_max, confidence = map(float, (ns_hat, ns_max, confidence))
@@ -80,13 +80,13 @@ def _invert_upper_profile(log_likelihood_ratio, ns_hat, ns_max, confidence):
 def fixed_gamma_flux_upper_limit(analysis, result, confidence):
     """Use exactly the fit's public-effective-area yield and interpolation.
 
-    The analysis flux model has Phi0=1 at 1 TeV, in GeV^-1 cm^-2 s^-1.
+    The analysis flux model has phi0=1 at 1 TeV, in GeV^-1 cm^-2 s^-1.
     A point-source flux has no sr^-1 and no all-flavor factor is introduced.
     """
     import numpy as np
 
     if result["gamma_mode"] != "fixed" or result["likelihood_mode"] != "spatial_energy":
-        raise ValueError("Flux upper limits require a fixed-Gamma spatial+energy fit")
+        raise ValueError("Flux upper limits require a fixed-index spatial+energy fit")
     if int(result["minimizer_status"].get("warnflag", -1)) != 0:
         raise ValueError("Cannot invert an unconverged fit")
 
@@ -112,7 +112,7 @@ def fixed_gamma_flux_upper_limit(analysis, result, confidence):
     phi_upper = limit["ns_upper_limit"] / yield_at_100tev
     limit.update({
         "gamma": gamma, "gamma_mode": "fixed",
-        "flux_definition": "dPhi/dE = phi0 * (E / 100 TeV)^(-Gamma)",
+        "flux_definition": "phi(E) = phi0 * (E / 100 TeV)^(-s)",
         "flavor": "nu_mu+anti_nu_mu", "pivot_energy_gev": 1e5,
         "phi0_unit": "GeV^-1 cm^-2 s^-1", "phi0_upper_limit": phi_upper,
         "e2_dphi_de_upper_limit_gev_cm2_s": 1e10 * phi_upper,
@@ -129,5 +129,5 @@ def fixed_gamma_flux_upper_limit(analysis, result, confidence):
                      intensity0_unit="GeV^-1 cm^-2 s^-1 sr^-1", solid_angle_sr=4*math.pi,
                      e2_intensity_upper_limit_gev_cm2_s_sr=limit["e2_dphi_de_upper_limit_gev_cm2_s"]/(4*math.pi))
         limit.update(flux_scope="sum_of_source_fluxes", n_sources=result["n_sources"],
-                     source_flux_definition="dPhi_j/dE = w_model_j * phi0_total * (E / 100 TeV)^(-Gamma); sum_j w_model_j = 1")
+                     source_flux_definition="phi_j(E) = w_model_j * phi0_total * (E / 100 TeV)^(-s); sum_j w_model_j = 1")
     return limit

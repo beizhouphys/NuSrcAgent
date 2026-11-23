@@ -8,7 +8,7 @@ Use the same execution option for single-source, catalog scan and joint stacking
 
 `--workers` must be a positive integer and defaults to 1. It controls computing
 resources; it does not change the catalog, event selection, weights, likelihood,
-Gamma convention, optimizer, bounds, seeds or scientific request hash.
+spectral index convention, optimizer, bounds, seeds or scientific request hash.
 
 For a single-source or joint stacking fit, the CLI sets numerical-library thread
 limits before importing NumPy, SciPy or the analysis modules. This includes
@@ -59,9 +59,9 @@ scheduler and one numerical thread per worker.
 Dominance runs independent delete-one refits in N single-thread processes.
 Screening and cumulative removals retain their original sequence and use the
 numerical-library thread budget. Each cumulative fit keeps the preceding fit's
-Gamma and ns seeds; parallelizing that sequence would change the fit procedure.
+spectral index and ns seeds; parallelizing that sequence would change the fit procedure.
 RA-scramble diagnostics run independent seeds in N single-thread processes within
-each original mode. Source/event random streams, seed order and Gamma settings
+each original mode. Source/event random streams, seed order and spectral index settings
 remain unchanged. Only the parent writes checkpoints, after each returned fit;
 resumption skips completed jobs, and changing the worker budget does not change
 the scientific trial definition. Diagnostic checkpoints record the worker budget.

@@ -166,7 +166,7 @@ class DR2PrecalculatedPDFStore:
         table = self.signal_table(dataset_name)
         axis = table["gamma"]
         if gamma < axis[0] or gamma > axis[-1]:
-            raise ValueError(f"Gamma {gamma} is outside table range [{axis[0]}, {axis[-1]}]")
+            raise ValueError(f"Spectral index {gamma} is outside table range [{axis[0]}, {axis[-1]}]")
         upper = int(np.searchsorted(axis, gamma, side="left"))
         if upper == 0 or np.isclose(axis[upper], gamma, atol=1e-12):
             values = table["values"][:, :, upper]
@@ -181,8 +181,8 @@ class DR2PrecalculatedPDFStore:
     def compact_signal_grid(self, dataset_name, gamma_values):
         """Load only the SkyLLH interpolation slices and release the dense table.
 
-        The source files use a 0.01 Gamma grid and are about 0.5 GB per
-        dataset.  The likelihood uses a 0.1 Gamma grid, so retaining only those
+        The source files use a 0.01 spectral-index grid and are about 0.5 GB per
+        dataset.  The likelihood uses a 0.1 spectral-index grid, so keeping only those
         exact/interpolated slices substantially lowers steady-state memory.
         """
         gamma_values = np.asarray(gamma_values, dtype=np.float64)
@@ -203,7 +203,7 @@ class DR2PrecalculatedPDFStore:
                 dense = dense[:, :, ::-1]
             if gamma_values.min() < axis[0] or gamma_values.max() > axis[-1]:
                 raise ValueError(
-                    f"Requested Gamma grid [{gamma_values.min()}, {gamma_values.max()}] "
+                    f"Requested spectral-index grid [{gamma_values.min()}, {gamma_values.max()}] "
                     f"is outside table range [{axis[0]}, {axis[-1]}]"
                 )
             compact = np.empty((*dense.shape[:2], len(gamma_values)), dtype=np.float32)
@@ -300,7 +300,7 @@ class DR2RequestedSpectrumPDFStore(DR2PrecalculatedPDFStore):
             for value in gamma_values:
                 matches = np.flatnonzero(np.isclose(axis, value, rtol=0., atol=1e-10))
                 if len(matches) != 1:
-                    raise ValueError('Gamma is outside the prepared spectrum-response grid')
+                    raise ValueError('spectral index is outside the prepared spectrum-response grid')
                 indices.append(int(matches[0]))
             result = dict(dec_edges=table['dec_edges'], energy=table['energy'],
                           gamma=gamma_values.copy(), values=table['values'][:, :, indices])

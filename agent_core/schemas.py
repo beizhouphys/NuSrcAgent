@@ -112,6 +112,21 @@ class AnalysisConfig:
             data_payload = payload["data"]
         except KeyError as exc:
             raise ConfigError(f"missing required block: {exc.args[0]}") from exc
+        limit_exponents = analysis_payload.get("flux_upper_limit_gammas", [])
+        if "flux_upper_limit_s" in analysis_payload:
+            if "flux_upper_limit_gammas" in analysis_payload:
+                raise ConfigError("Specify only one upper-limit spectral-index list")
+            limit_indices = analysis_payload["flux_upper_limit_s"]
+            if not isinstance(limit_indices, list):
+                raise ConfigError("analysis.flux_upper_limit_s must be a list")
+            limit_exponents = [-float(index) for index in limit_indices]
+        gamma_bounds = analysis_payload.get("gamma_bounds")
+        if "s_bounds" in analysis_payload:
+            bounds = analysis_payload["s_bounds"]
+            if "gamma_bounds" in analysis_payload or not isinstance(bounds, list) or len(bounds) != 2:
+                raise ConfigError("Specify analysis.s_bounds alone as a list of two endpoints")
+            lower, upper = map(float, bounds)
+            gamma_bounds = [-upper, -lower]
         sample = str(data_payload.get("sample", "icecube_public_ps_14yr_dr2"))
         default_likelihood_mode = "spatial_energy" if sample == "icecube_public_ps_14yr_dr2" else "spatial_only"
         likelihood_mode = str(analysis_payload.get("likelihood_mode", default_likelihood_mode))
@@ -119,7 +134,7 @@ class AnalysisConfig:
         default_spectral_index = -2.5 if likelihood_mode == "spatial_only" else (-3.0 if sample == "icecube_public_ps_14yr_dr2" else -2.5)
         return cls(
             schema_version=str(payload.get("schema_version", "0.1")),
-            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")), flux_upper_limit_cl=optional_float(analysis_payload, "flux_upper_limit_cl"), flux_upper_limit_gammas=[float(value) for value in analysis_payload.get("flux_upper_limit_gammas", [])], flux_measurement_ts_threshold=optional_float(analysis_payload, "flux_measurement_ts_threshold"), fit_procedure=str(analysis_payload.get("fit_procedure", "skyllh_lbfgs_v1")), scan_fit_procedure=optional_str(analysis_payload, "scan_fit_procedure"), signal_energy_gamma_interpolation=optional_str(analysis_payload, "signal_energy_gamma_interpolation"), stacking_flux=analysis_payload.get("stacking_flux", {}), spectrum=analysis_payload.get("spectrum", {}), gamma_bounds=analysis_payload.get("gamma_bounds"), temporal=analysis_payload.get("temporal", {})),
+            analysis=AnalysisBlock(type=parse_analysis_type(analysis_payload.get("type")), time_mode=str(analysis_payload.get("time_mode", "time_integrated")), likelihood_mode=likelihood_mode, catalog_operation=str(analysis_payload.get("catalog_operation", "stack" if sample == "icecube_public_ps_14yr_dr2" else "scan_and_stack")), flux_upper_limit_cl=optional_float(analysis_payload, "flux_upper_limit_cl"), flux_upper_limit_gammas=[float(value) for value in limit_exponents], flux_measurement_ts_threshold=optional_float(analysis_payload, "flux_measurement_ts_threshold"), fit_procedure=str(analysis_payload.get("fit_procedure", "skyllh_lbfgs_v1")), scan_fit_procedure=optional_str(analysis_payload, "scan_fit_procedure"), signal_energy_gamma_interpolation=optional_str(analysis_payload, "signal_energy_gamma_interpolation"), stacking_flux=analysis_payload.get("stacking_flux", {}), spectrum=analysis_payload.get("spectrum", {}), gamma_bounds=gamma_bounds, temporal=analysis_payload.get("temporal", {})),
             data=DataBlock(sample=sample),
             source=parse_source(payload.get("source")),
             sources=parse_sources(payload.get("sources")),
@@ -227,10 +242,17 @@ def parse_weights(payload: Any) -> WeightsBlock:
 def parse_stacking(payload: Any, default_gamma_mode: str = "fixed", default_spectral_index: float = -2.5) -> StackingBlock:
     if payload is None:
         return StackingBlock(spectral_indices=[default_spectral_index], gamma_mode=default_gamma_mode)
-    spectral_indices = payload.get("spectral_indices", [default_spectral_index])
+    if "s" in payload and "spectral_indices" in payload:
+        raise ConfigError("Specify only one of stacking.s and stacking.spectral_indices")
+    if "s_mode" in payload and "gamma_mode" in payload:
+        raise ConfigError("Specify only one of stacking.s_mode and stacking.gamma_mode")
+    indices = payload.get("s")
+    if "s" in payload and (not isinstance(indices, list) or not indices):
+        raise ConfigError("stacking.s must be a non-empty list")
+    spectral_indices = [-float(index) for index in indices] if indices else payload.get("spectral_indices", [default_spectral_index])
     if not isinstance(spectral_indices, list) or len(spectral_indices) == 0:
         raise ConfigError("stacking.spectral_indices must be a non-empty list")
-    gamma_mode = str(payload.get("gamma_mode", default_gamma_mode))
+    gamma_mode = str(payload.get("s_mode", payload.get("gamma_mode", default_gamma_mode)))
     if gamma_mode not in {"fitted", "fixed"}:
         raise ConfigError("stacking.gamma_mode must be fitted or fixed")
     return StackingBlock(spectral_indices=[float(value) for value in spectral_indices], include_uniform_baseline=bool(payload.get("include_uniform_baseline", True)), gamma_mode=gamma_mode)

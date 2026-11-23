@@ -250,7 +250,7 @@ def run_dominance_analysis(repo_root, baseline_run_directory, output_directory, 
         raise ValueError("Baseline run review must pass before dominance analysis")
     baseline = report["result"]
     if baseline.get("likelihood_mode") != "spatial_energy" or baseline.get("gamma_mode") != "fitted":
-        raise ValueError("Dominance workflow requires a fitted-Gamma DR2 spatial+energy baseline")
+        raise ValueError("Dominance workflow requires a fitted-index DR2 spatial+energy baseline")
     specs = _source_specs(normalized)
     if not 1 <= int(top_n) <= int(candidate_count) <= len(specs):
         raise ValueError("Dominance counts must satisfy 1 <= top_n <= candidate_count <= normalized source count")

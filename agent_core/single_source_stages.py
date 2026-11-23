@@ -145,10 +145,16 @@ def _save_primary(task, run, full_hash, task_dir):
         run_directory=str(run.run_dir))
     task["artifacts"].update(llh_run_directory=str(run.run_dir), llh_checkpoint=str(path))
     result = run.result
+    index = result.get("gamma")
+    if index is not None and "gamma_legacy" not in result and "ns" not in result:
+        index = -index
     task["single_source_llh_summary"] = dict(
+        n=result.get("ns", result.get("best_fit_ns")),
+        s=index,
         best_fit_ns=result.get("ns", result.get("best_fit_ns")),
         Gamma=result.get("gamma_legacy", result.get("gamma")),
-        gamma_convention="fixed tabulated shape; no PL Gamma" if getattr(run.normalized, "spectrum", {}) else "dN/dE proportional to (E/E0)^Gamma",
+        gamma_convention="fixed tabulated spectrum" if getattr(run.normalized, "spectrum", {}) else "Gamma is the legacy signed exponent (-s)",
+        s_convention="phi(E) proportional to (E/E0)^(-s)" if not getattr(run.normalized, "spectrum", {}) else None,
         spectrum=getattr(run.normalized, "spectrum", {}),
         gamma_mode=run.normalized.gamma_mode, TS=result.get("TS", result.get("ts")),
         p_value=result["pre_trial_p"], significance=result["pre_trial_significance"],
@@ -235,7 +241,11 @@ def _run_flux(request_path, primary, root, workers=1):
 def chat_stages(task):
     summary = dict(execution_flow=FLOW, single_source_stages=task.get("stages", {}))
     if task.get("single_source_llh_summary"):
-        primary = task["single_source_llh_summary"]
+        primary = dict(task["single_source_llh_summary"])
+        primary.setdefault("n", primary.get("best_fit_ns"))
+        if "s" not in primary:
+            exponent = primary.get("Gamma")
+            primary["s"] = -exponent if exponent is not None else None
         summary["single_source_llh_summary"] = dict(primary,
             background_trial_note=background_trial_note(primary["significance"]))
     if task.get("status") == "AWAITING_FLUX":
@@ -259,5 +269,10 @@ def chat_stages(task):
                                 for fit in result.get("flux_upper_limit_fits", [])]
         if "flux_upper_limit" in result:
             flux["upper_limit"] = {k: v for k, v in result["flux_upper_limit"].items() if k in limit_fields}
+        if "measurement" in flux:
+            flux["measurement"]["s"] = flux["measurement"].get("gamma")
+        limits = flux["upper_limits"] + ([flux["upper_limit"]] if "upper_limit" in flux else [])
+        for limit in limits:
+            limit.update(s=limit.get("gamma"), n_upper_limit=limit.get("ns_upper_limit"))
         summary["single_source_flux_summary"] = flux
     return summary

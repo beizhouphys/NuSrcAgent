@@ -1,11 +1,12 @@
 # Requested spectra
 
-`--gamma` is the signed exponent in `dN/dE proportional to (E/E0)^gamma`.
-Bare natural-language `Gamma=+2.5` remains ambiguous unless a formula defines
-its convention. An explicit E^+2.5, E^0, E^-0.2 or E^-8 is accepted unchanged.
-A supplied exponent defaults to fixed mode. Fitted PLs keep the default bounds
-unless the user specifies another interval with `--gamma-bounds EXP_MIN EXP_MAX`;
-do not widen a search automatically because a seed lies outside the default.
+Use `--s` for the power-law index in phi(E) proportional to (E/E0)^(-s).
+For example, use `--s 2.5` for E^(-2.5) and `--s -2.5` for E^(+2.5).
+A supplied index defaults to fixed mode. Use `--s-bounds MIN MAX`
+for a fitted interval in increasing s order. Keep the default bounds unless
+the user specifies a different interval. `--gamma` still accepts the signed
+exponent -s. Clarify a signed value in a natural-language request when the
+user has left that older convention ambiguous.
 
 For a fixed non-PL spectrum (including realistic modeling), supply a text file
 with two numeric columns, energy and value, plus all three interpretation options:
@@ -25,7 +26,7 @@ record the model and sampled energy range. Do not replace it with a PL fit.
 Positive nodes use log-log interpolation. Segments touching a zero use linear
 interpolation in energy; values must be finite/nonnegative, with positive unique
 energies and nonzero emission. Extrapolation requires positive nodes. The
-normalization of the supplied table cancels in the shape; ns is fitted. A
+normalization of the supplied table cancels in the shape. The fit varies n. A
 common shape applies to the selected sources; distinct per-source spectra or
 free parameters of a non-PL model are not implemented and require a separate
 explicit scientific extension. Existing PL-reference flux upper limits remain
