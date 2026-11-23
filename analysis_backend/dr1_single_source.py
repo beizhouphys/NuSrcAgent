@@ -83,7 +83,7 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
         "fit_bounds": {"ns": [-10., float(sum(Nj))]},
         "roi_deg": float(ROI*d2r) if bounds is None else None,
         "note": "single-source time-integrated backend copied from likelihood_v4.py; p-value uses chi2(df=1)/2 approximation",
-        "warnings": (["Requested-spectrum DR1 path retains NumPy integration compatibility and uses the original likelihood code SLSQP maximization with unchanged ns bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
+        "warnings": (["The requested-spectrum DR1 path uses NumPy-compatible integration and the original likelihood code's SLSQP maximization with unchanged n bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
     }
 
 

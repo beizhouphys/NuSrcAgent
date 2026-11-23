@@ -65,15 +65,15 @@ exact recorded code revision being tested.
    `COMPLETED_WITH_WARNINGS` must be recorded as such, not as a warning-free pass.
 3. Inspect the reports, normalized/original configurations, provenance, CSV
    tables, per-source review checks and central agent reviews listed in the
-   quickstart. Confirm input hashes, source order, intrinsic weights, Gamma
+   quickstart. Confirm input hashes, source order, intrinsic weights, spectral-index
    mode, event selection, optimizer settings and actual executed-trial counts.
-   Compare TS/ns/Gamma to the controlled numerical references, recording signed
+   Compare TS, n and s to the controlled numerical references, recording signed
    relative differences first and then signed absolute differences (relative
    difference is undefined at a zero reference). Review discrepancies; do not
    change scientific settings merely to obtain a match.
 4. Before declaring the additional documented paths release-checked, install
    their matching inputs and execute real DR2 spatial-only and DR1 single-source
-   and catalog scan+stack checks. Use fixed acceptance Gamma for spatial-only;
+   and catalog scan+stack checks. Use a fixed acceptance spectral index for spatial-only.
    DR1 must retain its own inputs, definitions and expected CSV/PDF artifacts.
    Record optional workbook availability/warnings separately. Installing DR1
    inputs alone does not validate DR1 analysis or workbook portability.

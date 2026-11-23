@@ -280,9 +280,12 @@ def fit_review(result, config):
     if (config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'
             or result.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'):
         failures.append('unsupported or inconsistent fit procedure')
-    for name in (('TS', 'ns') if config.get('fit_options', {}).get('spectrum') else ('TS', 'ns', 'gamma')):
-        if not math.isfinite(result[name]):
-            failures.append(f'nonfinite {name}')
+    fitted_fields = [('TS', 'TS'), ('ns', 'n')]
+    if not config.get('fit_options', {}).get('spectrum'):
+        fitted_fields.append(('gamma', 's'))
+    for key, label in fitted_fields:
+        if not math.isfinite(result[key]):
+            failures.append(f'nonfinite {label}')
     if (result['TS'] < 0 or not 0 <= result['ns'] <= config['ns_max'] or
             (config.get('gamma_mode', 'fitted') == 'fitted' and not config['gamma_min'] <= result['gamma'] <= config['gamma_max'])):
         failures.append('fit outside constrained domain')
@@ -296,7 +299,7 @@ def fit_review(result, config):
     if config.get('gamma_mode', 'fitted') == 'fitted' and min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
         warnings.append('spectral index at fit boundary; not a precise spectral measurement')
     if abs(result['ns']-config['ns_max']) < 1e-5:
-        warnings.append('ns at upper boundary')
+        warnings.append('n at upper fit boundary')
     if 'fit_options' in config:
         options = config['fit_options']
         for key in ('likelihood_mode', 'signal_energy_gamma_interpolation', 'spectrum'):
@@ -305,8 +308,22 @@ def fit_review(result, config):
         if result['event_counts'] != config['expected_event_counts']:
             failures.append('changed event counts')
         if result.get('fit_bounds', {}).get('ns') != [0., options['ns_max']]:
-            failures.append('changed ns bounds')
+            failures.append('changed n bounds')
     return dict(status='fail' if failures else ('warning' if warnings else 'pass'), failures=failures, warnings=warnings)
+
+
+def _fit_review_for_display(review):
+    """Use current notation when reading review text from earlier checkpoints."""
+    aliases = {
+        'nonfinite ns': 'nonfinite n',
+        'nonfinite gamma': 'nonfinite s',
+        'ns at upper boundary': 'n at upper fit boundary',
+        'changed ns bounds': 'changed n bounds',
+    }
+    return dict(review, **{
+        key: [aliases.get(message, message) for message in review[key]]
+        for key in ('failures', 'warnings') if key in review
+    })
 
 
 def _is_skippable_negative_ts(row, config):
@@ -317,7 +334,7 @@ def _is_skippable_negative_ts(row, config):
             and row['review']['failures'] == ['fit outside constrained domain']
             and math.isfinite(result['TS']) and result['TS'] < 0.
             and result['minimizer_status'].get('warnflag') == 0
-            and row['review'] == fit_review(result, config))
+            and _fit_review_for_display(row['review']) == fit_review(result, config))
 
 
 def _skipped_negative_ts_rows(out, config, accepted_hashes):
@@ -490,7 +507,7 @@ def report(out, persist=True):
     for row in rows:
         if row['request_sha256'] not in accepted_hashes:
             raise ValueError('Checkpoint request hash mismatch')
-        if row['review'] != fit_review(row['result'], config):
+        if _fit_review_for_display(row['review']) != fit_review(row['result'], config):
             raise ValueError('Checkpoint review mismatch')
         index = row['index']
         expected_seed = event_seed_for_index(config, index)
@@ -1624,7 +1641,7 @@ def _aggregate_trial_row(row, config, source, trial_id):
     actual = row['result']['ra_scramble']['event_seed']
     if actual != expected:
         raise ValueError(f'Checkpoint event seed mismatch for {trial_id}')
-    if row['review'] != fit_review(row['result'], config):
+    if _fit_review_for_display(row['review']) != fit_review(row['result'], config):
         raise ValueError(f'Checkpoint review mismatch for {trial_id}')
     if row['review']['status'] == 'fail':
         raise ValueError(f'Failed fit cannot enter aggregate: {trial_id}')
@@ -1637,7 +1654,7 @@ def _aggregate_trial_row(row, config, source, trial_id):
         'ns': row['result']['ns'],
         'gamma': row['result']['gamma'],
         'review_status': row['review']['status'],
-        'review_warnings': row['review']['warnings'],
+        'review_warnings': _fit_review_for_display(row['review'])['warnings'],
         'elapsed_seconds': row['elapsed_seconds'],
         'completed_at_utc': row['completed_at_utc'],
         'checkpoint_request_sha256': row['request_sha256'],
