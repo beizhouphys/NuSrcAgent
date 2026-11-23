@@ -14,7 +14,7 @@ from agent_core.temporal import parameter_mode, temporal_errors, unavailable_sig
 NOTE = ("Time-dependent p-values and significances are unavailable. Background trials must repeat "
         "the complete recorded temporal/spectral search and selected catalog. The time-dependent "
         "scrambling method awaits owner approval; this task executes zero background trials. "
-        "The statistic is 2 log(L_hat/L_ns=0), without an additional duration penalty.")
+        "The statistic is 2 log(L_hat/L(n=0)), without an additional duration penalty.")
 
 
 def fit_records(normalized, result):
@@ -27,7 +27,7 @@ def fit_row(record):
     fit = record["fit"]
     temporal = fit["temporal"]
     return dict(source_number=record["source_number"], source_name=record["source_name"],
-        TS=fit["TS"], ns=fit["ns"], gamma=fit["gamma"], gamma_mode=fit["gamma_mode"],
+        TS=fit["TS"], n=fit["ns"], s=fit["gamma"], ns=fit["ns"], gamma=fit["gamma"], gamma_mode=fit["gamma_mode"],
         profile=temporal["settings"]["profile"], t0_mjd=temporal["t0_mjd"],
         width_days=temporal["width_days"], width_meaning=temporal["width_meaning"],
         t0_mode=temporal["t0_mode"], width_mode=temporal["width_mode"],
@@ -95,12 +95,12 @@ def write_time_dependent_artifacts(config_path, config, normalized, result, root
     write_yaml(run_dir/"report.yaml", report)
     write_yaml(run_dir/"provenance.yaml", build_provenance(config_path, normalized, root, config))
     lines = ["# Time-dependent source analysis", "", NOTE, "",
-        "| Source | ns | Gamma | TS | t0 (MJD, UT1) | Width (days) | Width meaning |",
+        "| Source | n | s | TS | t0 (MJD, UT1) | Width (days) | Width meaning |",
         "| --- | ---: | ---: | ---: | ---: | ---: | --- |"]
     for row in rows:
         gamma = "fixed shape" if row["gamma"] is None else f"{row['gamma']:.6g}"
         lines.append(f"| {row['source_name']} | {row['ns']:.6g} | {gamma} | {row['TS']:.6g} | {row['t0_mjd']:.9f} | {row['width_days']:.9g} | {row['width_meaning']} |")
-    lines += ["", "Gamma follows dN/dE proportional to E^(-Gamma), with the recorded fixed/fitted mode.",
+    lines += ["", "The power-law flux scales as E^(-s). The fit record gives the spectral-index mode.",
               "Time profiles show the intrinsic shape; the likelihood normalizes separately over each dataset's good-run intervals.",
               "The recorded seeded temporal search does not certify a unique global maximum.",
               "", "Review: [review.md](review.md).", ""]

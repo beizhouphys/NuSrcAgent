@@ -125,7 +125,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
                       and all(dataset.get("signal_energy_gamma_interpolation", "parabola_v1") == interpolation
                               for dataset in datasets.values()))
         add_check(review, "dr2_gamma_interpolation", "pass" if consistent else "fail",
-                  "signal-energy Gamma interpolation matches the request" if consistent else "signal-energy Gamma interpolation differs from the request", False)
+                  "signal-energy spectral-index interpolation matches the request" if consistent else "signal-energy spectral-index interpolation differs from the request", False)
     if isinstance(ns_bounds, list) and len(ns_bounds) == 2:
         valid = valid and ns_hat is not None and float(ns_bounds[0]) <= ns_hat <= float(ns_bounds[1])
     if result.get("gamma_mode") == "fitted" and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
@@ -135,10 +135,10 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     if result.get("gamma_mode") == "fixed":
         requested_gamma = finite_float(normalized.get("spectral_indices", [None])[0])
         mode_matches = mode_matches and (spectrum_ok if tabulated else gamma is not None and requested_gamma is not None and abs(gamma + requested_gamma) < 1e-12)
-    add_check(review, "dr2_gamma_request", "pass" if mode_matches else "fail", "Gamma mode and fixed value match the request" if mode_matches else "Gamma mode or fixed value differs from the request", False)
+    add_check(review, "dr2_gamma_request", "pass" if mode_matches else "fail", "spectral-index mode and fixed value match the request" if mode_matches else "spectral-index mode or fixed value differs from the request", False)
     if result.get("gamma_mode") == "fitted" and gamma is not None and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
         if any(abs(gamma - float(bound)) < 1e-5 for bound in gamma_bounds):
-            add_check(review, "dr2_gamma_boundary", "warning", "Gamma at fit boundary; not a precise spectral measurement", False)
+            add_check(review, "dr2_gamma_boundary", "warning", "spectral index at fit boundary; not a precise spectral measurement", False)
     if ns_hat is not None and isinstance(ns_bounds, list) and len(ns_bounds) == 2 and abs(ns_hat - float(ns_bounds[1])) < 1e-5:
         add_check(review, "dr2_ns_upper_boundary", "warning", "ns at upper boundary", False)
     requested_abs_cut = finite_float(normalized.get("event_abs_dec_max_deg"))
@@ -203,7 +203,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         normalized_gamma = normalized.get("spectral_indices", [None])[0]
         acceptance_gamma = finite_float(result.get("acceptance_gamma_legacy"))
         fixed_acceptance = result.get("gamma_mode") == "fixed" and (spectrum_ok and result.get("gamma_role") == "fixed_spectrum_shape" if tabulated else result.get("gamma_role") == "acceptance_only" and acceptance_gamma is not None and finite_float(normalized_gamma) is not None and abs(acceptance_gamma - float(normalized_gamma)) < 1e-12)
-        add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance Gamma matches the normalized request" if fixed_acceptance else "spatial-only acceptance Gamma is not fixed or does not match the request", False)
+        add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance spectral index matches the normalized request" if fixed_acceptance else "spatial-only acceptance spectral index is not fixed or does not match the request", False)
         no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False
         add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False)
     review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
@@ -213,7 +213,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         for key in ("pre_trial_p", "pre_trial_significance"):
             value = finite_float(result.get(key))
             valid_estimate = valid_estimate and value is not None and math.isclose(value, expected[key], rel_tol=1e-12, abs_tol=1e-14)
-        add_check(review, "dr2_local_estimate", "pass" if valid_estimate else "fail", "p-value and significance estimates match Gamma mode and declared dof" if valid_estimate else "local estimate, method or dof is inconsistent with Gamma mode", False)
+        add_check(review, "dr2_local_estimate", "pass" if valid_estimate else "fail", "p-value and significance estimates match spectral-index mode and declared dof" if valid_estimate else "local estimate, method or dof is inconsistent with spectral-index mode", False)
     table_path = result.get("generated_files", {}).get("fit_results")
     if table_path:
         table = read_csv_if_present(Path(table_path))

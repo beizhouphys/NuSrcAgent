@@ -1,5 +1,11 @@
 # Requested spectra and response preparation
 
+For a power law, set the spectral index using `--s`. The option takes s in E^(-s).
+In a structured request, `stacking.s` is a list of spectral indices,
+`stacking.s_mode` selects fitted or fixed, and `analysis.s_bounds`
+uses increasing spectral-index order. The optional list `analysis.flux_upper_limit_s`
+sets the fixed indices for upper limits. Existing signed-exponent settings still work.
+
 The common spectrum interface supports all current time-integrated analysis
 operations. A conventional PL uses existing frozen SEpdfs; when its required
 interpolation nodes are absent, the runtime prepares a separate signal response.
@@ -28,7 +34,7 @@ likelihood is introduced. Native declination intervals, reconstructed-energy
 spacing 0.0025 dex, PL interpolation and the optimizer remain unchanged. The
 runtime grid contains the nodes needed by the requested fixed exponent or
 explicit fitted interval, with interpolation margins. An arbitrary fixed shape
-has identical passive mapper nodes; those nodes are never reported as Gamma.
+has identical passive mapper nodes; those nodes are never reported as spectral index.
 
 Each response has a content-derived directory under
 `data_output/spectrum_responses/`. Its identity records the supplied spectrum
@@ -50,7 +56,7 @@ supplied shape; its spatial likelihood and event selection are retained. No new
 DR1 energy likelihood is claimed. DR2 time-dependent single-source analysis and
 catalog scans use this same fixed-shape interface, including temporal detector
 acceptance; time-dependent flux/fluence products remain unavailable. Non-PL shapes
-have no fitted PL Gamma. Model-specific shape-parameter fits and per-source
+have no fitted PL spectral index. Model-specific shape-parameter fits and per-source
 spectra are outside this fixed-shape interface. Existing PL-reference upper
 limits are distinct hypotheses; PL-specific primary flux-measurement figures
 are not silently applied to a non-PL shape.
@@ -71,13 +77,13 @@ likelihood code's `minimize(..., x0=0, method="SLSQP", bounds=...)` block;
 stacking copies its seeded `minimize` block. This prevents a new acceptance
 distribution from leaving the compatibility golden-section search entirely in
 an invalid-mixture plateau. The spatial likelihood, event selection and current
-runtime ns bounds are unchanged (single: [-10, selected event count]; stack:
+runtime n bounds are unchanged (single: [-10, selected event count]; stack:
 [0, selected event count]). The selected procedure is recorded in the result.
 The untouched baseline `likelihood_v4.py` was inspected, not modified. An earlier
 failed development task is retained; its numerical output is not a valid result.
 
 The requested-spectrum DR1 stack evaluates the same log likelihood ratio as
-`sum(log1p(ns*f_k/N_k*(S/B-1)))` and supplies its analytic ns derivative to
+`sum(log1p(n*f_k/N_k*(S/B-1)))` and supplies its analytic derivative with respect to n to
 the original bounded minimizer. This avoids cancellation of large background
 log likelihoods; it changes no PDF, hypothesis, parameter bound or trial scope.
 An independent scalar-score root and direct original-formula comparison check

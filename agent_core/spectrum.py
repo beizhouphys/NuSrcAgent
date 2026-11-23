@@ -1,6 +1,6 @@
 """Spectrum input contract shared by every analysis workflow.
 
-Command Gamma is the signed exponent in (E/E0)^Gamma. Tabulated spectra
+The power law has index s in (E/E0)^(-s). The --gamma option takes the signed exponent -s. Tabulated spectra
 are fixed shapes; their normalization is fitted through the signal count.
 """
 from __future__ import annotations
@@ -62,14 +62,14 @@ def validate_spectrum(spectrum, gamma, gamma_mode, bounds=None, root="."):
         if gamma != 0.:
             errors.append("A non-PL spectrum uses a fixed internal mapper coordinate, not a supplied PL index")
         if gamma_mode != "fixed" or bounds is not None:
-            errors.append("A supplied non-power-law spectrum fixes its shape; no power-law Gamma is fitted")
+            errors.append("A supplied non-power-law spectrum fixes its shape; no power-law spectral index is fitted")
     elif gamma is None or not math.isfinite(float(gamma)):
         errors.append("Power-law exponent must be finite")
     if bounds is not None:
         if (not isinstance(bounds, (list, tuple)) or len(bounds) != 2
                 or not all(math.isfinite(float(v)) for v in bounds) or bounds[0] >= bounds[1]
                 or gamma_mode != "fitted" or gamma is None or not bounds[0] <= gamma <= bounds[1]):
-            errors.append("Gamma bounds require an ordered finite exponent interval, fitted mode and a seed inside it")
+            errors.append("spectral-index bounds require an ordered finite exponent interval, fitted mode and a seed inside it")
     return errors
 
 

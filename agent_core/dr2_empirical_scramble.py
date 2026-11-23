@@ -1,7 +1,7 @@
 """Persistent conditional event-RA calibration using the unchanged DR2 LLH.
 
 Trials inherit the reviewed single-source or stacking configuration,
-including fixed/fitted Gamma, event selections and supplied spectra. No PDF optimization or analytic TS calibration.
+including fixed/fitted spectral index, event selections and supplied spectra. No PDF optimization or analytic TS calibration.
 """
 from __future__ import annotations
 
@@ -290,11 +290,11 @@ def fit_review(result, config):
         failures.append('optimizer did not converge')
     if (result['gamma_mode'] != config.get('gamma_mode', 'fitted') or
             result['background_pdf_version'] != config['background_pdf_version']):
-        failures.append('wrong Gamma mode or background version')
+        failures.append('wrong spectral-index mode or background version')
     if result['n_sources'] != config['n_sources'] or result['event_selection'] != config.get('expected_event_selection', 'all_events'):
         failures.append('wrong catalog size or event selection')
     if config.get('gamma_mode', 'fitted') == 'fitted' and min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
-        warnings.append('Gamma at fit boundary; not a precise spectral measurement')
+        warnings.append('spectral index at fit boundary; not a precise spectral measurement')
     if abs(result['ns']-config['ns_max']) < 1e-5:
         warnings.append('ns at upper boundary')
     if 'fit_options' in config:
@@ -672,7 +672,7 @@ def _run_locked(root, out, resume, max_hours, max_fits):
             raise ValueError('Incomplete ensemble cannot be reported as completed')
         review = dict(status='warning', checks=dict(all_requested_fits_present=True, all_fit_reviews_pass=True),
                       warnings=['Finite Monte Carlo precision; report exact binomial intervals.',
-                                'Conditional uniform-RA null; PDF residuals can still bias ns/Gamma.',
+                                'Conditional uniform-RA null; PDF residuals can still bias n and s.',
                                 'Uses the existing optimizer; this ensemble is not a general coverage validation.'],
                       boundary_warning_fits=summary['boundary_warning_fits'])
         write_json(out/'review.json', review)
@@ -697,7 +697,7 @@ def prepare_continuous(root, out, parent_directory, request, workers=2):
         raise ValueError('Parent timing pilot must be PAUSED before protocol amendment')
     parent_config = parent_task['parameters']['experiment']['value']
     if parent_config.get('background_pdf_version') != 'v3':
-        raise ValueError('Parent task is not the required fitted-Gamma v3 calibration')
+        raise ValueError('Parent task is not the required fitted-index v3 calibration')
     verify_v3_release(root)
     out.mkdir(parents=True, exist_ok=False)
     shutil.copy2(parent/'catalog.json', out/'catalog.json')
@@ -853,7 +853,7 @@ def prepare_versioned_continuous(root, out, reference_directory, request,
         raise ValueError('Reference empirical task must be PAUSED')
     reference_config = reference_task['parameters']['experiment']['value']
     if reference_config.get('gamma_mode') != 'fitted' or not reference_config.get('continuous'):
-        raise ValueError('Reference is not a fitted-Gamma continuous empirical task')
+        raise ValueError('Reference is not a fitted-index continuous empirical task')
     if import_reference_fits and reference_config.get('background_pdf_version') != background_version:
         raise ValueError('Cannot import fits across background-PDF versions')
     _background_release_paths(root, background_version)
@@ -1002,7 +1002,7 @@ def prepare_distributed_shard(root, out, reference_directory, request, analysis_
     if reference_task['status'] != 'PAUSED':
         raise ValueError('Canonical reference task must be PAUSED before preparing a shard')
     if not reference_config.get('continuous') or reference_config.get('gamma_mode') != 'fitted':
-        raise ValueError('Reference is not a fitted-Gamma continuous empirical task')
+        raise ValueError('Reference is not a fitted-index continuous empirical task')
     background_version = reference_config['background_pdf_version']
     _background_release_paths(root, background_version)
     observed_source = reference/'fits'/'observed.json'
@@ -1571,8 +1571,8 @@ def write_snapshot_exports(out, result):
         lines += [
             '## Result', '',
             f"- Observed TS: `{observed['TS']:.12g}`",
-            f"- Observed ns: `{observed['ns']:.12g}`",
-            f"- Observed Gamma: `{observed['gamma']}`",
+            f"- Observed n: `{observed['ns']:.12g}`",
+            f"- Observed s: `{observed['gamma']}`",
             f"- Exceedances: `{stats['exceedances']}` of `{stats['n_trials']}`",
             f"- Empirical pre-trial p-value: `{stats['p_pre']:.12g}`",
             f"- Empirical post-trial p-value: `{stats['p_post']:.12g}`",

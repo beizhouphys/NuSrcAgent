@@ -40,7 +40,7 @@ selection and fit procedure; historical ensembles must not be relabeled.
 During a scan the runtime loads each dataset once and keeps immutable complete
 data templates. Each source receives fresh mutable data and its own selected
 events. The PDF store keeps validated background PDF tables and compact signal
-energy PDF grids, keyed by dataset and the complete Gamma grid. It does not
+energy PDF grids, keyed by dataset and the complete spectral-index grid. It does not
 keep one source's fitted state or selected event sample for another source.
 The cache is released when the scan ends. Independent CLI processes have
 independent caches; no cross-process memory cache or persisted hash trust is

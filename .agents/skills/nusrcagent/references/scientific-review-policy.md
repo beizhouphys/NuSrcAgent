@@ -2,7 +2,7 @@
 
 ## Confirmation Boundaries
 
-Use the skill's clarification policy to resolve conventional notation and approved input mappings, recording the interpretation before execution. Ask about unresolved alternatives that materially change the spectrum, relative weights, source/event membership, fit hypotheses or background-trial family. An unsigned spectral-index magnitude or an explicitly defined E^-Gamma convention can map to the negative wrapper exponent without a user answer; a bare explicit positive sign requires clarification. Preserve any explicit power-law exponent. An unknown common multiplicative weight unit does not require a user answer.
+Use the skill's clarification policy to resolve conventional notation and approved input mappings, recording the interpretation before execution. Ask about unresolved alternatives that materially change the spectrum, relative weights, source/event membership, fit hypotheses or background-trial family. An unsigned spectral-index magnitude or an explicitly defined E^-s convention can map to the negative wrapper exponent without a user answer; a bare explicit positive sign requires clarification. Preserve any explicit power-law exponent. An unknown common multiplicative weight unit does not require a user answer.
 
 Do not select a column merely because it is numeric. Use relevant name/metadata and the user's weighting request; the example radio_weight is approved as a relative radio-weight proxy. Record unknown absolute units as unknown, inspect invalid/negative/zero/concentrated values, and ask when several scientifically distinct columns remain plausible.
 
@@ -19,7 +19,7 @@ Require these checks for catalog runs:
 - Catalog post-trial p-values match the declared catalog-size correction.
 - Excel, CSV, provenance, and expected PDF figures exist and are readable.
 
-For DR2 spatial-only runs, additionally require `gamma_mode=fixed`, agreement between the normalized legacy-convention Gamma and `acceptance_gamma_legacy`, `energy_pdf=not_used`, and `working_set.signal_energy_tables_loaded=false`. Require only the background spatial-PDF provenance; do not require signal-energy-table provenance. Describe this Gamma as an acceptance Gamma, never as a fitted spectrum.
+For DR2 spatial-only runs, additionally require `gamma_mode=fixed`, agreement between the normalized legacy-convention spectral index and `acceptance_gamma_legacy`, `energy_pdf=not_used`, and `working_set.signal_energy_tables_loaded=false`. Require only the background spatial-PDF provenance; do not require signal-energy-table provenance. Describe this spectral index as an acceptance spectral index, never as a fitted spectrum.
 
 ## Warning Interpretation
 
@@ -45,15 +45,15 @@ Never automatically change gamma, weights, catalog rows, coordinate columns, tri
 
 Report fitted quantities, TS, p-value and the corresponding significance together.
 Use the one-sided Gaussian convention `Z = Phi^-1(1 - p)` in sigma and label
-local/pre-trial versus post-trial and analytic versus empirical values. For ordinary local estimates, use half-chi-square dof=2 when Gamma is
-free (`gamma_mode=fitted`) and dof=1 when Gamma is fixed. With `TS > 0`, use
+local/pre-trial versus post-trial and analytic versus empirical values. For ordinary local estimates, use half-chi-square dof=2 when spectral index is
+free (`gamma_mode=fitted`) and dof=1 when spectral index is fixed. With `TS > 0`, use
 `p = 0.5 exp(-TS/2)` for dof=2 or `p = 0.5 erfc(sqrt(TS/2))` for dof=1.
 Always convert with `Z = Phi^-1(1-p)`; `Z = sqrt(TS)` applies only to dof=1.
 At `TS=0`, retain the reporting convention `p=0.5`, `Z=0`.
 Label both p-value and significance as estimates, record the dof and method,
 and do not claim empirical calibration or a verified asymptotic distribution
-for free Gamma. Do not apply these formulas to empirical or catalog-corrected
-p-values or to a search across several fixed-Gamma hypotheses.
+for free spectral index. Do not apply these formulas to empirical or catalog-corrected
+p-values or to a search across several fixed-index hypotheses.
 Unavailable post-trial quantities must remain unavailable.
 
 For every analysis, immediately after reporting an estimated significance in

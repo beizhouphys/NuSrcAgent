@@ -91,6 +91,6 @@ DR2 time-dependent tasks accept a complete `--temporal-file` at creation or
 confirmation, preserve fixed/fitted t0 and width settings, and require READY.
 Multi-source time-dependent requests select independent `scan`; stacking waits
 for collaborator code. `run` and `show` return `time_dependent_summary` with
-input-ordered ns/Gamma/TS/t0/width, calibration-unavailable fields and artifact
+input-ordered n and s/TS/t0/width, calibration-unavailable fields and artifact
 paths. No flux continuation or background trials are enabled. See
 `docs/time_dependent.md` for the explicit time-search and background inputs.

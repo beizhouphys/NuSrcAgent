@@ -1,6 +1,6 @@
 # Stacking performance and exact PDF caching
 
-A fitted-Gamma stack evaluates all selected sources against every selected
+A stack with fitted s evaluates all selected sources against every selected
 event at each new spectral hypothesis. A source scan instead fits one source
 at a time, defaults to its recorded adaptive declination window and can run
 two independent single-thread workers with `run --task <id> --workers 2`.
@@ -13,16 +13,16 @@ joint fit uses the thread budget and the scan uses N single-thread processes.
 The [CPU execution guide](cpu_execution.md) describes the shared interface.
 
 The stacking spatial PDF depends on the source coordinates, event coordinates
-and angular uncertainties, but not on Gamma or ns. Recomputing it on every
-Gamma update repeats expensive trigonometric and exponential calculations.
+and angular uncertainties, but not on spectral index or ns. Recomputing it on every
+spectral index update repeats expensive trigonometric and exponential calculations.
 
 ## Lossless fit-local spatial cache
 
-Fitted-Gamma DR2 spatial+energy stacks with multiple sources share one spatial
+Fitted-index DR2 spatial+energy stacks with multiple sources share one spatial
 block cache across their datasets. Each block is first evaluated with the
 original float64 formula, compressed using standard-library zlib and restored
-bit for bit for later Gamma updates. Source weights, signal-energy PDFs and
-their derivatives are still evaluated at the current Gamma. Event/source
+bit for bit for later spectral index updates. Source weights, signal-energy PDFs and
+their derivatives are still evaluated at the current spectral index. Event/source
 block sizes, source ordering and weighted reductions are unchanged.
 
 The shared compressed-payload budget is 1 GiB per fit, plus small bookkeeping
@@ -33,7 +33,7 @@ uncompressed Cartesian array is allocated and no disk cache is written.
 Each dataset has an independent namespace. Initializing a new trial discards
 its previous spatial blocks, so event-RA scrambles, selected events and event
 uncertainties cannot inherit stale geometry. No cache crosses analysis objects
-or processes. Single-source, fixed-Gamma, spatial-only and DR1 fits do not
+or processes. Single-source, fixed-index, spatial-only and DR1 fits do not
 enable this cache.
 
 The per-dataset `working_set.datasets.<dataset>.spatial_cache` in `report.yaml`
@@ -48,11 +48,11 @@ Multi-source DR2 spatial+energy fits also use an independent signal-energy
 interpolation lookup for each dataset. A trial's exact valid observed
 `log_energy` values are identified with `np.unique`; no rounding or new energy
 bins are introduced. The existing `np.interp` evaluates each distinct energy
-once for each requested signal-table declination/Gamma node. An inverse index
+once for each requested signal-table declination/spectral index node. An inverse index
 restores the value for every original event, including repeated energies and
 the original zero for events outside the valid energy range.
 
-The Gamma nodes remain the original table indices. The three-node Gamma
+The spectral index nodes remain the original table indices. The three-node spectral index
 interpolation, its derivative, source weights and all weighted reductions
 retain their original arithmetic and order. Only repeated energy-axis
 interpolations are replaced by indexing their previously evaluated values.
@@ -67,7 +67,7 @@ Thus high-cardinality input energies cannot create an unbounded PDF cache.
 Initializing a new trial clears all lookup vectors and rebuilds the energy
 index. There is no sharing across datasets, analysis objects or processes.
 Single-source, spatial-only and DR1 fits retain their existing path. Fixed-
-Gamma multi-source spatial+energy fits may also use the lookup.
+spectral index multi-source spatial+energy fits may also use the lookup.
 
 `working_set.datasets.<dataset>.energy_interpolation_cache` records whether
 the lookup was enabled, its reason, payload budget/size, number of distinct
@@ -80,10 +80,10 @@ The spatial cache's
 
 ## Verification and interpretation
 
-Isolated kernel checks compare both the PDF ratio and its Gamma derivative
+Isolated kernel checks compare both the PDF ratio and its spectral index derivative
 bit for bit, including changed weights, spectral endpoints, exhausted cache
 budgets and new-trial invalidation. End-to-end fit checks must also compare
-TS, ns, Gamma, convergence status and optimizer evaluation counts against
+TS, n, spectral index, convergence status and optimizer evaluation counts against
 the unchanged scientific request through `run_agent_wrap.py`.
 
 Energy-lookup checks additionally cover exact energy knots, valid-range
@@ -115,8 +115,8 @@ comparing timings. Report the two cache records in `working_set.datasets`
 alongside the event/source block sizes when investigating performance.
 
 Use an unchanged scientific request for before/after checks. Compare the event
-selection, catalog/weights, numerical input hashes, TS, ns, Gamma, optimizer
-status, calls and iterations; compare PDF ratios and Gamma derivatives bit for
+selection, catalog/weights, numerical input hashes, TS, n, spectral index, optimizer
+status, calls and iterations; compare PDF ratios and spectral index derivatives bit for
 bit before interpreting any timing change. Repeated-energy lookup is indexing
 at the original values, not an approximation to nearby energies.
 

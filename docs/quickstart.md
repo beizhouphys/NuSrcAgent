@@ -7,14 +7,14 @@ You can run these commands without an AI assistant. A line ending in `\`
 continues on the next line: copy the whole command, not just its first line.
 `.venv/bin/python` selects the Python environment created by `install.sh`.
 
-Both examples explicitly select time-integrated spatial+energy, fitted ns and
-Gamma, frozen background v3 and the installed SEpdf tables. Individual fits
+Both examples explicitly select time-integrated spatial+energy, fitted n and
+spectral index, frozen background v3 and the installed SEpdf tables. Individual fits
 use the default adaptive source-centered declination window; the joint stack
 uses all events. No source cuts are added. Bounds, seeds and the pooled IC86 definition are
 recorded in the [scientific baseline](release_scientific_baseline.md).
 
-The fitted `ns` is the signal-event count and `Gamma` is the index in
-`dN/dE` proportional to `(E/E0)^(-Gamma)`. `TS` compares the best-fitting
+The fitted `n` is the signal-event count and `spectral index` is the index in
+`dN/dE` proportional to `(E/E0)^(-s)`. `TS` compares the best-fitting
 signal-plus-background model with background alone; it is not a significance
 in sigma. See the [quantity definitions](../README.md#what-do-the-fitted-quantities-mean).
 
@@ -22,10 +22,10 @@ in sigma. See the [quantity definitions](../README.md#what-do-the-fitted-quantit
 
 ```bash
 .venv/bin/python run_agent_wrap.py create-single \
-  --request "DR2 NGC 1068 release example; fit ns and Gamma" \
+  --request "DR2 NGC 1068 release example; fit n and spectral index" \
   --name "NGC 1068" --ra-deg 40.6696 --dec-deg -0.0133 \
   --data-sample icecube_public_ps_14yr_dr2 \
-  --likelihood-mode spatial_energy --gamma-mode fitted
+  --likelihood-mode spatial_energy --s-mode fitted
 ```
 
 This first command saves the request; it does not yet run the fit. It prints
@@ -45,8 +45,8 @@ task_id=task_REPLACE_WITH_RETURNED_ID
 .venv/bin/python run_agent_wrap.py run --task "$task_id"
 ```
 
-The first `run` now returns the reviewed primary fit. Read the best-fit ns and
-Gamma, TS, local p value and significance in `single_source_llh_summary`.
+The first `run` now returns the reviewed primary fit. Read the best-fit n and
+spectral index, TS, local p value and significance in `single_source_llh_summary`.
 When its status is `AWAITING_FLUX`, report the primary result and wait for the
 user to reply. Only after that reply continue with:
 
@@ -76,7 +76,7 @@ equal detected signal contributions.
   --name-column name --ra-column ra_deg --dec-column dec_deg \
   --catalog-operation scan_and_stack --weight-mode uniform \
   --data-sample icecube_public_ps_14yr_dr2 \
-  --likelihood-mode spatial_energy --gamma-mode fitted
+  --likelihood-mode spatial_energy --s-mode fitted
 ```
 
 Use the **new** returned task ID, not the single-source ID. Check `READY`, then run:
@@ -96,7 +96,7 @@ asks whether to continue and ends the turn. After the user replies, run:
 ```
 
 The scan independently fits each source with the same settings. The stack is a
-separate joint fit with one ns and one common Gamma. This command is not a time
+separate joint fit with one ns and one common spectral index. This command is not a time
 search, a catalog-global significance calculation or the historical large-catalog
 benchmark. See [catalog columns and weights](../configs/examples/README.md).
 
@@ -153,7 +153,7 @@ review and the central agent review before quoting a result.
 The first run of these two-stage examples returns `AWAITING_FLUX`. After the
 user-authorized flux stage, completion is `COMPLETED` when all review checks
 pass. Report local p-value and one-sided Gaussian significance estimates
-together: half-chi-square dof=2 for fitted Gamma, dof=1 for fixed Gamma; zero background trials and absent empirical/catalog-global calibration
+together: half-chi-square dof=2 for fitted spectral index, dof=1 for fixed spectral index; zero background trials and absent empirical/catalog-global calibration
 are method information, not warnings on their own. Actual fit or artifact warnings
 still produce `COMPLETED_WITH_WARNINGS`. If a review fails,
 do not treat its numerical output as valid or change scientific settings merely
@@ -165,12 +165,12 @@ The local clean-install checks on 2026-10-16 produced the following rounded
 values with the original all-event selection. To reproduce this historical
 table, add `--full-sky-events` to each creation command above. The new default
 windowed individual fits can differ; the joint stack is unchanged.
-Gamma here is positive SkyLLH Gamma in
-`dN/dE` proportional to `E^-Gamma`; the CLI's `--gamma` uses the negative
+spectral index here is positive SkyLLH spectral index in
+`dN/dE` proportional to `E^-s`; the CLI's `--gamma` uses the negative
 power-law exponent. These are reproducibility references on the tested macOS
 environment, not detection claims or cross-platform guarantees.
 
-| Fit | TS | ns | Gamma |
+| Fit | TS | ns | spectral index |
 | --- | ---: | ---: | ---: |
 | NGC 1068 | 22.991619 | 68.567453 | 3.059035 |
 | Three-source stack | 7.004486 | 18.813651 | 2.290629 |
@@ -188,19 +188,19 @@ explains the remaining limitations.
 
 ## Other supported settings
 
-- To fit ns at a fixed spectrum in DR2 spatial+energy, replace
-  `--gamma-mode fitted` with `--gamma-mode fixed --gamma -2.53` in a creation
+- To fit n at a fixed spectrum in DR2 spatial+energy, replace
+  `--s-mode fitted` with `--s-mode fixed --s 2.53` in a creation
   command and adjust its request text. Supplying `--gamma` alone does not fix
-  Gamma in the default spatial+energy fit.
-- For DR2 spatial-only, replace the likelihood/Gamma flags with
-  `--likelihood-mode spatial_only --gamma-mode fixed --gamma -2.5`.
-  This Gamma sets detector acceptance, not a fitted spectrum. The smaller input
+  spectral index in the default spatial+energy fit.
+- For DR2 spatial-only, replace the likelihood/spectral index flags with
+  `--likelihood-mode spatial_only --s-mode fixed --s 2.5`.
+  This spectral index sets detector acceptance, not a fitted spectrum. The smaller input
   installation must be selected explicitly; see the installation guide.
 - For catalog scan only, replace `--catalog-operation scan_and_stack` with
   `--catalog-operation scan`; stacking weights are then not required.
 - To retain the DR1 path, install its separate inputs, then use
   `--data-sample icecube_public_ps_10yr --likelihood-mode spatial_only
-  --gamma-mode fixed --gamma -2.53` in a creation command. DR2 reference numbers
+  --s-mode fixed --s 2.53` in a creation command. DR2 reference numbers
   and frozen v3 definitions do not apply to DR1.
 
 Ordinary `run` commands execute **zero background trials**, even if the request
