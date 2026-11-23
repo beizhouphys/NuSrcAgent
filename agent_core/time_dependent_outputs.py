@@ -60,7 +60,12 @@ def write_time_dependent_artifacts(config_path, config, normalized, result, root
         temporal = fit["temporal"]
         trace = temporal["evaluations"]
         trace_path = run_dir/f"time_search_{record['source_number']:04d}.csv"
-        write_csv(trace_path, list(trace[0]), trace)
+        trace_rows = []
+        for row in trace:
+            index = fit["gamma"] if fit["gamma_mode"] == "fixed" else row.get("s")
+            trace_rows.append(dict(row, n=row["ns"], s=index if row["TS"] is not None else None))
+        trace_columns = [key for key in trace[0] if key not in {"n", "s"}] + ["n", "s"]
+        write_csv(trace_path, trace_columns, trace_rows)
         files[f"search_{record['source_number']}"] = str(trace_path)
         center, width = temporal["t0_mjd"], temporal["width_days"]
         radius = 4*width if normalized.temporal["profile"] == "gaussian" else width

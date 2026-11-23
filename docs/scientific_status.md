@@ -66,7 +66,7 @@ contract, support rules, response provenance and fixed-shape scope.
 ## Fitted spectra and boundaries
 
 Spatial+energy fits n and s with the existing SkyLLH bounds/initial values;
-spatial+energy with fixed s is also selectable. At ns = 0 the spectrum is
+spatial+energy with fixed s is also selectable. At n = 0 the spectrum is
 unidentifiable: an optimizer's returned spectral index is not a spectral measurement.
 The fixed acceptance spectral index used in spatial-only is not a measured spectrum.
 Optimizer-boundary fits must be reported as warnings, not repaired by widening

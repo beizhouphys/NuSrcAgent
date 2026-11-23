@@ -96,7 +96,7 @@ asks whether to continue and ends the turn. After the user replies, run:
 ```
 
 The scan independently fits each source with the same settings. The stack is a
-separate joint fit with one ns and one common spectral index. This command is not a time
+separate joint fit with one n and one common spectral index. This command is not a time
 search, a catalog-global significance calculation or the historical large-catalog
 benchmark. See [catalog columns and weights](../configs/examples/README.md).
 

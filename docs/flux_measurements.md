@@ -32,7 +32,7 @@ correlation; it is not an interval for n rescaled at a fixed best-fit spectral i
 Fixed-index primary fits provide the normalization interval at that spectrum.
 
 One parameter of interest uses two-sided profile thresholds 1 and 3.841458821
-for 68.27% and 95%. Joint joint flux and spectral-index regions use two degrees of freedom and
+for 68.27% and 95%. Joint flux and spectral-index regions use two degrees of freedom and
 thresholds 2.295748929 and 5.991464547. The existing one-sided 95% upper limits
 retain threshold 2.705543454 and their fixed E^-2, E^-2.5 and E^-3 hypotheses.
 

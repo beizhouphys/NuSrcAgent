@@ -161,6 +161,11 @@ def chat_stages(task):
         if stage.get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
             output[name] = dict(stage["chat_summary"], status=stage["status"],
                                 review_status=stage["review_status"], warnings=stage.get("warnings", []))
+            measurement = output[name].get("measurement")
+            if measurement and "intervals" in measurement:
+                output[name]["measurement"] = dict(measurement, intervals=[
+                    dict(row, parameter_label="s" if row["parameter"] == "gamma" else row["parameter"])
+                    for row in measurement["intervals"]])
             if name == "primary":
                 output[name].setdefault("n", output[name].get("ns"))
                 output[name].setdefault("s", output[name].get("gamma"))

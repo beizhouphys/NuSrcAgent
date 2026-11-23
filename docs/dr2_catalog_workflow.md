@@ -8,8 +8,8 @@ These are different statistical hypotheses, so their TS values need not agree.
 ## Choose the analysis
 
 Use `stack` for a joint fit, `scan` for independent fits of every catalog row,
-or `scan_and_stack` for both. A scan fits each source's own `ns` and, in the
-default spatial+energy analysis, its own `s`. A stack fits one total `ns`
+or `scan_and_stack` for both. A scan fits each source's own `n` and, in the
+default spatial+energy analysis, its own `s`. A stack fits one total `n`
 and one common `spectral index` for the catalog.
 
 `create-catalog --catalog-operation stack|scan|scan_and_stack` selects the

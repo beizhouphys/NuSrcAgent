@@ -281,7 +281,7 @@ when testing. See the [catalog notes](data_input/sources/README.md).
   start trials or change the review status.
 - **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to
   be read in the report; results are preliminary. Failed reviews are not valid results.
-  At ns = 0, spectral index is unidentifiable. Spatial-only spectral index describes acceptance,
+  At n = 0, the fit cannot measure s. Spatial-only spectral index describes acceptance,
   not a measured spectrum.
 - Background trials can follow a reviewed DR2 single-source or stacking
   analysis. Catalog-scan maxima and time-dependent trials remain unavailable.

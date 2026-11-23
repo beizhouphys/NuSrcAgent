@@ -59,7 +59,7 @@ scheduler and one numerical thread per worker.
 Dominance runs independent delete-one refits in N single-thread processes.
 Screening and cumulative removals retain their original sequence and use the
 numerical-library thread budget. Each cumulative fit keeps the preceding fit's
-spectral index and ns seeds; parallelizing that sequence would change the fit procedure.
+spectral index and n seeds; parallelizing that sequence would change the fit procedure.
 RA-scramble diagnostics run independent seeds in N single-thread processes within
 each original mode. Source/event random streams, seed order and spectral index settings
 remain unchanged. Only the parent writes checkpoints, after each returned fit;

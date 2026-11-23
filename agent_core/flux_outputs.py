@@ -236,7 +236,8 @@ def write_measurement_tables(folder, measurement, files):
     from agent_core.analysis_outputs import write_csv
     base = {k: v for k, v in measurement.items() if not isinstance(v, (dict, list))}
     base.update(n=measurement.get("ns_hat"), s=measurement["gamma"])
-    rows = [dict(base, **interval) for interval in measurement["intervals"]] or [base]
+    rows = [dict(base, **interval, parameter_label="s" if interval["parameter"] == "gamma" else interval["parameter"])
+            for interval in measurement["intervals"]] or [base]
     if measurement.get("flux_scope") == "sum_of_source_fluxes":
         for row in rows:
             for bound in ("lower", "upper"):
@@ -248,7 +249,9 @@ def write_measurement_tables(folder, measurement, files):
     if not measurement["reported"]:
         return
     table = folder / "flux_measurement_profiles.csv"
-    profiles = [dict(row, n=row.get("ns"), s=row["gamma"]) for row in measurement["profiles"]]
+    profiles = [dict(row, n=row.get("ns"), s=row["gamma"],
+                     parameter_label="s" if row["parameter"] == "gamma" else row["parameter"])
+                for row in measurement["profiles"]]
     write_csv(table, list(profiles[0]), profiles)
     files["flux_measurement_profiles"] = str(table)
     if measurement["contours"]:
