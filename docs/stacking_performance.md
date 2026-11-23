@@ -13,7 +13,7 @@ joint fit uses the thread budget and the scan uses N single-thread processes.
 The [CPU execution guide](cpu_execution.md) describes the shared interface.
 
 The stacking spatial PDF depends on the source coordinates, event coordinates
-and angular uncertainties, but not on spectral index or ns. Recomputing it on every
+and angular uncertainties, but not on spectral index or n. Recomputing it on every
 spectral index update repeats expensive trigonometric and exponential calculations.
 
 ## Lossless fit-local spatial cache

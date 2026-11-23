@@ -136,12 +136,11 @@ later turn's final answer. This supersedes earlier automatic-continuation rules.
 
 Ask only about unresolved ambiguity that materially changes the spectrum,
 relative weights, source/event membership, fit hypotheses or trial family.
-Interpret unsigned gamma 2.5 as E^-2.5 and record the convention.
-Pass CLI `--gamma -2.5`. Ask about a bare explicit positive sign.
-Preserve a power-law exponent explicitly defined by the user. CLI --gamma is
-the signed exponent; an explicit rising E^+2.5 maps to --gamma +2.5, while
-E^-s with s=+2.5 maps to --gamma -2.5. Prepare a missing response
-rather than reversing an exponent or rejecting it for its sign.
+For a power law, `--s` takes the spectral index in E^(-s). Use `--s 2.5`
+for E^(-2.5) and `--s -2.5` for E^(+2.5). Record the interpretation.
+Clarify a signed value in a natural-language request when the exponent
+convention is ambiguous. The legacy option `--gamma` takes the signed exponent -s.
+Prepare the detector response when the requested spectrum needs it.
 A unique column identifying requested flux/relative weights may be used with
 recorded metadata. A common unknown multiplicative unit cancels in normalized
 weights. Do not invent absolute units or drop invalid rows.
@@ -339,7 +338,7 @@ does not by itself establish a calibrated detection or publication readiness.
 
 Use TS after likelihood maximization. Distinguish analytic local approximations
 from empirically calibrated values and catalog-global quantities. Report the data
-sample, likelihood mode, source count, weights, fitted or fixed s, ns, TS, p-value and one-sided significance,
+sample, likelihood mode, source count, weights, fitted or fixed s, n, TS, p-value and one-sided significance,
 review status, artifacts and limitations. Include signed relative difference
 before signed absolute difference in comparisons.
 

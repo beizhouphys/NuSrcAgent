@@ -270,7 +270,12 @@ def chat_stages(task):
         if "flux_upper_limit" in result:
             flux["upper_limit"] = {k: v for k, v in result["flux_upper_limit"].items() if k in limit_fields}
         if "measurement" in flux:
-            flux["measurement"]["s"] = flux["measurement"].get("gamma")
+            measurement = flux["measurement"]
+            measurement["s"] = measurement.get("gamma")
+            if "intervals" in measurement:
+                measurement["intervals"] = [
+                    dict(row, parameter_label="s" if row["parameter"] == "gamma" else row["parameter"])
+                    for row in measurement["intervals"]]
         limits = flux["upper_limits"] + ([flux["upper_limit"]] if "upper_limit" in flux else [])
         for limit in limits:
             limit.update(s=limit.get("gamma"), n_upper_limit=limit.get("ns_upper_limit"))

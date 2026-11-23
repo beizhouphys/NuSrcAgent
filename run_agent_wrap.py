@@ -483,9 +483,9 @@ def build_parser() -> argparse.ArgumentParser:
                             help="Single-thread worker processes for independent seeds. Default: 1.")
     for command_parser in (single, catalog, confirm):
         index = command_parser.add_mutually_exclusive_group()
-        index.add_argument("--s", dest="gamma", type=lambda value: -float(value),
+        index.add_argument("--s", dest="gamma", metavar="S", type=lambda value: -float(value),
                            help="Power-law spectral index s in E**(-s). A supplied s is fixed by default.")
-        index.add_argument("--gamma", type=float, help="Signed power-law exponent (-s).")
+        index.add_argument("--gamma", metavar="EXPONENT", type=float, help="Signed power-law exponent (-s).")
     for command_parser in (single, catalog):
         command_parser.add_argument("--s-mode", "--gamma-mode", dest="gamma_mode", choices=["fitted", "fixed"],
                                     help="DR2 spatial+energy fits s from 3 by default. Spatial-only uses fixed s=2.5.")
@@ -569,8 +569,9 @@ def set_mode_parameter_sources(task: Dict[str, Any], args: argparse.Namespace, l
         task["parameters"]["gamma"]["source"] = "system_default_fit_seed"
     for note in getattr(args, "interpretation_note", []) or []:
         name, separator, explanation = note.partition("=")
+        name = {"s": "gamma", "s_mode": "gamma_mode"}.get(name, name)
         if not separator or name not in {"gamma", "gamma_mode", "weight_column", "weight_meaning"} or name not in task["parameters"] or not explanation.strip():
-            raise ValueError("interpretation note must be an available gamma, gamma_mode, weight_column or weight_meaning followed by =EXPLANATION")
+            raise ValueError("Use s, s_mode, weight_column or weight_meaning in PARAMETER=EXPLANATION")
         task["parameters"][name]["source"] = "agent_interpreted"
         task["parameters"][name]["interpretation"] = explanation.strip()
 

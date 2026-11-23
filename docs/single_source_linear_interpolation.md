@@ -10,7 +10,7 @@ are unchanged.
 
 ## Numerical definition
 
-For spectral index between neighboring table nodes s_a and s_b, the signal
+For a spectral index between neighboring table nodes s_a and s_b, the signal
 energy PDF is the convex combination
 
 \[
@@ -22,7 +22,7 @@ S_{\rm energy}(\log_{10}E_{\rm reco},\delta;s_b).
 \]
 
 Its spectral index derivative is the difference of these two node PDF values divided
-by Gamma_b-Gamma_a. At an internal grid node the right-hand interval defines
+by `s_b - s_a`. At an internal grid node the right-hand interval defines
 the derivative; the PDF value is continuous. Both source-declination and
 event-declination lookup modes use the same method. Energy-axis interpolation
 remains the original linear `np.interp`, including its valid-range and zero-value

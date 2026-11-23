@@ -206,7 +206,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance spectral index matches the normalized request" if fixed_acceptance else "spatial-only acceptance spectral index is not fixed or does not match the request", False)
         no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False
         add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False)
-    review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
+    review["metrics"].update({"n": ns_hat, "s": gamma, "ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
     if result.get("p_value_method") in {"analytic_half_chi_square_df1_estimate", "analytic_half_chi_square_df2_estimate"}:
         expected = local_p_value_estimate(result["TS"], normalized.get("gamma_mode"))
         valid_estimate = all(result.get(key) == expected[key] for key in ("p_value_method", "p_value_dof", "p_value_is_estimate", "significance_convention"))
@@ -377,9 +377,11 @@ def review_single_run(review: Dict[str, Any], report: Dict[str, Any]) -> None:
     p_value = finite_float(result["pre_trial_p"])
     valid = ns_hat is not None and ts is not None and ts >= 0.0 and p_value is not None and 0.0 <= p_value <= 1.0
     add_check(review, "single_numeric_ranges", "pass" if valid else "fail", "single-source values are finite and in valid ranges" if valid else "single-source result contains invalid numeric values", False)
-    review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "pre_trial_p": p_value})
+    exponent = finite_float(result.get("gamma"))
+    review["metrics"].update({"n": ns_hat, "s": -exponent if exponent is not None else None,
+                              "ns_hat": ns_hat, "ts": ts, "pre_trial_p": p_value})
     if ns_hat is not None and abs(ns_hat + 10.0) < 0.01:
-        add_check(review, "single_fit_boundary", "warning", "ns_hat is at the lower optimizer boundary", False)
+        add_check(review, "single_fit_boundary", "warning", "The fitted n reaches the lower optimizer bound", False)
 
 
 def review_dr1_event_selection(review, result, normalized, source, prefix="dr1_event_selection"):
@@ -561,7 +563,14 @@ def render_review_markdown(review: Dict[str, Any]) -> str:
     lines = ["# Analysis Review", "", "Overall status: `%s`" % review["status"], "", "## Checks", ""]
     lines.extend("- `%s` %s: %s" % (check["status"], check["id"], check["message"]) for check in review["checks"])
     lines.extend(["", "## Metrics", ""])
-    lines.extend("- %s: `%s`" % (key, value) for key, value in review["metrics"].items())
+    def display_metrics(metrics):
+        legacy = {"ns_hat": "n", "gamma": "s"}
+        return {key: value for key, value in metrics.items() if legacy.get(key) not in metrics}
+
+    metrics = display_metrics(review["metrics"])
+    if "source_fits" in metrics:
+        metrics["source_fits"] = [display_metrics(fit) for fit in metrics["source_fits"]]
+    lines.extend("- %s: `%s`" % (key, value) for key, value in metrics.items())
     return "\n".join(lines) + "\n"
 
 

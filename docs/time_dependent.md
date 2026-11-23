@@ -2,7 +2,7 @@
 
 Time-dependent analysis tests a source's emission with an explicit Gaussian
 or box arrival-time profile. A catalog scan fits every selected source
-independently, with its own ns, spectral index and temporal parameters. Time-dependent
+independently, with its own n, spectral index and temporal parameters. Time-dependent
 stacking awaits collaborator-provided code. DR1 remains unchanged.
 
 ## Scientific definition
@@ -41,7 +41,7 @@ offsets and detector downtime gaps remain invalid. Frozen PDF products are uncha
 A box covering every good-run interval recovers the time-integrated
 likelihood, detector fractions and fitted n/TS exactly.
 
-The statistic is `TS = 2 log(L_hat / L_ns=0)`, constrained to ns >= 0,
+The statistic is `TS = 2 log(L_hat / L(n=0))`, constrained to n >= 0,
 without an added duration penalty. It is not the significance of the time
 search. Time-dependent p-values, one-sided significances and catalog-corrected
 values remain unavailable. The time-integrated half-chi-square formulas and
@@ -62,7 +62,7 @@ scrambling method is silently chosen.
 
 `grid_powell_v1` first evaluates the Cartesian product of the supplied seeds,
 then starts one bounded Powell search at each seed. At every temporal point,
-the original SkyLLH `skyllh_lbfgs_v1` optimizer profiles ns and any free spectral index.
+the original SkyLLH `skyllh_lbfgs_v1` optimizer profiles n and any free spectral index.
 MJD centers are scaled linearly to the unit interval; widths use log scaling.
 The requested maxiter, xtol and ftol refer to this scaled outer search.
 All seed evaluations and search outcomes are retained. An unconverged search
@@ -70,7 +70,7 @@ or inner maximization fails; the runtime never widen bounds, changes seeds
 or substitutes a different scientific request. Multiple starts improve search
 coverage but do not certify a unique global maximum. Box objectives are
 nonsmooth when an edge passes an event; choose seeds/resolution accordingly.
-When ns=0, the temporal parameters and spectral index are not measurements.
+When n=0, the temporal parameters and spectral index are not measurements.
 
 The standalone source's existing linear spectral-index interpolation and the catalog
 scan's existing quadratic interpolation retain their respective definitions.
@@ -124,7 +124,7 @@ An explicit fixed `mode` cannot also carry fit bounds or seeds.
 ```
 
 Omitting the spectral-index option selects the default fit. Supplying
---gamma fixes the signed power-law exponent unless --s-mode fitted is
+--s fixes the power-law spectral index unless --s-mode fitted is
 explicit. Generic ICRS/Galactic coordinates, angular units and provenance
 use the shared input layer.
 
@@ -151,7 +151,7 @@ retroactively alter a recorded task.
 
 ## Outputs and review
 
-`show`/`run` return `time_dependent_summary`: input-ordered results with ns,
+`show`/`run` return `time_dependent_summary`: input-ordered results with n,
 spectral index, TS, t0, width, fixed/fitted modes, and unavailable calibration fields.
 Artifacts include the complete CSV, one temporal evaluation CSV per source,
 intrinsic-profile PNG/PDF figures, normalized settings, code/input provenance

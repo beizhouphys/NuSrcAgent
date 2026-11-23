@@ -535,7 +535,8 @@ def report(out, persist=True):
             result['estimated_total_fit_wall_hours'] = average*(requested_trials+1)/config['workers']/3600
     if observed and trials and not failures:
         result['statistics'] = empirical_summary(observed['result']['TS'], [r['result']['TS'] for r in trials])
-        result['observed'] = {k: observed['result'][k] for k in ('TS','ns','gamma')}
+        result['observed'] = {k: observed['result'][k] for k in ('TS', 'ns', 'gamma')}
+        result['observed'].update(n=observed['result']['ns'], s=observed['result']['gamma'])
         result['statistics_status'] = 'final_fixed_n' if complete else 'running_snapshot'
         if skipped:
             result['statistics_caution'] = ('Negative-TS fits were excluded. The empirical statistics use only '
@@ -1537,7 +1538,7 @@ def write_snapshot_exports(out, result):
     with temporary_csv.open('w', newline='') as stream:
         writer = csv.writer(stream)
         writer.writerow(['trial_id', 'index', 'kind', 'event_ra_seed', 'TS', 'ns', 'gamma',
-                         'review_status', 'elapsed_seconds', 'completed_at_utc'])
+                         'review_status', 'elapsed_seconds', 'completed_at_utc', 'n', 's'])
         for row in sorted(rows, key=lambda item: item['index']):
             value = row['result']
             writer.writerow([
@@ -1545,6 +1546,7 @@ def write_snapshot_exports(out, result):
                 row['index'], 'observed' if row['index'] < 0 else 'background',
                 value['ra_scramble']['event_seed'], value['TS'], value['ns'], value['gamma'],
                 row['review']['status'], row['elapsed_seconds'], row['completed_at_utc'],
+                value['ns'], value['gamma'],
             ])
     temporary_csv.replace(csv_path)
 
@@ -1639,6 +1641,8 @@ def _aggregate_trial_row(row, config, source, trial_id):
         'elapsed_seconds': row['elapsed_seconds'],
         'completed_at_utc': row['completed_at_utc'],
         'checkpoint_request_sha256': row['request_sha256'],
+        'n': row['result']['ns'],
+        's': row['result']['gamma'],
     }
 
 
@@ -1775,7 +1779,8 @@ def aggregate_distributed_shards(root, analysis_alias, out):
         'catalog_sha256': canonical_catalog_hash,
         'created_at_utc': utc_now(),
         'status': 'RUNNING' if any(item['status'] == 'RUNNING' for item in source_tasks) else 'PAUSED',
-        'observed': {key: observed[key] for key in ('TS', 'ns', 'gamma')},
+        'observed': {**{key: observed[key] for key in ('TS', 'ns', 'gamma')},
+                     'n': observed['ns'], 's': observed['gamma']},
         'statistics': statistics,
         'completed_trials': len(values),
         'attempted_trials': len(values)+len(skipped_negative_ts),
@@ -1802,7 +1807,7 @@ def aggregate_distributed_shards(root, analysis_alias, out):
     with temporary_csv.open('w', newline='') as stream:
         writer = csv.DictWriter(stream, fieldnames=[
             'trial_id', 'source', 'index', 'event_ra_seed', 'TS', 'ns', 'gamma',
-            'review_status', 'elapsed_seconds', 'completed_at_utc', 'checkpoint_request_sha256',
+            'review_status', 'elapsed_seconds', 'completed_at_utc', 'checkpoint_request_sha256', 'n', 's',
         ])
         writer.writeheader()
         for item in values:

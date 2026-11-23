@@ -41,7 +41,7 @@ reply on the flux attempt. Do not invent a reply or infer one from the initial
 analysis request. Stage 2 checks the original request
 hash, sealed primary artifacts, runtime packages, code and scientific-input
 hashes before reconstructing the same likelihood. It evaluates the saved primary
-parameters to verify TS and does not repeat primary maximization. Primary ns,
+parameters to verify TS and does not repeat primary maximization. Primary n,
 spectral index, TS, p-value, significance and optimizer records stay in place.
 
 The default companions are three separate fixed-index fits at s=2, 2.5 and 3,
