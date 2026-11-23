@@ -31,9 +31,9 @@ provenance and path/hash manifests remain source-controlled. Original frozen
 manifests are not rewritten; their original SHA-256 identities are retained.
 Signal tables are checked against the mapped hashes before interpolation.
 
-Generic dominance, fixed-Gamma RA smoke tests and empirical orchestration are
-retained with their existing scientific scope. No background trials are started
-by source preparation. The original time-integrated fit formulas and optimizer
+The release preserves the scientific scope of the dominance diagnostics, RA
+smoke tests with fixed `s`, and empirical background-trial workflow. Source
+preparation starts zero background trials. The original time-integrated fit formulas and optimizer
 bounds are preserved. All substantive adaptations must pass owner-side review.
 
 ## Time-dependent runtime — 20261024

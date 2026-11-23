@@ -516,7 +516,7 @@ def review_source_rows(review: Dict[str, Any], rows: List[Dict[str, str]], expec
     add_check(review, "source_local_p", "pass" if local_p_mismatch == 0 else "fail", "pre-trial p-values match the declared analytic TS approximation" if local_p_mismatch == 0 else "%d pre-trial p-values do not match the declared TS approximation" % local_p_mismatch, False)
     add_check(review, "source_trial_correction", "pass" if post_trial_mismatch == 0 else "fail", "post-trial p-values match the catalog-size correction" if post_trial_mismatch == 0 else "%d post-trial p-values do not match the catalog-size correction" % post_trial_mismatch, False)
     if boundary:
-        add_check(review, "source_fit_boundaries", "warning", "%d source fits reached the lower ns optimizer boundary" % boundary, False)
+        add_check(review, "source_fit_boundaries", "warning", "The optimizer reached the lower bound for n in %d source fit(s)" % boundary, False)
     review["metrics"]["source_lower_boundary_count"] = boundary
 
 
