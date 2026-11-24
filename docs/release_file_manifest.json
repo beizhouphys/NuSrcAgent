@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 51284,
-      "sha256": "c459726934d92bd9931c61a8c2afeef036edac87cde0987707129f6494c55aff"
+      "bytes": 51862,
+      "sha256": "da8cc78661515fe710a89603a11f9540e134931e46f4ada4cb4b6176192c3ac8"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -243,8 +243,8 @@
     },
     {
       "path": "agent_core/time_dependent_trials.py",
-      "bytes": 14484,
-      "sha256": "a2c019e24696a0031cf1de40ca8b2d58b2d18d48793aead792619a0162f03d15"
+      "bytes": 16692,
+      "sha256": "66cccbdea5b4bc7e5c31f892fb2b89ab7e6d92ec2cc4c9ec1a2c9bca746c0599"
     },
     {
       "path": "agent_core/validate.py",
@@ -673,8 +673,8 @@
     },
     {
       "path": "run_agent_wrap.py",
-      "bytes": 47001,
-      "sha256": "4c1c94379b12cc8c7702c58f212a235c2ed30f9a45a077a8d75291618ccf8f35"
+      "bytes": 47461,
+      "sha256": "ecc4648582ab9a0066f0c4c70dea977004715268559e5b0254d73489a781096a"
     },
     {
       "path": "tools/build_analysis_workbook.mjs",
