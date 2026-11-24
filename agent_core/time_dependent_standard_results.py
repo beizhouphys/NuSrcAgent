@@ -23,6 +23,11 @@ from scipy.stats import norm
 
 from agent_core.file_cache import sha256_file
 from agent_core.simple_yaml import load_simple_yaml
+from agent_core.time_dependent_phase_correction import (
+    assign_sources_to_response,
+    response_uptime,
+    sidak_by_response,
+)
 
 
 PROFILE = "td_catalog_standard_v1"
@@ -242,14 +247,19 @@ def _source_statistics(
     observed_arrays: dict[str, np.ndarray],
     trials: dict[str, np.ndarray],
     manifest: dict[str, Any],
+    phase_assignments: list[dict[str, Any]],
+    phase_counts: dict[str, int],
 ) -> list[dict[str, Any]]:
     n_trials, n_sources = trials["source_ts"].shape
     if n_sources != len(manifest["selected"]):
         raise ValueError("trial source array does not match selected source count")
+    if len(phase_assignments) != n_sources:
+        raise ValueError("response-phase assignments do not match selected source count")
     observed_ts = observed_arrays["source_ts"]
     exceedances = np.count_nonzero(trials["source_ts"] >= observed_ts[np.newaxis, :], axis=0)
     local_p = (exceedances + 1.0) / (n_trials + 1.0)
-    sidak_p = -np.expm1(n_sources * np.log1p(-local_p))
+    with np.errstate(divide="ignore"):
+        sidak_p = -np.expm1(n_sources * np.log1p(-local_p))
     maximum_ts = np.max(trials["source_ts"], axis=1)
     maximum_exceedances = np.count_nonzero(
         maximum_ts[:, np.newaxis] >= observed_ts[np.newaxis, :], axis=0
@@ -258,6 +268,9 @@ def _source_statistics(
     rows = []
     for index, source in enumerate(manifest["selected"]):
         gamma = observed_arrays["source_gamma"][index]
+        assignment = phase_assignments[index]
+        phase_count = phase_counts[assignment["response_phase"]]
+        phase_p = sidak_by_response(float(local_p[index]), phase_count)
         rows.append(
             {
                 "source_index": index,
@@ -269,12 +282,20 @@ def _source_statistics(
                 "time_start_mjd": source["time_start_mjd"],
                 "time_end_mjd": source["time_end_mjd"],
                 "time_anchor_definition": source["time_anchor_definition"],
+                "time_profile": source["time_profile"],
                 "ts": float(observed_ts[index]),
                 "ns": float(observed_arrays["source_ns"][index]),
                 "gamma": None if not np.isfinite(gamma) else float(gamma),
                 "n_exceedances": int(exceedances[index]),
                 "p_pre": float(local_p[index]),
                 "z_pre": _finite_significance(float(local_p[index])),
+                **assignment,
+                "response_phase_n_sources": phase_count,
+                "p_post": phase_p,
+                "z_post": _finite_significance(phase_p),
+                "post_trial_method": "analytic_sidak_response_phase_from_joint_fit_local_p",
+                "p_post_phase_sidak": phase_p,
+                "z_post_phase_sidak": _finite_significance(phase_p),
                 "p_post_sidak": float(sidak_p[index]),
                 "z_post_sidak": _finite_significance(float(sidak_p[index])),
                 "n_max_ts_exceedances": int(maximum_exceedances[index]),
@@ -444,6 +465,7 @@ def _write_likelihood_surfaces(
     from agent_core.schemas import NormalizedAnalysis, NormalizedSource
     from analysis_backend.time_dependent.adapter import prepare_analysis
     from analysis_backend.time_dependent.surfaces import (
+        build_observed_surface_context,
         save_observed_likelihood_surface,
     )
 
@@ -471,6 +493,7 @@ def _write_likelihood_surfaces(
             )
     if expected.get("time_profile") is not None and prepared.metadata["time_profile"] != expected["time_profile"]:
         raise ValueError("observed likelihood-surface reconstruction differs in time_profile")
+    surface_context = build_observed_surface_context(prepared.constructed)
 
     saved = []
     if leading is not None:
@@ -492,6 +515,7 @@ def _write_likelihood_surfaces(
                 source_index=source_index,
                 source_name=str(leading["source_name"]),
                 source_id=str(leading["source_id"]),
+                context=surface_context,
             )
         )
     if stack_summary is not None:
@@ -505,6 +529,7 @@ def _write_likelihood_surfaces(
                     "gamma": stack_summary["observed_gamma"],
                 },
                 source_index=None,
+                context=surface_context,
             )
         )
     return saved
@@ -568,7 +593,16 @@ def finalize_time_dependent_results(
         normalized, observed, configuration
     )
     manifest = _source_manifest(normalized, observed)
-    source_rows = _source_statistics(normalized, observed_arrays, trials, manifest)
+    uptime_directory = root / "data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime"
+    response_intervals = response_uptime(
+        uptime_directory, observed["time_dependent_engine"]["dataset_names"]
+    )
+    phase_assignments, phase_counts = assign_sources_to_response(
+        manifest["selected"], manifest["time_profile"], response_intervals
+    )
+    source_rows = _source_statistics(
+        normalized, observed_arrays, trials, manifest, phase_assignments, phase_counts
+    )
     leading = min(source_rows, key=lambda row: row["p_pre"]) if _source_components(normalized) else None
     stack_summary = _stack_summary(normalized, observed_arrays, trials) if _stack_component(normalized) else None
     fit_gamma = _fit_gamma(normalized)
@@ -591,6 +625,8 @@ def finalize_time_dependent_results(
         **spectrum,
         "n_sources": len(normalized["sources"]),
         "n_background_trials": requested,
+        "default_source_post_trial_method": "analytic_sidak_response_phase_from_joint_fit_local_p",
+        "response_phase_source_counts": phase_counts,
         "has_source_component": _source_components(normalized),
         "has_stacking_component": _stack_component(normalized),
         "single_source": leading,
@@ -672,6 +708,11 @@ def finalize_time_dependent_results(
             {
                 "method": "empirical local survival fraction with add-one correction",
                 "empirical_post_trial_method": "shared-trial maximum single-source TS survival fraction with add-one correction",
+                "default_post_trial_method": "analytic_sidak_response_phase_from_joint_fit_local_p",
+                "response_phase_sidak_formula": "1 - (1 - p_pre)**response_phase_n_sources",
+                "response_phase_source_counts": phase_counts,
+                "source_phase_assignment": "box stop or Gaussian center within selected response period; sole window-overlap fallback outside periods",
+                "local_p_value_origin": "matched shared-trial joint-phase single-source fits",
                 "sidak_post_trial_formula": "1 - (1 - p_pre)**n_sources",
                 "n_trials": requested,
                 "minimum_empirical_p": 1.0 / (requested + 1.0),
@@ -767,7 +808,8 @@ def finalize_time_dependent_results(
                 f"- Best fit: TS={leading['ts']:.6g}, ns={leading['ns']:.6g}"
                 + ("; Gamma unidentified" if leading["gamma"] is None else f", Gamma={leading['gamma']:.6g}"),
                 f"- Local p-value: {leading['p_pre']:.6g} ({leading['n_exceedances']}/{requested} exceedances)",
-                f"- Sidak post-trial p-value: {leading['p_post_sidak']:.6g}",
+                f"- Default response-phase Sidak post-trial p-value: {leading['p_post_phase_sidak']:.6g} (N={leading['response_phase_n_sources']} in {leading['response_phase']}; analytic estimate from joint-fit local p)",
+                f"- Full-catalog Sidak post-trial p-value: {leading['p_post_sidak']:.6g}",
                 f"- Empirical max-TS post-trial p-value: {leading['p_post_empirical_max_ts']:.6g}",
                 "",
             ]

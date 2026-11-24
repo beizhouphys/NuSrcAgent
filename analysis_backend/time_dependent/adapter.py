@@ -34,6 +34,10 @@ class PreparedAnalysis:
     cached: bool
 
 
+class CatalogWindowResult(dict):
+    """Serializable result mapping with optional in-process runtime state."""
+
+
 def resolve_windows(normalized):
     settings = normalized.temporal
     profile = settings.get("profile", "box")
@@ -218,7 +222,10 @@ def run_catalog_windows(normalized, root, workers=1):
         fit=record(observed.source_ts[i], observed.source_ns[i], observed.source_gamma[i], observed.source_fit_ok[i], observed.source_gamma_status[i]))
         for i, source in enumerate(normalized.sources)]
     stack = record(observed.stack.ts, observed.stack.ns, observed.stack.gamma, observed.stack.fit_ok, observed.stack.gamma_status)
-    return dict(time_mode="time_dependent", temporal_scope="per_source_catalog_windows",
+    result = CatalogWindowResult(time_mode="time_dependent", temporal_scope="per_source_catalog_windows",
         backend="skyllh_catalog_windows_v1", catalog_operation=normalized.catalog_operation,
         source_results=source_results, stack_result=stack,
-        time_dependent_engine=prepared.metadata, n_sources=len(source_results), **unavailable_significance())
+        time_dependent_engine=prepared.metadata, n_sources=len(source_results),
+        **unavailable_significance())
+    result.prepared_analysis = prepared
+    return result
