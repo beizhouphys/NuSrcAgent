@@ -267,7 +267,7 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
        {\sum_j w_{j,\mathrm{model}}w_{j,\mathrm{acc}}^k}
 
     and returns ``S_i^k / B_i^k``.  SkyLLH's detector-yield service supplies
-    the product of the two source weights and its Gamma derivative.
+    the product of the two source weights and its spectral index derivative.
     """
 
     signal_energy_gamma_interpolation = "parabola_v1"
@@ -293,7 +293,7 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
     ):
         super().__init__(sig_param_names=["gamma"], bkg_param_names=None, **kwargs)
         if signal_energy_gamma_interpolation not in {"parabola_v1", "linear_v1"}:
-            raise ValueError("Unsupported signal-energy Gamma interpolation")
+            raise ValueError("Unsupported signal-energy spectral-index interpolation")
         self.signal_energy_gamma_interpolation = signal_energy_gamma_interpolation
         self.dataset_idx = int(dataset_idx)
         self.dataset_name = str(dataset_name)
@@ -399,7 +399,7 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
     def _common_gamma(src_params_recarray):
         gamma = np.asarray(src_params_recarray["gamma"], dtype=np.float64)
         if not np.all(gamma == gamma[0]):
-            raise ValueError("The current DR2 stacking backend requires one common Gamma for all sources")
+            raise ValueError("The current DR2 stacking backend requires one common spectral index for all sources")
         return float(gamma[0])
 
     @staticmethod
@@ -412,13 +412,13 @@ class ChunkedSourceWeightedPDFRatio(PDFRatio):
         if len(ids) == 0:
             return None
         if len(ids) != 1:
-            raise ValueError("Gamma must map to one common global fit parameter")
+            raise ValueError("spectral index must map to one common global fit parameter")
         return int(ids[0] - 1)
 
     def _gamma_slice_indices(self, gamma):
         if self.signal_energy_gamma_interpolation == "linear_v1":
             if not np.isfinite(gamma) or not self.gamma_values[0] <= gamma <= self.gamma_values[-1]:
-                raise ValueError("Gamma is outside the signal-energy interpolation grid")
+                raise ValueError("spectral index is outside the signal-energy interpolation grid")
             upper = min(int(np.searchsorted(self.gamma_values, gamma, side="right")), len(self.gamma_values)-1)
             lower = upper-1
             x0, x1 = self.gamma_values[[lower, upper]]
@@ -566,8 +566,8 @@ class ChunkedSpatialOnlySourceWeightedPDFRatio(PDFRatio):
        S_{ij}^{k,\mathrm{spatial}}}
        {\sum_j w_{j,\mathrm{model}}w_{j,\mathrm{acc}}^k}
 
-    and returns ``S_i^k / B_{i,spatial}^k``.  The acceptance Gamma is fixed,
-    so this ratio has no fitted signal-shape parameter or Gamma gradient.
+    and returns ``S_i^k / B_{i,spatial}^k``.  The acceptance spectral index is fixed,
+    so this ratio has no fitted signal-shape parameter or spectral index gradient.
     """
 
     def __init__(

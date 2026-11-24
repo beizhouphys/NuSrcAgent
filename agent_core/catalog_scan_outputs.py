@@ -14,14 +14,14 @@ from agent_core.p_value import background_trial_note, local_p_value_estimate
 
 METHOD = "analytic_independent_source_catalog_correction_estimate"
 NOTE = ("Local p values and significances are analytic half-chi-square estimates "
-        "(dof=2 for fitted Gamma, dof=1 for fixed Gamma). Global estimates use "
+        "(dof=2 for fitted spectral index, dof=1 for fixed spectral index). Global estimates use "
         "p_global = 1 - (1 - p_local)^N_sources, following arXiv:2103.12813 Sec. IV A. "
         "This assumes independent source tests; overlapping source hypotheses can be correlated. "
         "It covers the selected source catalog only, not additional catalog selections, spectra "
         "or stacking hypotheses. No empirical calibration is implied. Global significance "
         "is the signed one-sided Gaussian Z; the table displays max(0, Z), following paper "
         "Table I, while the CSV retains both values. sqrt(TS) is the figure coordinate, "
-        "not a significance conversion for fitted Gamma. At ns=0, Gamma is not a spectral measurement.")
+        "not a significance conversion for fitted spectral index. At n=0, the fit cannot measure s.")
 GLOBAL_COLUMNS = ("post_trial_p_approx", "post_trial_significance",
                   "post_trial_excess_significance", "post_trial_method", "post_trial_n_sources")
 
@@ -56,7 +56,7 @@ def ranked_sources(records):
 
 def compact_scan_table(records):
     """Separate p value/significance columns, with grouped local/global headings."""
-    headers = ["Source", "ns", "Γ", "TS", "p value", "significance", "p value", "significance"]
+    headers = ["Source", "n", "s", "TS", "p value", "significance", "p value", "significance"]
     rows = [[str(item["source_name"]).replace("\n", " ").replace("\r", " ").replace("\t", " "),
              f"{item['fit']['ns']:.2f}", ("model" if item["fit"].get("spectrum") else f"{item['fit']['gamma']:.3f}"), f"{item['fit']['TS']:.3f}",
              f"{item['fit']['pre_trial_p']:.4g}", f"{item['fit']['pre_trial_significance']:.3f}σ",

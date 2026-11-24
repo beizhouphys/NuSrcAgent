@@ -15,13 +15,14 @@ from agent_core.schemas import NormalizedAnalysis
 from analysis_backend.dr1_single_source import load_backend_data
 
 
-SOURCE_COLUMNS = ["source_number", "source_name", "significance_rank", "ra_deg", "dec_deg", "intrinsic_weight", "ns_hat", "ts", "signed_sqrt_ts", "pre_trial_p", "pre_trial_significance", "post_trial_p", "post_trial_significance", "n_events_in_roi", "fit_status"]
-STACKING_COLUMNS = ["weighting_scheme", "spectral_index", "n_sources", "ns_hat", "ts", "pre_trial_p", "pre_trial_significance", "post_trial_p", "post_trial_significance", "ns_95", "flux_100tev_95", "fraction_of_diffuse_flux_95"]
+SOURCE_COLUMNS = ["source_number", "source_name", "significance_rank", "ra_deg", "dec_deg", "intrinsic_weight", "n", "s", "ns_hat", "ts", "signed_sqrt_ts", "pre_trial_p", "pre_trial_significance", "post_trial_p", "post_trial_significance", "n_events_in_roi", "fit_status"]
+STACKING_COLUMNS = ["weighting_scheme", "s", "spectral_index", "n_sources", "n", "ns_hat", "ts", "pre_trial_p", "pre_trial_significance", "post_trial_p", "post_trial_significance", "n_95", "ns_95", "flux_100tev_95", "fraction_of_diffuse_flux_95"]
 
 
 def write_catalog_outputs(run_dir: Path, normalized: NormalizedAnalysis, result: dict[str, object], repo_root: Path) -> dict[str, str]:
-    source_rows = list(result.get("_source_results", []))
-    stacking_rows = list(result.get("_stacking_results", []))
+    source_rows = [dict(row, n=row["ns_hat"]) for row in result.get("_source_results", [])]
+    stacking_rows = [dict(row, n=row["ns_hat"], s=-row["spectral_index"], n_95=row.get("ns_95"))
+                     for row in result.get("_stacking_results", [])]
     curves = list(result.get("_stacking_curves", []))
     source_columns = ordered_columns(SOURCE_COLUMNS, source_rows)
     stacking_columns = ordered_columns(STACKING_COLUMNS, stacking_rows)
@@ -79,12 +80,12 @@ def build_run_information(normalized: NormalizedAnalysis) -> list[list[object]]:
         ["time_mode", normalized.time_mode],
         ["data_sample", normalized.sample],
         ["n_sources", len(normalized.sources)],
-        ["spectral_indices", ", ".join(str(value) for value in normalized.spectral_indices)],
+        ["s", ", ".join(str(-value) for value in normalized.spectral_indices)],
         ["background_method", normalized.background_method],
         ["background_trials_requested", normalized.n_trials],
         ["random_seed", normalized.random_seed],
         ["reference", "https://arxiv.org/abs/2103.12813"],
-        ["ts_definition", "TS evaluated at the maximum-likelihood estimate ns_hat"],
+        ["ts_definition", "TS evaluated at the maximum-likelihood estimate of n"],
         ["flux_conversion", "Paper-calibrated ns-to-flux references from legacy_codex_revised/likelihood_v4.py and legacy_codex_revised/ns2flux.py"],
     ]
 
@@ -153,7 +154,7 @@ def plot_fig3(path: Path, rows: list[dict[str, object]]) -> None:
     draw_linear_ticks(c, left, bottom, width, [0., 1., 2., 3., 4., 5.], 0., edges[-1], horizontal=True)
     draw_log_ticks(c, left, bottom, height, [1., 10., 100., 1000.], 0.5, ymax, horizontal=False)
     c.setFillColor(colors.black)
-    c.drawString(left+8., bottom+height-18., f"Sources with ns_hat >= 0: {len(values)}")
+    c.drawString(left+8., bottom+height-18., f"Sources with n >= 0: {len(values)}")
     if len(values) < 20:
         c.drawString(left+8., bottom+height-34., "Normal fit omitted: fewer than 20 non-negative fits")
     c.save()

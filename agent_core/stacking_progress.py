@@ -34,7 +34,7 @@ class StackingFitProgress:
             return None,'waiting_for_first_completed_evaluation'
         full=[d for d,k in zip(self.durations,self.kinds) if k=='pdf_recomputed']
         cached=[d for d,k in zip(self.durations,self.kinds) if k=='pdf_reused']
-        # A free-Gamma fit can need full-PDF work again after a cached burst.
+        # A free-index fit can need full-PDF work again after a cached burst.
         # Cached durations never enter its full-PDF rate.
         if full:
             rate=median(full[-8:]);basis='current_full_pdf_speed_and_assumed_remaining_calls'

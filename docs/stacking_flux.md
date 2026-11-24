@@ -1,7 +1,7 @@
 # Joint-stack flux limits, intensity measurements and two-stage reporting
 
 New DR2 time-integrated spatial+energy joint-stack tasks report results in two
-stages. The primary fit keeps its requested ns/Gamma hypotheses, selected sources,
+stages. The primary fit keeps its requested n and s hypotheses, selected sources,
 intrinsic weights, event selection, frozen PDFs, bounds and original optimizer.
 This workflow applies to `stack` and the joint stack in `scan_and_stack`.
 Individual-source scan limits retain their separate opt-in setting. DR1 and
@@ -18,7 +18,7 @@ Create the task through the public wrapper and require `READY`. Run it normally:
 
 The primary result is saved and independently reviewed before any joint-stack
 flux profiles or companion fixed-spectrum fits. A passing primary stage returns
-`AWAITING_FLUX`. The wrapper's `stacking_stages.primary` contains ns, Gamma, TS,
+`AWAITING_FLUX`. The wrapper's `stacking_stages.primary` contains n, s, TS,
 local analytic p-value, one-sided significance, method labels and review status.
 The Agent must report these values in a final answer chat bubble, ask whether
 the user wants flux upper limits/measurements and figures, and end that turn.
@@ -41,12 +41,12 @@ reply on the flux attempt. Do not invent a reply or infer one from the initial
 analysis request. Stage 2 checks the original request
 hash, sealed primary artifacts, runtime packages, code and scientific-input
 hashes before reconstructing the same likelihood. It evaluates the saved primary
-parameters to verify TS and does not repeat primary maximization. Primary ns,
-Gamma, TS, p-value, significance and optimizer records are retained.
+parameters to verify TS and does not repeat primary maximization. Primary n,
+spectral index, TS, p-value, significance and optimizer records stay in place.
 
-The default companions are three separate fixed-Gamma fits at Gamma=2, 2.5 and 3,
+The default companions are three separate fixed-index fits at s=2, 2.5 and 3,
 each with a one-sided 95% profile-likelihood upper limit. Their upper crossings
-satisfy `2[ln L(ns_hat,Gamma)-ln L(ns_upper,Gamma)] = 2.705543454095404` inside
+satisfy `2[ln L(n_hat, s)-ln L(n_upper, s)] = 2.705543454095404` inside
 the recorded bounds. `--no-flux-upper-limits` at task creation omits these
 companions; the strict measurement gate remains recorded independently.
 
@@ -57,10 +57,10 @@ without a measured spectrum or measurement shading. The TS > 9 condition applies
 to measurement products, not to upper-limit figures.
 
 Only primary TS > 9 produces a measured primary-spectrum intensity, 68.27%/95%
-profile intervals, spectral shading and, for fitted Gamma, joint contours.
+profile intervals, spectral shading and, for fitted spectral index, joint contours.
 TS=9 does not trigger measurement reporting. At each fixed total-flux
-normalization, free-Gamma profiling includes its Gamma-dependent detector yield;
-it does not freeze the primary Gamma to rescale an ns interval. The existing
+normalization, free-index profiling includes its spectral index-dependent detector yield;
+it does not freeze the primary spectral index to rescale an interval for n. The existing
 maximum-consistency guard, thresholds and bound-truncation checks remain active.
 A failed flux stage cannot invalidate the separately preserved primary artifacts,
 but its flux numbers must not be reported as valid. No background trials are
@@ -71,11 +71,11 @@ started by this workflow.
 The normalized intrinsic model weights satisfy sum_j w_model_j=1. For a common
 power law, source j has
 
-`dPhi_j/dE = w_model_j * phi0_total * (E/E0)^(-Gamma)`.
+`phi_j(E) = w_model_j * phi0_total * (E/E0)^(-s)`.
 
 The expected count is
 
-`ns = phi0_total * sum_k sum_j w_model_j * Y_j^k(Gamma; E0)`.
+`n = phi0_total * sum_k sum_j w_model_j * Y_j^k(s, E0)`.
 
 Here Y is the same effective-area/livetime detector yield used in the likelihood.
 The acceptance factor is applied once. Both uniform and catalog-column weighting
@@ -85,7 +85,7 @@ with split intrinsic weight leaves the total-flux conversion unchanged.
 
 The displayed quantity is the full-sky average
 
-`dI_catalog/dE = (sum_j dPhi_j/dE)/(4*pi sr)`.
+`dI_catalog/dE = (sum_j phi_j(E))/(4*pi sr)`.
 
 This is an explicit full-sky averaging convention for the selected catalog; it
 does not assign isotropic emission or a local solid-angle aperture to each point
@@ -99,7 +99,7 @@ intensity fields, with the exact 4*pi sr conversion recorded.
 
 The joint-stack spectrum has one intensity axis. Current-analysis upper limits
 and measured spectra use solid lines; all published reference spectra use dashed
-lines. Computed intensity-Gamma contour boundaries also use solid lines. Catalog limits, measured
+lines. Computed intensity-spectral index contour boundaries also use solid lines. Catalog limits, measured
 spectra and their bands are total flux divided by exactly 4*pi sr. The two
 published diffuse astrophysical spectra and bands remain in their original
 per-steradian intensity units. Only the 9.5-year tracks and 10.3-year starting-track
@@ -110,7 +110,7 @@ figure conventions remain separate.
 The spectrum curves describe complete power-law hypotheses over 1 TeV–10 PeV;
 that display range is not a measured sensitive range or independent energy-bin
 limits. Measurement shading retains the existing confidence-region meaning.
-Joint contours display intensity normalization versus Gamma. PNG, vector PDF
+Joint contours display intensity normalization versus spectral index. PNG, vector PDF
 and editable SVG are generated under `figures/runs/<run>/stack/`.
 
 Each stage has its own run directory and review. The task record retains both

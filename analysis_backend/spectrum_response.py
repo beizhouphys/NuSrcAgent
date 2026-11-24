@@ -199,7 +199,7 @@ def prepare_response(root, datasets, cfg, gamma, gamma_mode='fixed', gamma_min=1
                 else:
                     started = perf_counter()
                     # Copied from the validated pre-calculation path. For a
-                    # fixed non-PL shape, all passive Gamma nodes are identical.
+                    # fixed non-PL shape, all passive spectral index nodes are identical.
                     construction_grid = (ParameterGrid('gamma', grid=np.asarray([0.]), delta=.1, decimals=1)
                                          if spectrum else grid)
                     pdf_set = PDSignalEnergyPDFSet(cfg=cfg, ds=dataset, src_dec=float(dec),

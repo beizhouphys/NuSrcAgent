@@ -70,7 +70,12 @@ Coordinates use the shared coordinate layer. Intrinsic source weights must be
 strictly positive and are normalized by NuSrcAgent; detector acceptance is
 applied separately by the likelihood. CLI `--gamma -2` means the positive
 internal index Gamma=2 in E^(-Gamma); `--gamma-mode fitted` fits Gamma within the
-recorded bounds. The numerical procedure is `catalog_continuous_profile_v1`.
+recorded bounds. The upstream aliases `--s 2`, `--s-mode fitted` and
+`--s-bounds 1 4` use the same positive spectral index and convert to the
+existing signed-exponent request fields. Time-integrated reports label this
+index `s`; fixed-profile time-dependent reports retain `Gamma`. Neither
+notation changes the spectrum or the saved numerical fields.
+The numerical procedure is `catalog_continuous_profile_v1`.
 Signal/background time densities are normalized over detector uptime. Gaussian
 detector-phase acceptance uses the exact truncated-profile integral over good
 runs, while box acceptance retains the existing overlap calculation. The

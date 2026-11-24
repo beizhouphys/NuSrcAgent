@@ -41,12 +41,12 @@ Read-only independent reviews exactly reproduced the saved reviews. Reports,
 CSV tables, original/normalized configurations, all 31 runtime code hashes,
 52/53 single/catalog input-provenance hashes and request hashes passed checks.
 All runtime inputs resolved inside the clone. Configuration matched the earlier
-references: full14, spatial+energy, fitted ns/Gamma, frozen v3, all 1,643,355
+references: full14, spatial+energy, fitted n and s, frozen v3, all 1,643,355
 events, no extra cuts, unchanged bounds/seeds, and 1/3 intrinsic catalog weights.
 Both examples executed zero background trials. For every nonzero compared
-single/stack/scan TS, ns and Gamma, signed relative difference was 0, then
+single/stack/scan TS, n and s, signed relative difference was 0, then
 signed absolute difference 0. Zero TS/ns references had undefined relative
-differences and absolute differences 0. Gamma at ns = 0 remains unidentifiable.
+differences and absolute differences 0. spectral index at ns = 0 remains unidentifiable.
 Numerical reference values are in the historical table below and `quickstart.md`.
 
 All 51 DR2 bundle input/provenance files and 71 shipped source inventory entries
@@ -85,12 +85,12 @@ cases and development input hashes also passed. Test code is not distributed.
 
 The newly installed environment then ran an NGC 1068 single-source task and a
 three-source uniform-weight individual scan plus stack, using full14 DR2,
-spatial+energy, fitted ns/Gamma and unchanged approved bounds/defaults. Both
+spatial+energy, fitted n and s and unchanged approved bounds/defaults. Both
 reached COMPLETED_WITH_WARNINGS, with no failed review checks; warnings report
 analytic p-value approximation and unavailable empirical/catalog-global calibration.
 Reports, CSVs, configuration, provenance and reviews were readable.
 
-Against the preceding release-copy observed-fit references, TS, ns and Gamma
+Against the preceding release-copy observed-fit references, TS, n and s
 signed relative differences are 0, followed by signed absolute differences 0,
 for both the single-source fit and stack. This confirms these installation
 checks preserved the fitted outputs on the tested platform; it does not validate
@@ -135,7 +135,7 @@ reviews exactly. The single-source warning concerns analytic local p-values;
 the catalog also warns that empirical catalog-global calibration is absent.
 Neither warning was suppressed, and both executed zero background trials.
 
-| Fit | TS | ns | Gamma (SkyLLH) |
+| Fit | TS | ns | spectral index (SkyLLH) |
 | --- | ---: | ---: | ---: |
 | NGC 1068 | 22.991618557054025 | 68.56745260524343 | 3.0590345620224406 |
 | Three-source stack | 7.004486283592772 | 18.81365067323916 | 2.2906293703278 |
@@ -143,14 +143,14 @@ Neither warning was suppressed, and both executed zero background trials.
 | Scan: PKS 1502+106 | 0.25511669236778944 | 5.030084337350434 | 2.514923107052178 |
 | Scan: 3C 279 | 0 | 0 | Unidentifiable at ns = 0 |
 
-Against the earlier installation references, all compared nonzero TS/ns/Gamma
+Against the earlier installation references, all compared nonzero TS/n and s
 values have signed relative difference 0, then signed absolute difference 0.
 The zero TS/ns references have undefined relative differences and absolute
 differences 0. No spectral measurement is assigned to 3C 279 at ns = 0.
 
 Normalized configurations were identical to the controlled references: full14
-DR2, time-integrated spatial+energy, fitted ns/Gamma, all 1,643,355 events,
-no extra cuts, Gamma seed 3 and ns seed 10, unchanged bounds and random seed
+DR2, time-integrated spatial+energy, fitted n and s, all 1,643,355 events,
+no extra cuts, spectral index seed 3 and ns seed 10, unchanged bounds and random seed
 12345. The stack used intrinsic weights 1/3 each; source order was preserved.
 The original/normalized configuration hashes, request-attempt hashes, all
 31 runtime code hashes and 52/53 single/catalog input-provenance hashes were

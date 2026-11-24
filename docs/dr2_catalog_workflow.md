@@ -8,9 +8,9 @@ These are different statistical hypotheses, so their TS values need not agree.
 ## Choose the analysis
 
 Use `stack` for a joint fit, `scan` for independent fits of every catalog row,
-or `scan_and_stack` for both. A scan fits each source's own `ns` and, in the
-default spatial+energy analysis, its own `Gamma`. A stack fits one total `ns`
-and one common `Gamma` for the catalog.
+or `scan_and_stack` for both. A scan fits each source's own `n` and, in the
+default spatial+energy analysis, its own `s`. A stack fits one total `n`
+and one common `spectral index` for the catalog.
 
 `create-catalog --catalog-operation stack|scan|scan_and_stack` selects the
 requested operation. Scan-only requires no intrinsic stacking weights.
@@ -40,7 +40,7 @@ means the saved record of data/code versions and settings used in that calculati
 ## Significance and example inputs
 
 Ordinary time-integrated local p-values and significances are estimates: half-chi-square dof=2
-for fitted Gamma and dof=1 for fixed Gamma. The source CSV records the method,
+for fitted spectral index and dof=1 for fixed spectral index. The source CSV records the method,
 dof and estimate flag alongside each result. An analytic independent-source catalog correction is reported; no empirical
 catalog post-trial significance is produced. The excluded 3386-source reproduction
 workflow's six stacks, signed fits and paper comparison products are not
@@ -96,14 +96,14 @@ the probability, approximation and source count. The report also records the
 best selected source threshold as `catalog_post_trial_p`, with its signed
 `catalog_post_trial_significance` and explicit `catalog_post_trial_method`;
 this is the source scan result, not the joint stacking significance. Local dof and method labels
-remain recorded. At ns=0, Gamma is not a spectral measurement.
+remain recorded. At n=0, spectral index is not a spectral measurement.
 
 Each scan also writes `sqrt_ts_distribution_bins.csv` and PDF/PNG
 figures under `figures/<run_id>/`, with bin width 0.25, counts on a logarithmic
 axis and sqrt(N) error bars, following Fig. 3. All selected sources, including
 TS=0, enter the histogram. Empty bins remain in the numeric table; zero lower
 error endpoints are clipped only in the logarithmic drawing. No normal
-distribution is fitted. For fitted Gamma, sqrt(TS) is a plotting coordinate,
+distribution is fitted. For fitted spectral index, sqrt(TS) is a plotting coordinate,
 not the local Gaussian significance. The review checks the correction,
 ranking, histogram counts and figure hashes. Historical run artifacts are
 not rewritten and retain their original review requirements.
@@ -113,7 +113,7 @@ not rewritten and retain their original review requirements.
 New DR2 `scan` and the individual-source part of `scan_and_stack` explicitly
 record `scan_fit_procedure=skyllh_lbfgs_v1` in the task, request and normalized
 configuration. This is the original SkyLLH optimizer, without an additional
-search over every Gamma interpolation interval and stencil switch. The
+search over every spectral-index interpolation interval and stencil switch. The
 separate single-source and joint stacking settings are preserved. The backend
 passes the recorded scan procedure explicitly and review rejects an absent or
 different procedure declaration, or an extra maximum search under the original-optimizer label.
@@ -129,11 +129,11 @@ bounds or background-trial settings are changed by this recording safeguard.
 ## Exact stacking PDF caches
 
 Multi-source DR2 spatial+energy fits use exact observed-energy interpolation
-lookups with a 16 MiB payload limit per dataset. Fitted-Gamma stacks additionally
+lookups with a 16 MiB payload limit per dataset. Fitted-index stacks additionally
 share a lossless spatial PDF block cache with a 1 GiB compressed-payload limit
 per fit. Cache misses and exhausted budgets use the original calculation.
 New trials invalidate the previous geometry and energy lookups. This preserves
-event/source membership, current-Gamma weights, three-node Gamma interpolation,
+event/source membership, weights at the current spectral index, three-node spectral-index interpolation,
 its derivative and weighted reduction order. It changes no CPU configuration
 or recorded optimizer procedure.
 

@@ -43,6 +43,9 @@ from agent_core.task_state import confirm_parameters, load_task, save_task
 def main(argv=None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if getattr(args, "s_bounds", None) is not None:
+        lower, upper = args.s_bounds
+        args.gamma_bounds = [-upper, -lower]
     repo_root = Path(args.repo_root).expanduser().resolve()
     try:
         if args.command == "td-background-trials":
@@ -276,7 +279,7 @@ def set_scan_fit_procedure(task, args):
         task["parameters"]["scan_fit_procedure"] = parameter("skyllh_lbfgs_v1", "system_default", True)
         task["parameters"]["scan_fit_procedure"]["basis"] = (
             "Owner restored the original SkyLLH optimizer for individual catalog fits on 2026-10-19; "
-            "omit the additional Gamma interval/stencil-switch search. The joint stack retains its own procedure.")
+            "omit the additional spectral index interval/stencil-switch search. The joint stack keeps its own procedure.")
 
 
 def set_stacking_flux(task, args):
@@ -327,9 +330,9 @@ def set_flux_measurement(task, args):
     task["parameters"]["fit_procedure"] = parameter("skyllh_lbfgs_v1", "system_default", True)
     task["parameters"]["fit_procedure"]["basis"] = "Owner requested the original SkyLLH optimizer for all fits; likelihood, PDFs and bounds retained. Corresponding trials must use the same recorded procedure."
     task["parameters"]["signal_energy_gamma_interpolation"] = parameter("linear_v1", "system_default", True)
-    task["parameters"]["signal_energy_gamma_interpolation"]["basis"] = "Owner-approved two-node linear Gamma interpolation for standalone single-source primary and flux fits; catalog scans and joint stacks retain their existing procedure."
+    task["parameters"]["signal_energy_gamma_interpolation"]["basis"] = "Owner-approved two-node linear spectral-index interpolation for standalone single-source primary and flux fits; catalog scans and joint stacks keep their existing procedure."
     task["parameters"]["flux_measurement_ts_threshold"] = parameter(9.0, "system_default", True)
-    task["parameters"]["flux_measurement_ts_threshold"]["basis"] = "Owner-approved strict TS > 9 criterion for reporting primary-spectrum flux measurement, profile intervals and free-Gamma joint contours."
+    task["parameters"]["flux_measurement_ts_threshold"]["basis"] = "Owner-approved strict TS > 9 criterion for reporting primary-spectrum flux measurement, profile intervals and free-index joint contours."
 
 
 def set_source_window(task, args):
@@ -419,8 +422,6 @@ def build_parser() -> argparse.ArgumentParser:
     single.add_argument("--dec-deg", type=float, help="ICRS Dec in degrees; pair with --ra-deg (existing interface).")
     single.add_argument("--longitude", help="ICRS RA or Galactic l; requires coordinate frame and explicit units.")
     single.add_argument("--latitude", help="ICRS Dec or Galactic b; sexagesimal strings are accepted with explicit units.")
-    single.add_argument("--gamma", type=float, help="Signed power-law exponent. DR1 and DR2 spatial-only analyses default to fixed -2.5 for detector acceptance. DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
-    single.add_argument("--gamma-mode", choices=["fitted", "fixed"])
     single.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     single.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
     single.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
@@ -444,8 +445,6 @@ def build_parser() -> argparse.ArgumentParser:
     catalog.add_argument("--name-column")
     catalog.add_argument("--ra-column")
     catalog.add_argument("--dec-column")
-    catalog.add_argument("--gamma", type=float, help="Signed power-law exponent. DR1 and DR2 spatial-only analyses default to fixed -2.5 for detector acceptance. DR2 spatial+energy defaults to fitted Gamma seeded at -3.0. An explicit exponent overrides the default and is fixed unless --gamma-mode fitted is requested.")
-    catalog.add_argument("--gamma-mode", choices=["fitted", "fixed"])
     catalog.add_argument("--interpretation-note", action="append", default=[], metavar="PARAMETER=EXPLANATION", help="Record an agent interpretation under the approved clarification policy; metadata only.")
     catalog.add_argument("--likelihood-mode", choices=["spatial_energy", "spatial_only"])
     catalog.add_argument("--data-sample", choices=["icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr"], default="icecube_public_ps_14yr_dr2")
@@ -466,7 +465,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     confirm = subparsers.add_parser("confirm", help="Record user-confirmed scientific parameters.")
     confirm.add_argument("--task", required=True)
-    confirm.add_argument("--gamma", type=float)
     confirm.add_argument("--weight-mode", choices=["uniform", "column", "manual"])
     confirm.add_argument("--weight-column")
     confirm.add_argument("--weight-meaning")
@@ -519,18 +517,30 @@ def build_parser() -> argparse.ArgumentParser:
                            help="Parallel individual refits; sequential screening/cumulative stages use numerical-library thread limits. Default: 1.")
     dominance_review = subparsers.add_parser("review-dominance", help="Review a completed DR2 source-dominance analysis.")
     dominance_review.add_argument("--output-directory", required=True)
-    ra_scramble = subparsers.add_parser("dr2-ra-scramble", help="Run checkpointed source/event RA-scramble diagnostics for a completed fitted-Gamma DR2 stack.")
+    ra_scramble = subparsers.add_parser("dr2-ra-scramble", help="Run checkpointed source/event RA-scramble diagnostics for a completed fitted-index DR2 stack.")
     ra_scramble.add_argument("--baseline-run-directory", required=True)
     ra_scramble.add_argument("--output-directory", required=True)
     ra_scramble.add_argument("--seeds", default="104729,130363,155921", help="Comma-separated unique non-negative integer trial seeds.")
     ra_scramble.add_argument("--workers", type=positive_worker_count, default=1,
                             help="Single-thread worker processes for independent seeds. Default: 1.")
+    for command_parser in (single, catalog, confirm):
+        index = command_parser.add_mutually_exclusive_group()
+        index.add_argument("--s", dest="gamma", metavar="S", type=lambda value: -float(value),
+                           help="Power-law spectral index s in E**(-s). A supplied s is fixed by default.")
+        index.add_argument("--gamma", metavar="EXPONENT", type=float, help="Signed power-law exponent (-s).")
+    for command_parser in (single, catalog):
+        command_parser.add_argument("--s-mode", "--gamma-mode", dest="gamma_mode", choices=["fitted", "fixed"],
+                                    help="DR2 spatial+energy fits s from 3 by default. Spatial-only uses fixed s=2.5.")
     for command_parser in (single, catalog):
         command_parser.add_argument("--spectrum-file", help="Two-column energy/value file; fixes the non-power-law shape.")
         command_parser.add_argument("--spectrum-kind", choices=["dnde", "ednde", "e2dnde"])
         command_parser.add_argument("--spectrum-energy-unit", choices=["GeV", "TeV"])
         command_parser.add_argument("--spectrum-outside-support", choices=["zero", "extrapolate"])
-        command_parser.add_argument("--gamma-bounds", type=float, nargs=2, metavar=("EXP_MIN", "EXP_MAX"), help="Explicit fitted signed-exponent bounds; default fit bounds remain unchanged.")
+        bounds = command_parser.add_mutually_exclusive_group()
+        bounds.add_argument("--s-bounds", type=float, nargs=2, metavar=("S_MIN", "S_MAX"),
+                            help="Fit bounds in increasing order of s for E**(-s).")
+        bounds.add_argument("--gamma-bounds", type=float, nargs=2, metavar=("EXP_MIN", "EXP_MAX"),
+                            help="Fit bounds in increasing order of the signed exponent (-s).")
     spectrum_prepare = subparsers.add_parser("prepare-spectrum", help="Prepare a READY task spectrum response without fitting or starting trials.")
     spectrum_prepare.add_argument("--task", required=True)
     spectrum_prepare.add_argument("--estimate-only", action="store_true", help="Calculate one preparation unit for a current measured ETA; retain it for the full preparation.")
@@ -601,8 +611,9 @@ def set_mode_parameter_sources(task: Dict[str, Any], args: argparse.Namespace, l
         task["parameters"]["gamma"]["source"] = "system_default_fit_seed"
     for note in getattr(args, "interpretation_note", []) or []:
         name, separator, explanation = note.partition("=")
+        name = {"s": "gamma", "s_mode": "gamma_mode"}.get(name, name)
         if not separator or name not in {"gamma", "gamma_mode", "weight_column", "weight_meaning"} or name not in task["parameters"] or not explanation.strip():
-            raise ValueError("interpretation note must be an available gamma, gamma_mode, weight_column or weight_meaning followed by =EXPLANATION")
+            raise ValueError("Use s, s_mode, weight_column or weight_meaning in PARAMETER=EXPLANATION")
         task["parameters"][name]["source"] = "agent_interpreted"
         task["parameters"][name]["interpretation"] = explanation.strip()
 
