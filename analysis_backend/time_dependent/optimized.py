@@ -263,7 +263,7 @@ class OptimizedSharedScrambleEngine:
 
     The engine is backend-neutral: ratios come from the constructed SkyLLH
     graph, so both cached SkyLLH PDFs and strict precomputed PDFs use this same
-    likelihood path.  Gamma is evaluated on the configured grid and profiled
+    likelihood path.  s is evaluated on the configured grid and profiled
     with the same linear-density interpolation used by the precomputed backend.
     """
 

@@ -26,13 +26,13 @@ clean-clone/data-acquisition workflow or a scientific validation claim.
   Reports, configurations, CSVs, provenance, central reviews and run reviews were
   read; no failed review checks were present.
 
-Both tasks used DR2 full14, spatial+energy, fitted ns and Gamma, default bounds
+Both tasks used DR2 full14, spatial+energy, fitted ns and s, default bounds
 and frozen v3. The catalog used explicit uniform intrinsic weights. Warnings
 record analytic local p-value approximation and missing empirical/catalog-global
 calibration. No background trials were executed. No DR2 workbook/figure output
 is asserted because this path does not generate them.
 
-| Example | TS | ns | SkyLLH Gamma |
+| Example | TS | ns | SkyLLH s |
 | --- | ---: | ---: | ---: |
 | NGC 1068, RA 40.6696°, Dec -0.0133° | 22.9916185571 | 68.5674526052 | 3.0590345620 |
 | Three-source uniform stack | 7.0044862836 | 18.8136506732 | 2.2906293703 |
@@ -67,7 +67,7 @@ independent scalar score. No significance calibration is implied.
 
 Background trials can follow a reviewed DR2 time-integrated single-source or
 stacking primary through `dr2-empirical-scramble --action prepare --baseline-task`.
-Scientific settings and the observed result are inherited. Fixed/fitted Gamma,
+Scientific settings and the observed result are inherited. Fixed/fitted s,
 spatial+energy/spatial-only modes retain their original definitions. Ordinary
 fits still execute zero trials; a stack from `scan_and_stack` calibrates only
 that stack. Catalog-scan maxima, DR1 and time-dependent trials are excluded.
@@ -75,9 +75,9 @@ Outputs include empirical probability/significance, 68%/95% fixed-N and
 anytime-valid Monte Carlo intervals, PNG/PDF figures and resumable checkpoints.
 
 Owner verification passed 385 unit tests, 27 golden cases and input hash checks.
-Real single-source and weighted two-source scan/stack runs exercised fitted-Gamma
+Real single-source and weighted two-source scan/stack runs exercised fitted-s
 trials, pause/resume, immutable primary/checkpoint records and statistical/figure
-exports. A fixed-Gamma spatial-only run verified continuous launch and graceful
+exports. A fixed-s spatial-only run verified continuous launch and graceful
 stop. Small regression ensembles do not establish precision significance or
 parameter coverage. Random-catalog generation is owner-only testing code;
 historical ensembles and their seed mappings remain unchanged.
@@ -87,8 +87,10 @@ historical ensembles and their seed mappings remain unchanged.
 DR2 time-dependent single-source analysis and independent catalog scans support
 explicit Gaussian/box profiles, fixed/fitted temporal parameters, good-run
 interval normalization and temporal detector acceptance across four datasets.
-Time-dependent stacking awaits collaborator code. Time-dependent p-values,
-significance, trials and flux/fluence remain unavailable; time-integrated
+This dated verification covers the legacy time-search scope, not the later
+[fixed-profile stacking and shared-trial workflow](time_dependent_catalog.md).
+In the legacy scope, p-values, significance, trials and flux/fluence remain
+unavailable; time-integrated
 significance/flux formulas are not used for these tasks.
 
 Owner verification passed 397 full-suite unit tests, the final 13 targeted
@@ -96,10 +98,10 @@ temporal checks, 34 golden-corpus structural cases and frozen-input hashes.
 Independent event-mixture likelihood/gradient/maximum comparisons and the
 broad-box time-integrated limit passed, as did deterministic injected-profile
 optimizer recovery under a normalized toy spatial model. Real wrapper runs
-cover fixed/fitted Gaussian/box parameters, fixed/fitted Gamma, spatial-only,
+cover fixed/fitted Gaussian/box parameters, fixed/fitted s, spatial-only,
 parallel/reversed-order scans, and unchanged time-integrated source/scan/stack
 execution. Deliberately changed results and artifacts were rejected. Real
-release/test source and two-source scans agree exactly in TS/ns/Gamma,
+release/test source and two-source scans agree exactly in TS/ns/s,
 temporal values and dataset fractions (relative difference 0 for nonzero
 references, absolute difference 0; zero references have undefined relative
 difference). No time-dependent background trials were executed.

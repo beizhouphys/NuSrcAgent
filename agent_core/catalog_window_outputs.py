@@ -197,11 +197,11 @@ def write_artifacts(config_path, config, normalized, result, root):
     provenance["time_dependent_input_sha256"] = result["time_dependent_engine"]["input_sha256"]
     write_yaml(run_dir / "provenance.yaml", provenance)
     lines = ["# Fixed-profile time-dependent analysis", "", result["time_dependent_summary"]["note"], "",
-             "| Hypothesis | ns | Gamma | TS |", "| --- | ---: | ---: | ---: |"]
+             "| Hypothesis | ns | s | TS |", "| --- | ---: | ---: | ---: |"]
     for row in rows:
         gamma = "unidentified" if row["gamma"] is None else f"{row['gamma']:.7g}"
         lines.append(f"| {row['name']} | {row['ns']:.7g} | {gamma} | {row['TS']:.7g} |")
-    lines += ["", "Gamma is positive in E^(-Gamma). No time-integrated significance or flux formula is applied.",
+    lines += ["", "s is positive in E^(-s). No time-integrated significance or flux formula is applied.",
               "See review.md before interpreting these results.", ""]
     if contour_summary["status"] == "rendered":
         lines += ["## Observed likelihood contours", ""]

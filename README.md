@@ -72,7 +72,7 @@ substantial time, especially large catalog searches and repeated background fits
 | DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits n and s |
 | DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance spectral index; no energy term |
 | DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
-| DR2 time-dependent per-source profiles | Single source, catalog scan, stacking | Default time-dependent workflow; fixed box or Gaussian time PDFs; fixed/fitted Gamma; shared trials and empirical significance |
+| DR2 time-dependent per-source profiles | Single source, catalog scan, stacking | Default time-dependent workflow; fixed box or Gaussian time PDFs; fixed/fitted s; shared trials and empirical significance |
 | DR2 legacy Gaussian/box time searches | Single source and individual catalog scan | Explicit legacy selection; fixed parameters or time searches; no calibrated trials |
 
 ### Data and analysis terminology

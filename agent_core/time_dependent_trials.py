@@ -196,6 +196,45 @@ def run(root, directory, max_batches=None):
     return report(root, directory) if task["completed"] == target else task
 
 
+def render_source_diagnostics(root, directory, destination):
+    """Render saved source fits without refitting or changing an ensemble.
+
+    Only reporting-code revisions are allowed here. Execution/resume retains
+    the strict whole-code identity gate in verify_baseline.
+    """
+    from agent_core.time_dependent_standard_results import finalize_time_dependent_results
+    task = read_task(directory)
+    destination = Path(destination).resolve()
+    if destination.exists():
+        raise ValueError("Source diagnostic destination must be new")
+    expected = task["immutable"]["code"]
+    current = code_identity(root)
+    reporting_files = {"run_agent_wrap.py", "agent_core/time_dependent_trials.py",
+        "agent_core/time_dependent_standard_results.py", "agent_core/plot_time_dependent_standard_report.py"}
+    changed = {p for p in set(expected["files"]) | set(current["files"])
+        if expected["files"].get(p) != current["files"].get(p)}
+    if expected["packages"] != current["packages"] or changed - reporting_files:
+        raise ValueError("Numerical code/packages changed; cannot render source diagnostics")
+    for path, sha in task["immutable"]["baseline_files"].items():
+        if sha256_file(path) != sha:
+            raise ValueError("Reviewed baseline changed")
+    for path, sha in task["immutable"]["observed"]["time_dependent_engine"]["input_sha256"].items():
+        if sha256_file(Path(root)/path) != sha:
+            raise ValueError("Numerical input changed")
+    chunks = load_shards(directory, task)
+    if task["completed"] != task["immutable"]["n_trials"]:
+        raise ValueError("Source diagnostics require a complete ensemble")
+    result = finalize_time_dependent_results(root, destination, task, chunks,
+        include_source_diagnostics=True)
+    write_json(destination/"render_provenance.json", {
+        "source_trial_directory": str(Path(directory).resolve()),
+        "request_sha256": task["request_sha256"], "refitted": False,
+        "reporting_code_changes": {p: {"recorded": expected["files"].get(p),
+            "rendered": current["files"].get(p)} for p in sorted(changed)},
+        "numerical_code_and_inputs_unchanged": True})
+    return result
+
+
 def report(root, directory):
     import numpy as np
     from scipy.stats import beta, norm

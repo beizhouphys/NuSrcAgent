@@ -28,8 +28,11 @@
 - Always default new time-dependent requests to the merged
   `per_source_catalog_windows` workflow: fixed per-source box or Gaussian time profiles,
   single-source fits, scans, stacking and requested shared seasonal trials.
-  Read docs/time_dependent_catalog.md. Require explicit windows, detector phases
-  and the uniform-livetime background assumption before READY. Completed trials
+  Read docs/time_dependent_catalog.md. Require explicit fixed profiles before READY.
+  For omitted detector phases, select the supported phases with non-empty detector
+  uptime overlap with the profiles and record the derivation. Default an omitted
+  background-time model to uniform_livetime. Preserve explicit supported settings;
+  explain unsupported choices without substituting defaults. Completed trials
   provide empirical p-values and significances. Never silently fall back to
   legacy Gaussian/box time searches for unsupported settings; explain the
   limitation. New legacy requests require explicit `scope=legacy_time_profile`.
@@ -44,6 +47,10 @@
   apply this presentation path to time-integrated or legacy time-profile runs.
 
 ## Communication and notation
+
+- Use `s` in prose and $s$ in equations, reports and figures for the spectral
+  index in a spectrum proportional to $E^{-s}$, for every workflow. Preserve
+  existing CLI/API and machine-readable field names and their sign conventions.
 
 - Use terminology natural to particle physicists and astrophysicists. Prefer
   concrete physical meanings, such as detector response, point-spread function,

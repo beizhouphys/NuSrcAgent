@@ -157,6 +157,52 @@ def unavailable_significance():
                 post_trial_calibration="unavailable")
 
 
+def apply_catalog_window_defaults(task, root):
+    """Resolve new-task defaults without changing explicit or historical settings."""
+    from agent_core.agent_orchestrator import build_analysis_payload
+    from agent_core.schemas import AnalysisConfig
+    from agent_core.normalize import normalize_config
+    from analysis_backend.time_dependent.adapter import resolve_windows
+    from agent_core.time_dependent_phase_correction import response_uptime, IC86_SEASONS
+    from agent_core.file_cache import sha256_file
+
+    settings = task["parameters"]["temporal"]["value"]
+    provenance = task.setdefault("temporal_defaults", {})
+    if "background_time_model" not in settings:
+        settings["background_time_model"] = "uniform_livetime"
+        provenance["background_time_model"] = dict(value="uniform_livetime", source="system_default")
+    if "datasets" in settings:
+        return []
+    candidates = ["IC40", "IC59", "IC79", "IC86_I-XI"]
+    # Incomplete/invalid profiles remain pending; do not derive phases from them.
+    if catalog_window_errors(dict(settings, datasets=candidates)):
+        return []
+    try:
+        normalized = normalize_config(AnalysisConfig.from_dict(build_analysis_payload(task, Path(root))), root)
+        windows = resolve_windows(normalized)
+        directory = Path(root)/"data_input/IceCube_data_released/2026_icecube_14_year_track_data_IceTracks_DR2/uptime"
+        uptime = response_uptime(directory, candidates)
+        overlaps = {
+            phase: [row["name"] for row in windows if any(
+                max(row["start_mjd"], start) < min(row["stop_mjd"], stop)
+                for start, stop in uptime[phase])]
+            for phase in candidates
+        }
+        selected = [phase for phase in candidates if overlaps[phase]]
+        if not selected:
+            return ["No supported detector phase overlaps the supplied fixed profiles"]
+        seasons = ["IC40", "IC59", "IC79", *("IC86_" + season for season in IC86_SEASONS)]
+        hashes = {str((directory/(season + "_exp.csv")).relative_to(root)):
+                  sha256_file(directory/(season + "_exp.csv")) for season in seasons}
+        settings["datasets"] = selected
+        provenance["datasets"] = dict(value=selected, source="detector_uptime_overlap",
+            candidates=candidates, overlapping_sources=overlaps,
+            profile_supports=windows, uptime_sha256=hashes)
+    except (OSError, ValueError, KeyError, TypeError, IndexError) as exc:
+        return ["Cannot derive detector phases from fixed profiles: " + str(exc)]
+    return []
+
+
 def configure_temporal_task(task, args, root):
     from agent_core.task_state import parameter, refresh_readiness
     from agent_core.planner import combined_questions
@@ -188,7 +234,17 @@ def configure_temporal_task(task, args, root):
     elif previous_settings is None and default_scope:
         params["temporal"] = parameter({"scope": default_scope}, "system_default", True)
     settings = params.get("temporal", {}).get("value")
-    errors = temporal_errors(settings)
+    default_errors = []
+    if isinstance(settings, dict) and settings.get("scope") == "per_source_catalog_windows":
+        if getattr(args, "command", "").startswith("create-"):
+            task["temporal_defaults_policy"] = "overlapping_response_phases_v1"
+        if task.get("temporal_defaults_policy") == "overlapping_response_phases_v1":
+            if getattr(args, "temporal_file", None):
+                task.pop("temporal_defaults", None)
+            # Request construction needs the scope-specific procedure even during planning.
+            params["fit_procedure"] = parameter("catalog_continuous_profile_v1", "catalog_window_engine", True)
+            default_errors = apply_catalog_window_defaults(task, root)
+    errors = temporal_errors(settings) + default_errors
     if params.get("data_sample", {}).get("value") != "icecube_public_ps_14yr_dr2":
         errors.append("Time-dependent analysis currently requires DR2")
     catalog_windows = isinstance(settings, dict) and settings.get("scope") == "per_source_catalog_windows"
