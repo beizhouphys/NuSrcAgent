@@ -16,10 +16,9 @@ The tool assumes basic familiarity with physics/astronomy; familiarity with
 AI or software architecture is not required. Start with installation below,
 then run the two [worked examples](docs/quickstart.md).
 
-The current version is `0.2.0`, a development version shared
-through a private repository. Input data and precomputed probability-density
-tables are provided automatically. New time-dependent requests default to the
-merged [fixed-profile workflow](docs/time_dependent_catalog.md), supporting
+NuSrcAgent `0.2.0` is a **public development preview**. The installer downloads
+the IceCube data and precomputed probability-density tables. New time-dependent
+requests default to the merged [fixed-profile workflow](docs/time_dependent_catalog.md), supporting
 single-source fits, catalog scans, stacking and shared seasonal background
 trials with empirical p-values and significances.
 
@@ -144,8 +143,8 @@ substantial time, especially large catalog searches and repeated background fits
 
 ## Installation
 
-You need Python 3.12 on macOS/Linux, Git, internet access and access to this
-private GitHub repository. In a terminal, download the code and enter its folder:
+You need Python 3.12 on macOS or Linux, Git and an internet connection.
+Clone the repository and enter its folder:
 
 ```bash
 git clone https://github.com/beizhouphys/NuSrcAgent.git
@@ -171,11 +170,10 @@ each downloaded file against its recorded **SHA-256 checksum**, a file fingerpri
 used to detect incomplete or changed inputs. Successful installation ends with
 `Installation and input verification complete.` Re-running reuses verified inputs.
 
-Because the repository and data downloads are private, installation uses your
-own GitHub login. It reuses Git HTTPS credentials or an existing `gh auth login`
-(the GitHub command-line tool). If you cloned using only an SSH key, log in
-with `gh auth login` once for the HTTPS data downloads. Do not use someone else's
-account or token. See [authentication and installation options](docs/input_installation.md).
+The current installer uses your GitHub credentials to download the data bundles.
+It uses Git HTTPS credentials or an existing `gh auth login` session. If you
+only use SSH for GitHub, run `gh auth login` before installing.
+See [authentication and installation options](docs/input_installation.md).
 
 The default DR2 download is about 1.52 GB and extracts about 3.8 GiB, in addition
 to the Python environment and retained download/staging cache. Most extracted
