@@ -13,6 +13,7 @@ import csv
 import hashlib
 import json
 import re
+import sys
 import textwrap
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -26,12 +27,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import chi2, norm
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from agent_core.time_dependent_phase_correction import (
+    assign_sources_to_response,
+    response_uptime,
+    sidak_by_response,
+)
+
 
 PROFILE = "td_catalog_standard_v1"
 MJD_EPOCH = datetime(1858, 11, 17)
 SIGMA_LEVELS = np.asarray([1.0, 2.0, 3.0])
 SIGMA_P_VALUES = norm.sf(SIGMA_LEVELS)
-CONTOUR_LEVELS = (1.0, 2.30, 4.61, 5.99, 9.21)
+CONTOUR_LEVELS = (2.30, 5.99)
+CONTOUR_LABELS = {2.30: "68%", 5.99: "95%"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,9 +58,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--post-trial",
-        choices=("empirical", "sidak"),
-        default="empirical",
-        help="post-trial series shown in the lower timeline panel",
+        choices=("empirical", "sidak", "phase-sidak"),
+        default="phase-sidak",
+        help="post-trial series shown in the lower timeline panel; phase-sidak groups by detector response at the IR peak",
     )
     parser.add_argument("--catalog-label", help="optional presentation-label override")
     parser.add_argument("--dataset-label", help="optional presentation-label override")
@@ -376,9 +385,14 @@ def plot_source_timeline(
     post_trial: str,
 ) -> Path:
     rows = sorted(rows, key=lambda row: float(row["time_anchor_mjd"]))
-    dates = np.asarray([mjd_to_datetime(float(row["time_anchor_mjd"])) for row in rows])
+    time_column = "phase_assignment_mjd" if post_trial == "phase-sidak" else "time_anchor_mjd"
+    dates = np.asarray([mjd_to_datetime(float(row[time_column])) for row in rows])
     local_p = np.asarray([float(row["p_pre"]) for row in rows])
-    post_field = "p_post_empirical_max_ts" if post_trial == "empirical" else "p_post_sidak"
+    post_field = {
+        "empirical": "p_post_empirical_max_ts",
+        "sidak": "p_post_sidak",
+        "phase-sidak": "p_post_phase_sidak",
+    }[post_trial]
     post_p = np.asarray([float(row[post_field]) for row in rows])
     ts = np.asarray([float(row["ts"]) for row in rows])
     floor = 1.0 / (n_trials + 1.0)
@@ -388,12 +402,16 @@ def plot_source_timeline(
     fig, axes = plt.subplots(2, 1, figsize=(16, 9), sharex=True, constrained_layout=True)
     labels = (
         "Pre-trial",
-        "Post-trial (empirical max-TS)" if post_trial == "empirical" else "Post-trial (Šidák)",
+        {
+            "empirical": "Post-trial (empirical max-TS)",
+            "sidak": "Post-trial (Šidák, full catalog)",
+            "phase-sidak": "Post-trial (response-group Šidák; joint-fit local $p$)",
+        }[post_trial],
     )
     colors = ("#7752a5", "#d17c12")
     y_min = floor / 1.8
-    anchor_min = min(float(row["time_anchor_mjd"]) for row in rows)
-    anchor_max = max(float(row["time_anchor_mjd"]) for row in rows)
+    anchor_min = min(float(row[time_column]) for row in rows)
+    anchor_max = max(float(row[time_column]) for row in rows)
     coverage_start = min(start for start, _ in source_windows)
     coverage_stop = max(stop for _, stop in source_windows)
     display_start = min(coverage_start, anchor_min)
@@ -414,7 +432,8 @@ def plot_source_timeline(
         )
         for probability in SIGMA_P_VALUES:
             ax.axhline(probability, color="#159b78", ls=":", lw=1.4, alpha=0.9, zorder=1)
-        ax.axhline(floor, color="#6b6b6b", ls="--", lw=0.9, alpha=0.7, zorder=1)
+        if panel == 0 or post_trial != "phase-sidak":
+            ax.axhline(floor, color="#6b6b6b", ls="--", lw=0.9, alpha=0.7, zorder=1)
         ax.scatter(
             dates,
             values,
@@ -483,11 +502,19 @@ def plot_source_timeline(
     axes[1].xaxis.set_major_locator(mdates.YearLocator())
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     axes[1].xaxis.set_minor_locator(mdates.MonthLocator(bymonth=(4, 7, 10)))
-    axes[1].set_xlabel("Source time anchor")
+    axes[1].set_xlabel(
+        ("Box end time (IR peak for Flaires)" if rows[0]["time_profile"] == "box" else "Gaussian center time")
+        if post_trial == "phase-sidak" else "Source time anchor"
+    )
     axes[1].text(
         0.008,
         0.035,
-        r"Dashed gray: Monte Carlo floor $1/(N_\mathrm{trials}+1)$",
+        (
+            "Analytic response-group correction of saved joint-fit local $p$; "
+            "gray line in upper panel: local Monte Carlo floor"
+            if post_trial == "phase-sidak" else
+            r"Dashed gray: Monte Carlo floor $1/(N_\mathrm{trials}+1)$"
+        ),
         transform=axes[1].transAxes,
         fontsize=8.5,
         color="0.35",
@@ -504,7 +531,7 @@ def plot_source_timeline(
         plot_rows.append(
             {
                 **row,
-                "source_date_iso": mjd_to_datetime(float(row["time_anchor_mjd"])).date().isoformat(),
+                "source_date_iso": mjd_to_datetime(float(row[time_column])).date().isoformat(),
                 "displayed_post_trial_method": post_trial,
                 "displayed_post_trial_p": row[post_field],
             }
@@ -711,7 +738,7 @@ def plot_likelihood_surface(
             linewidths=1.5,
             linestyles="-",
         )
-        ax.clabel(contours, inline=True, fontsize=9, fmt=lambda value: f"{value:g}")
+        ax.clabel(contours, inline=True, fontsize=9, fmt=CONTOUR_LABELS)
 
     if np.isclose(best_ns, 0.0) and not np.isfinite(best_gamma):
         ax.plot(
@@ -745,7 +772,7 @@ def plot_likelihood_surface(
     ax.text(
         0.98,
         0.04,
-        "Contour labels show likelihood-drop levels.",
+        "68% and 95% two-parameter likelihood-drop contours.",
         transform=ax.transAxes,
         ha="right",
         va="bottom",
@@ -788,10 +815,40 @@ def main() -> None:
     all_phases = []
     source_windows = []
     phases = []
+    uptime_paths: list[Path] = []
     if has_sources:
-        all_phases = read_phases(infer_uptime_paths(observed, args.uptime_dir))
+        uptime_paths = infer_uptime_paths(observed, args.uptime_dir)
+        all_phases = read_phases(uptime_paths)
         source_windows = read_source_windows(root / "observed.sources.json")
         phases = phases_overlapping_source_windows(all_phases, source_windows)
+    phase_group_counts: dict[str, int] = {}
+    timeline_phases = phases
+    if has_sources and args.post_trial == "phase-sidak":
+        source_manifest = read_json(root / "observed.sources.json")
+        selected_datasets = observed["time_dependent_engine"]["dataset_names"]
+        grouped_spans = response_uptime(uptime_paths[0].parent, selected_datasets)
+        assignments, phase_group_counts = assign_sources_to_response(
+            source_manifest["selected"], source_manifest["time_profile"], grouped_spans
+        )
+        if len(assignments) != len(source_rows):
+            raise ValueError("response-phase assignments do not match source results")
+        for row, source, assignment in zip(source_rows, source_manifest["selected"], assignments):
+            if row["source_name"] != source["name"]:
+                raise ValueError("source results and manifest differ in order or membership")
+            count = phase_group_counts[assignment["response_phase"]]
+            phase_p = sidak_by_response(float(row["p_pre"]), count)
+            if row.get("p_post_phase_sidak") not in (None, "") and not np.isclose(
+                float(row["p_post_phase_sidak"]), phase_p, rtol=1e-12, atol=1e-12
+            ):
+                raise ValueError(f"saved response-phase p-value disagrees for {row['source_name']}")
+            row.update(assignment)
+            row["response_phase_n_sources"] = count
+            row["p_post_phase_sidak"] = phase_p
+            row["time_profile"] = source["time_profile"]
+        timeline_phases = [
+            (name.replace("_", " "), min(span[0] for span in spans), max(span[1] for span in spans))
+            for name, spans in grouped_spans.items()
+        ]
 
     selected_source = None
     selected_surface = None
@@ -825,7 +882,7 @@ def main() -> None:
         timeline_data = plot_source_timeline(
             timeline_stem,
             source_rows,
-            phases,
+            timeline_phases,
             source_windows,
             all_phases[-1][2],
             n_trials,
@@ -951,6 +1008,18 @@ def main() -> None:
         "report_profile": PROFILE,
         "source_result_directory": str(root),
         "post_trial_display": args.post_trial,
+        "phase_group_sidak": (
+            {
+                "source_assignment": "box stop or Gaussian center within response period; sole window-overlap fallback outside periods",
+                "local_p_value_origin": "saved joint-phase single-source fits",
+                "time_coordinate": (
+                    "box stop MJD" if source_rows[0]["time_profile"] == "box" else "Gaussian center MJD"
+                ),
+                "formula": "1 - (1 - p_pre)**N_phase",
+                "response_group_counts": phase_group_counts,
+            }
+            if args.post_trial == "phase-sidak" else None
+        ),
         "n_sources": len(source_rows),
         "n_background_trials": n_trials,
         "selected_source": source_specific,

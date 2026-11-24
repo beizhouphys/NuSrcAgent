@@ -33,23 +33,35 @@ def _has_stack(normalized):
             and catalog_operation in {"stack", "scan_and_stack"})
 
 
-def _write_observed_likelihood_contours(normalized, result, root, run_dir, figure_dir):
+def _write_observed_likelihood_contours(
+    normalized,
+    result,
+    root,
+    run_dir,
+    figure_dir,
+    prepared=None,
+):
     """Create reviewed-fit surfaces without running or depending on trials."""
 
     if normalized.gamma_mode != "fitted":
         return {}, {"status": "not_applicable_fixed_gamma", "sources": [], "stack": None}
 
     from analysis_backend.time_dependent.adapter import prepare_analysis
-    from analysis_backend.time_dependent.surfaces import save_observed_likelihood_surface
+    from analysis_backend.time_dependent.surfaces import (
+        build_observed_surface_context,
+        save_observed_likelihood_surface,
+    )
     from agent_core.plot_time_dependent_standard_report import plot_likelihood_surface
 
-    prepared = prepare_analysis(normalized, root, workers=1, build_engine=False)
+    if prepared is None:
+        prepared = prepare_analysis(normalized, root, workers=1, build_engine=False)
     expected = result["time_dependent_engine"]
     for key in ("engine", "spectrum", "likelihood", "dataset_names", "input_sha256", "windows"):
         if prepared.metadata[key] != expected[key]:
             raise ValueError("observed contour reconstruction differs in " + key)
     if expected.get("time_profile") is not None and prepared.metadata["time_profile"] != expected["time_profile"]:
         raise ValueError("observed contour reconstruction differs in time_profile")
+    surface_context = build_observed_surface_context(prepared.constructed)
 
     surface_dir = run_dir / "likelihood_contours"
     plot_dir = figure_dir / "likelihood_contours"
@@ -70,6 +82,7 @@ def _write_observed_likelihood_contours(normalized, result, root, run_dir, figur
             source_index=source_index,
             source_name=str(item["source_name"]),
             source_id=str(item["source_number"]),
+            context=surface_context,
         )
         plot_stem = plot_dir / stem_name
         plot_likelihood_surface(
@@ -105,6 +118,7 @@ def _write_observed_likelihood_contours(normalized, result, root, run_dir, figur
             surface_path,
             fit,
             source_index=None,
+            context=surface_context,
         )
         plot_stem = plot_dir / "stacking_likelihood_contour"
         plot_likelihood_surface(
@@ -136,6 +150,7 @@ def write_artifacts(config_path, config, normalized, result, root):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     root, config_path = Path(root), Path(config_path)
+    prepared = getattr(result, "prepared_analysis", None)
     from agent_core.time_dependent_trials import code_identity
     result["time_dependent_engine"]["code_identity"] = code_identity(root)
     run_dir = resolve_path(root, config.outputs.output_root) / make_run_id()
@@ -157,7 +172,7 @@ def write_artifacts(config_path, config, normalized, result, root):
         files[suffix] = str(path)
     plt.close(fig)
     contour_files, contour_summary = _write_observed_likelihood_contours(
-        normalized, result, root, run_dir, figure_dir
+        normalized, result, root, run_dir, figure_dir, prepared=prepared
     )
     files.update(contour_files)
     result["observed_likelihood_contours"] = contour_summary

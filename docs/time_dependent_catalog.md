@@ -145,6 +145,21 @@ Seed equals base seed plus global trial index, independent of batches/resources.
 Source-local TS, catalog maximum TS and stack TS are distinct null distributions.
 Reports use `(exceedances + 1)/(N + 1)` and fixed-N binomial 68%/95% intervals;
 finite Monte Carlo precision and inherited baseline warnings must be retained.
+The default displayed source post-trial value is the analytic response-phase
+Šidák estimate `1 - (1 - p_pre)**N_phase`, where `p_pre` is the saved local
+p-value from the joint-phase fit and `N_phase` counts sources assigned to the
+same detector response. All selected IC86 I–XI seasons form one response phase;
+IC40, IC59 and IC79 are separate. A box uses its stop time for phase assignment,
+and a Gaussian uses its center. An anchor inside a gap between good runs is
+assigned to its enclosing detector-response period. Outside all selected
+response periods, a source may be assigned by its fixed-window overlap only
+when exactly one response phase overlaps; ambiguous assignments fail. Source
+rows record the phase, assignment method, count, analytic value and one-sided
+significance.
+This calculation is an independence approximation applied to the joint-fit
+local p-values, not a phase-only fit or an empirical catalog scan calibration.
+The shared-trial maximum-TS p-value remains separately available as the
+empirical scan calibration; stacking retains its empirical p-value.
 No calibration is claimed for additional catalogs, window searches or optional
 stopping. No significance report is generated from an incomplete ensemble.
 
@@ -152,8 +167,9 @@ After a complete ensemble passes the baseline, fit, finite-value, requested
 count, unique-seed and contiguous-index checks, NuSrcAgent creates a canonical
 saved-result bundle below `<trial-output>/standard_results/` and renders it with
 `agent_core/plot_time_dependent_standard_report.py`. This output-only conversion
-does not repeat likelihood maximization. It provides the local and shared-trial maximum-TS
-catalog results, the stacking result when requested, machine-readable observed
+does not repeat likelihood maximization. It provides the default response-phase
+Šidák source values, local and shared-trial maximum-TS catalog results, the
+stacking result when requested, machine-readable observed
 and trial arrays, validation/provenance records, and applicable PNG/PDF figures.
 For fitted-Gamma runs it reconstructs the immutable reviewed observed
 likelihood, evaluates the full numerical `ns`-Gamma grid for the empirical
@@ -162,12 +178,14 @@ the canonical likelihood-contour NPZ files before plotting. Surface evaluation
 does not use the background trials and does not refit the parameters. A required
 surface that is missing or fails this consistency check blocks the polished
 standard result. Fixed-Gamma runs have no two-dimensional `ns`-Gamma surface.
-The source-time display uses the fixed Gaussian center, or records a physical
-anchor when supplied for a box and otherwise uses the fixed-window midpoint.
-NuSrcAgent retains the scrambled distribution as
-the time-dependent null calibration and does not add time-integrated asymptotic
-significance formulas. Incomplete or failed ensembles retain diagnostics but do
-not receive the polished standard presentation.
+The default source-time display places boxes at their stop time and Gaussians at
+their center, and uses the response-phase Šidák values in its lower panel.
+The empirical catalog-maximum or full-catalog Šidák series can be selected
+explicitly with the renderer's `--post-trial` option. NuSrcAgent retains the
+scrambled distribution as the time-dependent null calibration and does not add
+time-integrated asymptotic significance formulas. Incomplete or failed
+ensembles retain diagnostics but do not receive the polished standard
+presentation.
 
 The task records immutable scientific settings, input/code/package identities,
 hashed indexed NPZ shards and measured current-invocation timing. Stop takes

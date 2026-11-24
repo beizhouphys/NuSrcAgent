@@ -40,13 +40,20 @@ likelihood on the saved contour grid as specified below. Figures are rendered in
 `agent_core/plot_time_dependent_standard_report.py`. The public analysis interface
 remains `run_agent_wrap.py`.
 
-The source timeline uses an explicitly recorded physical time anchor when one
-exists. Otherwise it uses the fixed-window midpoint and records
-`time_anchor_definition=fixed_window_midpoint` in machine-readable products.
+The default source timeline uses the box stop or Gaussian center for its time
+coordinate. Its lower panel displays the response-phase Sidak estimate
+`1 - (1 - p_pre)**N_phase`, using the saved joint-fit local p-value. Count all
+selected IC86 I–XI seasons as one detector-response phase. If an anchor falls
+outside every selected response period, use a sole fixed-window overlap and
+record that assignment; ambiguous assignments fail. Preserve the empirical
+shared-trial maximum-TS result separately as the full-scan calibration.
 
 NuSrcAgent does not apply time-integrated asymptotic significance formulas to
-time-dependent fits. The standard plots therefore use the matched scrambled
-distribution as their null calibration and omit analytic half-chi-square
+time-dependent fits. Local source and stacking p-values, and the empirical
+catalog-maximum result, use the matched scrambled distributions. The default
+timeline's response-phase Sidak series is explicitly an analytic multiplicity
+estimate of those local p-values; it is not a background-trial calibration of
+the phase-restricted or full-catalog maximum. Omit analytic half-chi-square
 overlays unless a future reviewed workflow explicitly authorizes them.
 
 For a fitted-Gamma analysis, the observed stage reconstructs the immutable
@@ -76,7 +83,7 @@ and does not denote a different or signed parameter.
 
 For a validated completed ensemble, lead with the Gamma treatment and number of
 background trials. Present a two-column table containing the leading source,
-best fit, add-one local p-value and exceedances, Sidak post-trial result,
+best fit, add-one local p-value and exceedances, default response-phase Sidak post-trial result,
 empirical shared-trial maximum-TS result, and weighted-stack result when those
 components apply. Treat empirical maximum TS as the primary catalog-wide scan
 calibration.

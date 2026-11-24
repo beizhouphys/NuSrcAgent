@@ -627,7 +627,7 @@ fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
    index-to-seed mapping through pause/resume. Do not report a completed result
    from an incomplete ensemble. After the requested count and all validation
    checks pass, present the canonical table with the leading source, best fit,
-   add-one local p-value, Sidak result, empirical shared-trial maximum-TS result,
+   add-one local p-value, default response-phase Sidak result, empirical shared-trial maximum-TS result,
    and weighted-stack empirical result when applicable. Show the top-local-
    significance source and stacking summary tables defined above, rather than
    repeating the observed-TS ranking as the post-trial summary. Report Monte
@@ -719,7 +719,10 @@ ensemble; there is no time-dependent flux continuation.
    report the add-one empirical local p-value, exceedances/trials, one-sided
    significance when finite, Monte Carlo intervals and the minimum resolvable
    p-value. For a scan, additionally report the empirical shared-trial maximum-TS
-   post-trial result as primary and the Sidak approximation as secondary. State
+   post-trial result as the calibration of the full catalog scan. Display the
+   response-phase Sidak approximation by default for each source, using the
+   source's box stop or Gaussian center to assign a detector-response phase
+   and counting all selected IC86 I–XI seasons as one phase. State
    validation, requested/produced counts, seed uniqueness and index contiguity,
    preserve all inherited warnings, and show the top-local-significance source
    summary table defined above, with best-fit Gamma included only when Gamma was

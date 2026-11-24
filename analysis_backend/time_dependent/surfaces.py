@@ -32,11 +32,23 @@ class SurfaceInputs:
     yield_grid: np.ndarray
 
 
-def _observed_surface_inputs(
+@dataclass(frozen=True)
+class ObservedSurfaceContext:
+    """Shared exact observed ratio basis for several contour surfaces."""
+
+    native_gamma: np.ndarray
+    ratio_grids: tuple[np.ndarray, ...]
+    source_indices: tuple[np.ndarray, ...]
+    event_indices: tuple[np.ndarray, ...]
+    phase_yield_grid: np.ndarray
+    event_counts: np.ndarray
+    n_sources: int
+
+
+def build_observed_surface_context(
     constructed: ConstructedCatalogAnalysis,
-    source_index: int | None,
-) -> SurfaceInputs:
-    """Build the exact observed ratios used by the continuous profile fit."""
+) -> ObservedSurfaceContext:
+    """Evaluate the exact observed ratio basis once for all requested surfaces."""
 
     from .optimized import OptimizedSharedScrambleEngine
 
@@ -54,9 +66,35 @@ def _observed_surface_inputs(
         event_indices,
         phase_yield_grid,
     ) = engine._evaluate_grid(events, event_counts, None)
+    return ObservedSurfaceContext(
+        native_gamma=native_gamma,
+        ratio_grids=tuple(ratio_grids),
+        source_indices=tuple(source_indices),
+        event_indices=tuple(event_indices),
+        phase_yield_grid=phase_yield_grid,
+        event_counts=event_counts,
+        n_sources=engine.n_sources,
+    )
+
+
+def _observed_surface_inputs(
+    constructed: ConstructedCatalogAnalysis,
+    source_index: int | None,
+    *,
+    context: ObservedSurfaceContext | None = None,
+) -> SurfaceInputs:
+    """Select one hypothesis from a shared exact observed ratio basis."""
+
+    context = context or build_observed_surface_context(constructed)
+    native_gamma = context.native_gamma
+    ratio_grids = context.ratio_grids
+    source_indices = context.source_indices
+    event_indices = context.event_indices
+    phase_yield_grid = context.phase_yield_grid
+    event_counts = context.event_counts
 
     if source_index is not None:
-        if not 0 <= source_index < engine.n_sources:
+        if not 0 <= source_index < context.n_sources:
             raise IndexError(f"source index {source_index} is outside the catalog")
         grids = []
         phases = []
@@ -193,8 +231,9 @@ def save_observed_likelihood_surface(
     source_index: int | None,
     source_name: str = "",
     source_id: str = "",
-    ns_points: int = 251,
-    gamma_points: int = 121,
+    ns_points: int = 126,
+    gamma_points: int = 61,
+    context: ObservedSurfaceContext | None = None,
 ) -> dict[str, Any]:
     """Evaluate, validate, and atomically save one canonical surface NPZ."""
 
@@ -219,7 +258,11 @@ def save_observed_likelihood_surface(
     gamma_values = np.linspace(
         float(spectrum.gamma_min), float(spectrum.gamma_max), gamma_points
     )
-    inputs = _observed_surface_inputs(constructed, source_index)
+    inputs = _observed_surface_inputs(
+        constructed,
+        source_index,
+        context=context,
+    )
     log_lambda = evaluate_log_lambda_surface(inputs, gamma_values, ns_values)
     if not np.all(np.isfinite(log_lambda)):
         raise ValueError("likelihood surface contains nonfinite grid values")
