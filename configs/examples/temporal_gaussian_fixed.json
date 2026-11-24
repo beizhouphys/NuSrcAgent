@@ -1,4 +1,5 @@
 {
+  "scope": "legacy_time_profile",
   "profile": "gaussian",
   "time_format": "mjd",
   "time_scale": "ut1",

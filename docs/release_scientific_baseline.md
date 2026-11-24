@@ -48,10 +48,11 @@ as recorded.
 - DR1 definitions remain unchanged and do not use full14 v3 event tables.
 - Conditional time-integrated event-RA scrambling preserves other event quantities;
   trial count and hypothesis family must be agreed for each actual calibration.
-- DR2 time-dependent single-source analysis and catalog scans support explicit
-  Gaussian/box profiles with livetime-dependent acceptance and recorded searches.
-  Time-dependent stacking awaits collaborator code; scrambling requires owner
-  approval and time-search significance calibration remains unavailable.
+- The default DR2 fixed-profile time-dependent workflow supports single-source
+  fits, scans and stacking with fixed box or Gaussian profiles. Separately
+  authorized matched shared seasonal trials calibrate the recorded fixed-profile
+  hypotheses. The explicit legacy time-search scope has no stacking or
+  calibrated trials. Neither scope supplies time-dependent flux/fluence.
 
 BSpdf means background spatial probability density. If an event-declination
 cut is requested, this density is normalized over the retained region rather
@@ -68,7 +69,7 @@ baseline. New DR2 single-source and catalog-scan tasks instead default to the
 [adaptive source-centered declination window](single_source_performance.md): minimum half-width
 20 degrees and at least 20% of every dataset. Use `--full-sky-events` at task
 creation to reproduce all-event references. Stacking selections, frozen PDFs,
-Gamma conventions, fit bounds and historical task settings are unchanged.
+s conventions, fit bounds and historical task settings are unchanged.
 
 ## Fixed-spectrum point-source flux limits, 2026-10-19
 
@@ -76,7 +77,7 @@ New DR2 spatial+energy single-source tasks default to three separate fixed-spect
 
 ## Single-source measurement workflow, 2026-10-19
 
-New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-Gamma joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
+New single-source DR2 spatial+energy tasks use the owner-approved primary fit procedure and report flux measurements only for strict TS > 9. The calculation supplies correlated profile intervals and free-s joint contours alongside the existing fixed-spectrum upper limits. Catalog scans retain their current procedure and omit the new measurement calculation. The owner-approved default reporting policy stores technical method details in numerical metadata, without warnings or unsolicited discussion of the three identified topics. Genuine fit, input and artifact checks remain active. See [single-source flux measurement definitions](flux_measurements.md).
 
 
 New standalone DR2 spatial+energy single-source tasks explicitly select linear_v1;

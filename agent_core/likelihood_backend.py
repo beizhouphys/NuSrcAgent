@@ -12,6 +12,9 @@ DR2_SAMPLE = "icecube_public_ps_14yr_dr2"
 
 def run_likelihood_backend(normalized: NormalizedAnalysis, repo_root: str | Path | None = None, stacking_primary=None, workers: int = 1) -> dict[str, object]:
     if normalized.time_mode == "time_dependent":
+        if normalized.temporal.get("scope") == "per_source_catalog_windows":
+            from analysis_backend.time_dependent.adapter import run_catalog_windows
+            return run_catalog_windows(normalized, repo_root or ".", workers)
         from analysis_backend.skyllh_dr2_time_dependent import run_time_dependent
         if normalized.sample != DR2_SAMPLE or (normalized.analysis_type == "catalog_stacking" and normalized.catalog_operation != "scan"):
             raise ConfigError("Time-dependent runtime supports only DR2 single-source analysis and independent catalog scans")

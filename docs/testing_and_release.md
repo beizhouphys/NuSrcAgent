@@ -134,9 +134,9 @@ citation/publication metadata remain pending. No tag or GitHub Release is implie
   installation verification page.
 - Keep optional workbook limitations explicit; workbook portability is not
   required for the numerical/CSV/PDF analysis paths.
-- Time-dependent integration and validation, including collaborator stacking code,
-  are deferred by the owner until their integration is ready. They remain part
-  of the full first-release target, but do not block the current source-code sync.
+- The fixed-profile time-dependent integration is implemented, including
+  stacking and shared trials. Broader release validation remains separate from
+  implementation support; see [integration evidence](time_dependent_merge.md).
 - License and final CITATION/publication metadata; current author and code version
   are already approved.
 - Explicit choice of public Git history; this directory does not copy private history.
@@ -154,7 +154,7 @@ Tests remain excluded from the distributed repository.
 
 Real public-wrapper single-source and two-source scan-plus-stacking tasks
 completed with passing review in both the development and release copies.
-For TS, ns and Gamma, release-versus-development signed relative differences
+For TS, ns and s, release-versus-development signed relative differences
 are 0 and signed absolute differences are 0, including both individual source
 fits. Tables, figures, configurations, provenance and reviews were checked.
 The new histogram PDF was rendered and visually inspected. No background
@@ -170,13 +170,13 @@ hash verification. Eight focused policy checks passed in each development,
 release, isolated publication and test checkout, including final review
 handling of missing fit records. The private tests are not distributed.
 
-Six real public-wrapper tasks completed with passing review: a fixed-Gamma
-single source (Gamma=2.5, upper-limit fits omitted) and a fitted-Gamma two-source
+Six real public-wrapper tasks completed with passing review: a fixed-s
+single source (s=2.5, upper-limit fits omitted) and a fitted-s two-source
 scan plus uniform stack in each development, release and test checkout.
-Every individual scan fit records `skyllh_lbfgs_v1`, with no additional Gamma
+Every individual scan fit records `skyllh_lbfgs_v1`, with no additional s
 maximum search. Source fits, tables, normalized settings, provenance, review
 checks and histogram hashes were verified; the histogram PDF was rendered
-and visually inspected. All TS, ns and Gamma comparisons against the
+and visually inspected. All TS, ns and s comparisons against the
 development tasks have signed relative differences 0 and signed absolute
 differences 0. Zero background trials were executed. The stopped 501-source
 task remains stopped. These checks establish execution/procedure consistency,
@@ -186,21 +186,21 @@ not statistical calibration or parameter coverage.
 
 The development checkout passed 272 unit tests, including five new bitwise
 cache regressions, 20 golden language cases and setup/input hash verification.
-Checks cover PDF ratios and Gamma derivatives, both signal-energy declination
-modes, changed weights, Gamma endpoints, exact/repeated/nonfinite energy
+Checks cover PDF ratios and s derivatives, both signal-energy declination
+modes, changed weights, s endpoints, exact/repeated/nonfinite energy
 inputs, limited-budget fallback, lossless float64 payloads, dataset namespaces
 and new-trial invalidation. The private pre-cache calculation is retained
 only under the owner's test directory and is not shipped.
 
 Seven fresh persistent public-wrapper tasks completed with passing reviews:
-an uncached two-source scan-plus-stack control, followed by a fixed-Gamma
-single source and a fitted-Gamma two-source scan plus uniform stack in each
+an uncached two-source scan-plus-stack control, followed by a fixed-s
+single source and a fitted-s two-source scan plus uniform stack in each
 of the development, release and test copies. The control explicitly replaces
 `_calculate` in its process with the preserved pre-cache method; ordinary
 source-file provenance alone does not describe that substitution. The private
 verification record records the substitution and reference-file hash.
 
-All compared TS, ns, Gamma, local analytic p-value and significance values
+All compared TS, ns, s, local analytic p-value and significance values
 are bitwise identical: signed relative differences 0, signed absolute
 differences 0. Optimizer status/calls/iterations, selected events, weights,
 bounds and seeds agree. The source fits retain `skyllh_lbfgs_v1`; the stack
@@ -226,18 +226,18 @@ depends on the catalog, repeated energies, fit calls and machine load. See
 
 The development checkout passed 291 unit tests, setup/input hash checks and
 20 golden cases. Seven focused tests cover weighted catalog-total detector
-yield, split/zero weights, exact 4*pi intensity conversion, Gamma-dependent
+yield, split/zero weights, exact 4*pi intensity conversion, s-dependent
 measurement profiles, the strict TS=9 boundary, diffuse-only spectrum curves,
 primary-stage preservation, request/artifact mutation and isolated flux failure
 with at most one identical-request safe retry.
 
 Fresh public-wrapper runs completed a single source and a two-source
-individual scan plus fitted-Gamma joint stack in the development, release and
+individual scan plus fitted-s joint stack in the development, release and
 NuSrcAgent_test copies. The joint stack completed both reviews and generated
 three 95% limits, 68.27%/95% measured-intensity intervals and joint contours.
-Release checks also exercised a fixed-Gamma TS>9 stack and a TS<9 stack;
+Release checks also exercised a fixed-s TS>9 stack and a TS<9 stack;
 the latter produced limits without a reported measurement and preserved
-applicable boundary warnings. Each flux stage retained primary ns, Gamma, TS,
+applicable boundary warnings. Each flux stage retained primary ns, s, TS,
 p-value, significance and optimizer records exactly. Nonzero reference values
 had signed relative difference 0, then signed absolute difference 0; zero
 reference values have undefined relative difference and absolute difference 0.
@@ -267,7 +267,7 @@ Fresh single-source and small scan-plus-stack tasks completed in development,
 release and test copies. Each stopped at AWAITING_FLUX, rejected missing and
 blank replies without changing the primary record, then completed under an
 explicitly labelled regression-fixture reply. Fixture text is test input, not a
-claimed human conversation. The flux stages retained primary ns, Gamma, TS,
+claimed human conversation. The flux stages retained primary ns, s, TS,
 p-value, significance and optimizer records exactly; all primary artifact
 hashes remained unchanged. Nonzero reference values had signed relative
 difference 0 and signed absolute difference 0; for zero references, relative
@@ -296,7 +296,7 @@ background trial and does not overwrite historical figures or numerical products
 
 Background trials can follow a reviewed DR2 time-integrated single-source or
 stacking primary through `dr2-empirical-scramble --action prepare --baseline-task`.
-Scientific settings and the observed result are inherited. Fixed/fitted Gamma,
+Scientific settings and the observed result are inherited. Fixed/fitted s,
 spatial+energy/spatial-only modes retain their original definitions. Ordinary
 fits still execute zero trials; a stack from `scan_and_stack` calibrates only
 that stack. Catalog-scan maxima, DR1 and time-dependent trials are excluded.
@@ -304,20 +304,31 @@ Outputs include empirical probability/significance, 68%/95% fixed-N and
 anytime-valid Monte Carlo intervals, PNG/PDF figures and resumable checkpoints.
 
 Owner verification passed 385 unit tests, 27 golden cases and input hash checks.
-Real single-source and weighted two-source scan/stack runs exercised fitted-Gamma
+Real single-source and weighted two-source scan/stack runs exercised fitted-s
 trials, pause/resume, immutable primary/checkpoint records and statistical/figure
-exports. A fixed-Gamma spatial-only run verified continuous launch and graceful
+exports. A fixed-s spatial-only run verified continuous launch and graceful
 stop. Small regression ensembles do not establish precision significance or
 parameter coverage. Random-catalog generation is owner-only testing code;
 historical ensembles and their seed mappings remain unchanged.
+
+## Fixed-window time-dependent extension — 20261105
+
+The merged default time-dependent stacking/trial workflow is documented in
+[time_dependent_catalog.md](time_dependent_catalog.md), with integration evidence
+and remaining release gates in [time_dependent_merge.md](time_dependent_merge.md).
+The following dated record describes the legacy Gaussian/box time-search implementation,
+not the new fixed-window scope. Owner verification scripts remain outside the
+release checkout. CI now imports nested runtime packages and checks the shared
+trial command, but still does not claim real-data validation.
 
 ## DR2 time-dependent integration — 20261024
 
 DR2 time-dependent single-source analysis and independent catalog scans support
 explicit Gaussian/box profiles, fixed/fitted temporal parameters, good-run
 interval normalization and temporal detector acceptance across four datasets.
-Time-dependent stacking awaits collaborator code. Time-dependent p-values,
-significance, trials and flux/fluence remain unavailable; time-integrated
+At the time of this legacy-scope verification, stacking awaited collaborator
+code. In this legacy scope, p-values, significance, trials and flux/fluence
+remain unavailable; time-integrated
 significance/flux formulas are not used for these tasks.
 
 Owner verification passed 397 full-suite unit tests, the final 13 targeted
@@ -325,10 +336,10 @@ temporal checks, 34 golden-corpus structural cases and frozen-input hashes.
 Independent event-mixture likelihood/gradient/maximum comparisons and the
 broad-box time-integrated limit passed, as did deterministic injected-profile
 optimizer recovery under a normalized toy spatial model. Real wrapper runs
-cover fixed/fitted Gaussian/box parameters, fixed/fitted Gamma, spatial-only,
+cover fixed/fitted Gaussian/box parameters, fixed/fitted s, spatial-only,
 parallel/reversed-order scans, and unchanged time-integrated source/scan/stack
 execution. Deliberately changed results and artifacts were rejected. Real
-release/test source and two-source scans agree exactly in TS/ns/Gamma,
+release/test source and two-source scans agree exactly in TS/ns/s,
 temporal values and dataset fractions (relative difference 0 for nonzero
 references, absolute difference 0; zero references have undefined relative
 difference). No time-dependent background trials were executed.

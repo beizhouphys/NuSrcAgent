@@ -43,6 +43,9 @@ def make_run_id() -> str:
 
 def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normalized: NormalizedAnalysis, result: dict[str, object], repo_root: str | Path | None = None) -> Path:
     if normalized.time_mode == "time_dependent":
+        if normalized.temporal.get("scope") == "per_source_catalog_windows":
+            from agent_core.catalog_window_outputs import write_artifacts
+            return write_artifacts(config_path, config, normalized, result, repo_root or ".")
         from agent_core.time_dependent_outputs import write_time_dependent_artifacts
         return write_time_dependent_artifacts(config_path, config, normalized, result, repo_root or ".")
     add_significance(result, normalized.gamma_mode)

@@ -114,6 +114,9 @@ def write_time_dependent_artifacts(config_path, config, normalized, result, root
 
 
 def review_time_dependent(review, report, normalized, root):
+    if normalized.get("temporal", {}).get("scope") == "per_source_catalog_windows":
+        from agent_core.catalog_window_outputs import review_artifacts
+        return review_artifacts(review, report, normalized, root)
     from agent_core.review import add_check, review_dr2_run
     result = report["result"]
     records = fit_records(normalized, result)

@@ -154,13 +154,22 @@ TS. Primary TS > 9 additionally enables measured intensity and its uncertainty.
 Individual scan limits
 remain opt-in. See [stacking flux and two-stage reporting](stacking_flux.md).
 
-## Time-dependent catalog scans
+## Time-dependent catalog scans and stacking
 
-DR2 single-source analysis and independent catalog scans also support explicit
-Gaussian/box time profiles. Supplied t0/width are fixed unless explicitly used
-as fit seeds; omitted parameters require bounds, seeds and search settings
-before READY. These scans write time_dependent_results.csv, temporal search
-traces and profile figures, with unavailable p-values/significances. They do
-not use the time-integrated analytic formulas or catalog correction above.
-Time-dependent stacking awaits collaborator code; time-dependent background
-trials await owner approval. See [the guide](time_dependent.md).
+New time-dependent requests use the merged
+[fixed per-source-window workflow](time_dependent_catalog.md) by default.
+It supports single-source fits, independent scans and joint stacking with
+fixed or fitted s. Matched shared seasonal background trials provide
+empirical source-local, catalog-maximum and stacking p-values and one-sided
+Gaussian significances, with Monte Carlo intervals. These quantities become
+available after the requested trial ensemble completes; observed fits alone
+report them as unavailable. Time-integrated analytic formulas do not apply.
+
+Supply explicit fixed box or Gaussian profile parameters before READY. Omitted
+detector phases are derived from uptime overlap and the background-time model
+defaults to uniform_livetime; explicit supported settings take precedence. Omitted scope is recorded as `per_source_catalog_windows`.
+Fixed Gaussian profiles are supported; fitted time parameters do not trigger
+an automatic fallback. The [legacy fitted-time Gaussian/box workflow](time_dependent.md) remains available
+through explicit `scope=legacy_time_profile`; it supports independent source
+fits but has no stacking or calibrated trials. Existing tasks keep their
+recorded workflow.

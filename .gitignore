@@ -29,6 +29,7 @@ data_output/signal_energy_pdfs/14yr_dr2/*
 figures/
 outputs/
 release_assets/
+paper/
 .input_downloads/
 Tests*/
 docs_tmp/

@@ -17,12 +17,15 @@ only the original raw RFC input for the optional built-in reader remains externa
 The [README support table](../README.md#what-analyses-can-i-run) distinguishes
 implemented paths from the approved first-release target.
 
-DR2 time-dependent single-source analysis and independent catalog scans use
-Gaussian/box profiles, good-run interval normalization and temporal detector
-acceptance across all four datasets. Explicit fixed parameters or bounded,
-seeded searches are recorded and reviewed. Time-dependent p-values and
-significances are unavailable; no time-dependent scrambling is approved.
-Stacking awaits collaborator code. See [the guide](time_dependent.md).
+New DR2 time-dependent requests default to the merged
+[fixed per-source profile workflow](time_dependent_catalog.md), supporting
+single-source fits, scans, stacking and fixed-count shared seasonal background
+trials for fixed box or Gaussian signal-time PDFs. Completed trials provide empirical source-local, catalog-maximum and
+stacking p-values and significances with Monte Carlo intervals. It does not
+calibrate fitted time parameters or provide flux/fluence inference.
+The [legacy Gaussian/box time-search workflow](time_dependent.md) requires
+explicit selection for new requests and has no stacking or calibrated trials.
+Existing saved tasks retain their recorded definitions.
 This release copy does not establish publication readiness or implement extended
 source modeling through its point-coordinate examples.
 
@@ -174,7 +177,7 @@ not validate asymptotic significance, parameter bias or interval coverage.
 
 ## Original SkyLLH optimizer, 2026-10-19
 
-All new DR2 single-source, catalog-scan and joint stacking fits use
+Except for the explicit `per_source_catalog_windows` engine, new DR2 single-source, catalog-scan and joint stacking fits use
 `skyllh_lbfgs_v1`. The owner requested removal of the additional spectral index-interval
 and interpolation-switch maximum search. Likelihoods, PDFs, selections, bounds
 and exact caches are retained. Flux profiling keeps its maximum-consistency
