@@ -89,7 +89,7 @@ def _write_observed_likelihood_contours(
             surface_path,
             plot_stem,
             f"Observed single-source likelihood surface: {item['source_name']}",
-            r"Single-source signal count $n_s$",
+            r"Single-source signal count $n$",
             {"ns": item["fit"]["ns"], "gamma": item["fit"].get("gamma")},
         )
         prefix = f"source_contour_{rank}"
@@ -125,7 +125,7 @@ def _write_observed_likelihood_contours(
             surface_path,
             plot_stem,
             "Observed time-dependent stacking likelihood surface",
-            r"Stacked signal count $n_s$",
+            r"Stacked signal count $n$",
             {"ns": fit["ns"], "gamma": fit.get("gamma")},
         )
         files.update({
@@ -197,7 +197,7 @@ def write_artifacts(config_path, config, normalized, result, root):
     provenance["time_dependent_input_sha256"] = result["time_dependent_engine"]["input_sha256"]
     write_yaml(run_dir / "provenance.yaml", provenance)
     lines = ["# Fixed-profile time-dependent analysis", "", result["time_dependent_summary"]["note"], "",
-             "| Hypothesis | ns | s | TS |", "| --- | ---: | ---: | ---: |"]
+             "| Hypothesis | n | s | TS |", "| --- | ---: | ---: | ---: |"]
     for row in rows:
         gamma = "unidentified" if row["gamma"] is None else f"{row['gamma']:.7g}"
         lines.append(f"| {row['name']} | {row['ns']:.7g} | {gamma} | {row['TS']:.7g} |")

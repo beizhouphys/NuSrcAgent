@@ -17,7 +17,7 @@ scrambling, checkpointing, scientific review, or time-independent output.
   with an agreed fixed count.
 - Build the standard result bundle only after the full recorded ensemble is
   complete. Require the reviewed baseline, all observed and trial fits, finite
-  TS/ns values, the requested trial count, unique seeds, and contiguous indices.
+  TS and n values, the requested trial count, unique seeds, and contiguous indices.
 - On any failed check, retain diagnostic artifacts, identify the failure, and do
   not render or claim a successful standard result.
 
@@ -111,10 +111,10 @@ not issue the polished presentation. Fixed-s analyses do not create a
 two-dimensional surface.
 
 Never fabricate a surface or call likelihood-drop contours calibrated
-confidence regions. At `ns=0`, save and plot the s-independent maximum
+confidence regions. At `n=0`, save and plot the s-independent maximum
 ridge and report s as unidentified.
 
-Match the time-integrated notation in all human-facing products: write `s`
+Use `n` for the signal count in reports, figures and chat summaries. Write `s`
 in prose and render the positive spectral index as `s` in equations,
 titles, legends and axes, with `dN/dE` proportional to `E^{-s}`. The
 lowercase `gamma` spelling is reserved for existing CLI/API/JSON/NPZ field names

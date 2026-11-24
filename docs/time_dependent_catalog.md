@@ -112,14 +112,15 @@ python run_agent_wrap.py run --task <READY_task_id> --workers 4
 
 Use `create-single` with a one-source fixed profile for a single-source task, or select
 `--catalog-operation scan|stack`. Review must pass before interpreting results.
-Outputs include normalized settings, input hashes, source/stack TS, ns, s,
-fit diagnostics, CSV, PNG/PDF and independent review. s at ns=0 is not a
-measurement. Observed runs execute zero trials; significance remains unavailable
+Outputs include normalized settings, input hashes, source and stacking fits,
+fit diagnostics, CSV, PNG/PDF and independent review. Reports and figures use
+`n` for the signal count. When `n=0`, the fit leaves `s` unidentified.
+Observed runs execute zero trials. Significance remains unavailable
 until a matched trial ensemble is complete. No time-integrated p-value formula,
 flux limit or second flux stage is applied.
 
 For fitted s, observed output generation evaluates the immutable likelihood
-on the numerical `ns`-s grid for the three largest observed source TS values
+on the numerical `n`-`s` grid for the three largest observed source TS values
 (or all sources when the catalog has fewer than three) and for the stack when
 applicable. It validates each surface against the saved MLE and TS, writes the
 NPZ surface in the run directory, and writes PNG/PDF contours under `figures/`.
@@ -183,12 +184,12 @@ does not repeat likelihood maximization. It provides the default response-phase
 stacking result when requested, machine-readable observed
 and trial arrays, validation/provenance records, and applicable PNG/PDF figures.
 For fitted-s runs it reconstructs the immutable reviewed observed
-likelihood, evaluates the full numerical `ns`-s grid for the empirical
+likelihood, evaluates the full numerical `n`-`s` grid for the empirical
 leading source and applicable stack, verifies the saved MLE and TS, and writes
 the canonical likelihood-contour NPZ files before plotting. Surface evaluation
 does not use the background trials and does not refit the parameters. A required
 surface that is missing or fails this consistency check blocks the polished
-standard result. Fixed-s runs have no two-dimensional `ns`-s surface.
+standard result. Fixed-s runs have no two-dimensional `n`-`s` surface.
 The default source-time display places boxes at their stop time and Gaussians at
 their center, and uses the response-phase Šidák values in its lower panel.
 The empirical catalog-maximum or full-catalog Šidák series can be selected

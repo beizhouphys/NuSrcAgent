@@ -707,7 +707,7 @@ def plot_likelihood_surface(
             else float("nan") if fallback_fit.get("gamma") is None else float(fallback_fit["gamma"])
         )
     if delta.shape != (len(gammas), len(ns_values)):
-        raise ValueError(f"surface shape in {surface_path} does not match ns/s axes")
+        raise ValueError(f"surface shape in {surface_path} does not match the n and s axes")
 
     apply_style()
     fig, ax = plt.subplots(figsize=(8.4, 6.4), constrained_layout=True)
@@ -746,7 +746,7 @@ def plot_likelihood_surface(
             gammas,
             color="#7752a5",
             linewidth=2.4,
-            label=r"MLE ridge: $\hat n_s=0$, $s$ unidentified",
+            label=r"MLE ridge: $\hat n=0$, $s$ unidentified",
             zorder=5,
         )
     else:
@@ -758,7 +758,7 @@ def plot_likelihood_surface(
             color="black",
             edgecolor="black",
             linewidth=0.5,
-            label=rf"MLE: $\hat n_s={best_ns:.2f}$, $\hat s={best_gamma:.2f}$",
+            label=rf"MLE: $\hat n={best_ns:.2f}$, $\hat s={best_gamma:.2f}$",
             zorder=6,
         )
     ax.set_xlim(min(-0.45, float(ns_values[0])), float(ns_values[-1]))
@@ -964,7 +964,7 @@ def main() -> None:
                 selected_surface,
                 selected_contour_stem,
                 f"Observed single-source likelihood surface: {selected_source['source_name']}",
-                r"Single-source signal count $n_s$",
+                r"Single-source signal count $n$",
                 {"ns": selected_source["ns"], "gamma": selected_source.get("gamma") or None},
             )
             generated.extend(
@@ -986,7 +986,7 @@ def main() -> None:
                 source_surface,
                 source_stem,
                 f"Observed single-source likelihood surface: {leading['source_name']}",
-                r"Single-source signal count $n_s$",
+                r"Single-source signal count $n$",
                 {"ns": leading["ns"], "gamma": leading.get("gamma")},
             )
             generated.extend((source_stem.with_suffix(".png"), source_stem.with_suffix(".pdf")))
@@ -997,7 +997,7 @@ def main() -> None:
                 stack_surface,
                 stack_stem,
                 f"Observed stacking likelihood surface: {catalog_label}",
-                r"Stacked signal count $n_s$",
+                r"Stacked signal count $n$",
                 {"ns": stack_summary["observed_ns"], "gamma": stack_summary.get("observed_gamma")},
             )
             generated.extend((stack_stem.with_suffix(".png"), stack_stem.with_suffix(".pdf")))

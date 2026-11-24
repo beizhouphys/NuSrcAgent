@@ -210,6 +210,7 @@ def render_source_diagnostics(root, directory, destination):
     expected = task["immutable"]["code"]
     current = code_identity(root)
     reporting_files = {"run_agent_wrap.py", "agent_core/time_dependent_trials.py",
+        "agent_core/catalog_window_outputs.py",
         "agent_core/time_dependent_standard_results.py", "agent_core/plot_time_dependent_standard_report.py"}
     changed = {p for p in set(expected["files"]) | set(current["files"])
         if expected["files"].get(p) != current["files"].get(p)}

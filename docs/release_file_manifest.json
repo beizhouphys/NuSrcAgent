@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 51862,
-      "sha256": "da8cc78661515fe710a89603a11f9540e134931e46f4ada4cb4b6176192c3ac8"
+      "bytes": 51870,
+      "sha256": "569f6df55799f2a7cf70cdce07200b0de6b7a0c998ea6cf6a35f3a15524cc6ef"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -25,6 +25,11 @@
       "path": ".agents/skills/nusrcagent/references/scientific-review-policy.md",
       "bytes": 7758,
       "sha256": "9879cc7fa4a6f713b5bc50b60a788eb65d99f4e4ab2acca560a0b15b74ca1440"
+    },
+    {
+      "path": ".agents/skills/nusrcagent/references/time-dependent-result-standard.md",
+      "bytes": 8153,
+      "sha256": "a8b920136a4b0828af15bde2d2efb129d6383234def64d5758d42fdff162c2a1"
     },
     {
       "path": ".claude/skills/nusrcagent/SKILL.md",
@@ -93,8 +98,8 @@
     },
     {
       "path": "agent_core/catalog_window_outputs.py",
-      "bytes": 18675,
-      "sha256": "8da8c8b45e0738a50b757ccc4cb27a5a890e1f2d858934c7b1e6140fc82c2f10"
+      "bytes": 18670,
+      "sha256": "ed7f28be010802d78e76bc4cde0e8303591760b5afff94a1fdc75a507f583e45"
     },
     {
       "path": "agent_core/config_io.py",
@@ -165,6 +170,11 @@
       "path": "agent_core/planner.py",
       "bytes": 22516,
       "sha256": "d2d124083edc69d6aca68e5a076484c6ab013af31a892b602b5d06d75a5e4f08"
+    },
+    {
+      "path": "agent_core/plot_time_dependent_standard_report.py",
+      "bytes": 40411,
+      "sha256": "4d912e3abde4feec2ea4cac93f12c735edea25ffe5fe3dc0eaaee9fd366c5e25"
     },
     {
       "path": "agent_core/profile_progress.py",
@@ -242,9 +252,14 @@
       "sha256": "43d8f675d1e327eaa7600ea6ede2426c727b04db3c05c2098ac82ab1d7d3b4db"
     },
     {
+      "path": "agent_core/time_dependent_standard_results.py",
+      "bytes": 37481,
+      "sha256": "17540a22f2ed0aa2dc00ab1186bb3c2a554933d54678e5362ae989f57709589c"
+    },
+    {
       "path": "agent_core/time_dependent_trials.py",
-      "bytes": 16692,
-      "sha256": "66cccbdea5b4bc7e5c31f892fb2b89ab7e6d92ec2cc4c9ec1a2c9bca746c0599"
+      "bytes": 16740,
+      "sha256": "e9c95c4af4d3faac82786f82f0c277ca696096ed30003ef0d80f99d977f4a380"
     },
     {
       "path": "agent_core/validate.py",
@@ -648,8 +663,8 @@
     },
     {
       "path": "docs/time_dependent_catalog.md",
-      "bytes": 12277,
-      "sha256": "1af3b2594c42fcf3eacb2bb7c6902b865368032a18bd4a5ab0ca5a38f9bceda0"
+      "bytes": 12345,
+      "sha256": "0fdb865c8931cd3a307d8c5dc3514e653eacd37102d36d4210ee31638f4c9435"
     },
     {
       "path": "docs/time_dependent_merge.md",

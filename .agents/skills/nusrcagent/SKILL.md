@@ -225,17 +225,17 @@ human-facing report and figure: plain text `s` and the symbol
 `s`, defined by `dN/dE proportional to E^{-s}`. Keep `gamma`,
 `gamma_min`, `gamma_max` and related names unchanged in CLI options, Python
 interfaces and machine-readable artifacts; those fields store the positive
-s value after the existing signed-exponent conversion. Time-integrated
-reports use `n` for the signal count;
+s value after the existing signed-exponent conversion. Use `n` for the
+signal count in reports, figures and chat summaries.
 `--s S` and `--gamma -S` specify the same spectrum in both workflows.
 
 Every observed-only time-dependent result must include a compact source-fit
 table ranked by descending observed TS. Report exactly
 `min(10, N_sources)` rows, so a catalog with fewer than ten sources reports
 every source. Break equal-TS ties by the preserved input catalog order. Each row
-must identify the rank and source and give its best-fit ns and observed TS. For
+must identify the rank and source and give its best-fit n and observed TS. For
 a fitted-s analysis, also give the best-fit s in every row; write
-`unidentified` when ns=0 rather than quoting an arbitrary optimizer value. For
+`unidentified` when n=0 rather than quoting an arbitrary optimizer value. For
 a fixed-s analysis, state the common fixed s once and omit a misleading
 best-fit-s column. Apply this rule to scan, stack, `scan_and_stack` and
 standalone requests, including stack-only tasks for which the per-source fits
@@ -251,7 +251,7 @@ analyses unless the user asks for different artifacts:
   observed-likelihood contour PNG for the `min(3, N_sources)` sources with the
   largest observed TS, ordered by observed TS with input order as the tie-break,
   and the stacking contour PNG when a stack was fitted. These contours apply to
-  fitted-s analyses; for fixed s, state that a two-dimensional ns-s
+  fitted-s analyses; for fixed s, state that a two-dimensional n-s
   contour is not applicable. Constructing these output-only surfaces does not
   authorize or require background trials and does not calibrate significance.
 - After a complete validated background ensemble, show a source summary table
@@ -620,10 +620,10 @@ fixed-count shared background ensemble. Time-dependent tasks have no flux stage.
    the observed source and stack results and both artifact/scientific reviews.
    Write a FINAL ANSWER chat bubble with the weighting prescription and source
    count, the required top-observed-TS source table defined above, the leading
-   observed source when a scan is present, and the applicable stack best-fit ns,
+   observed source when a scan is present, and the applicable stack best-fit n,
    s and TS. State that local, catalog post-trial and stacking
    p-values/significances are unavailable from the observed-only fit. Preserve
-   every material warning and identify s as unidentified when ns=0. Display
+   every material warning and identify s as unidentified when n=0. Display
    the default top-observed-TS source contours and stacking contour defined
    above, then ask whether to continue with matched shared seasonal background
    trials and request an agreed fixed trial count if none has been supplied.
@@ -718,7 +718,7 @@ ensemble; there is no time-dependent flux continuation.
    fixed/fitted s treatment, detector phases and time-window definition,
    review status and every material warning. State that p-values and
    significances are unavailable because the observed fit ran zero trials; at
-   ns=0, report s as unidentified. Display the default top-observed-TS
+   n=0, report s as unidentified. Display the default top-observed-TS
    source contours defined above, then ask whether to continue with matched
    shared seasonal background trials and request the fixed trial count if it is
    not yet agreed. END THIS TURN after the question. Do not launch trials merely
@@ -777,7 +777,7 @@ In particular, render time-dependent likelihood surfaces with the same
 time-integrated contour language: solid purple (`#7752a5`) and orange
 (`#d17c12`) contour boundaries where multiple contour families need
 distinguishing, low-alpha fills, and a black star for an identifiable best fit.
-At ns=0, show the full s-independent ridge and label s as unidentified
+At n=0, show the full s-independent ridge and label s as unidentified
 instead of drawing an arbitrary star. Keep the time-dependent likelihood-drop
 statistic and requested numerical contour levels unchanged; matching the style
 does not turn them into calibrated confidence regions.

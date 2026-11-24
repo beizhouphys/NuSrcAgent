@@ -809,7 +809,7 @@ def finalize_time_dependent_results(
                 "## Single-source scan",
                 "",
                 f"- Leading source: {leading['source_name']}",
-                f"- Best fit: TS={leading['ts']:.6g}, ns={leading['ns']:.6g}"
+                f"- Best fit: TS={leading['ts']:.6g}, n={leading['ns']:.6g}"
                 + ("; s unidentified" if leading["gamma"] is None else f", s={leading['gamma']:.6g}"),
                 f"- Local p-value: {leading['p_pre']:.6g} ({leading['n_exceedances']}/{requested} exceedances)",
                 f"- Default response-phase Sidak post-trial p-value: {leading['p_post_phase_sidak']:.6g} (N={leading['response_phase_n_sources']} in {leading['response_phase']}; analytic estimate from joint-fit local p)",
@@ -837,7 +837,7 @@ def finalize_time_dependent_results(
             [
                 "## Stacking",
                 "",
-                f"- Best fit: TS={stack_summary['observed_ts']:.6g}, ns={stack_summary['observed_ns']:.6g}, {gamma_display}",
+                f"- Best fit: TS={stack_summary['observed_ts']:.6g}, n={stack_summary['observed_ns']:.6g}, {gamma_display}",
                 f"- Empirical p-value: {stack_summary['p_value']:.6g} ({stack_summary['n_background_ts_ge_observed']}/{requested} exceedances; {significance})",
                 "",
             ]
@@ -846,9 +846,9 @@ def finalize_time_dependent_results(
         [
             "All validation checks passed. Trial seeds are unique and trial indices are contiguous.",
             (
-                "Validated numerical ns-s likelihood surfaces were saved for the applicable leading-source and stacking fits."
+                "Validated numerical n-s likelihood surfaces were saved for the applicable leading-source and stacking fits."
                 if fit_gamma
-                else "The fixed-s fit has no two-dimensional ns-s likelihood surface."
+                else "The fixed-s fit has no two-dimensional n-s likelihood surface."
             ),
             "NuSrcAgent uses the matched scrambled distribution as the time-dependent null calibration; no time-integrated asymptotic significance formula is applied.",
             "",
