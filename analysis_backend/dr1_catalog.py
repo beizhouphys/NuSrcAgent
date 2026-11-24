@@ -94,6 +94,7 @@ def run_source_scan(normalized: NormalizedAnalysis, repo_root='.', workers=1) ->
             "dec_deg": source.dec_deg,
             "intrinsic_weight": source.weight,
             "ns_hat": ns_hat,
+            "s": -result["gamma"] if result.get("gamma") is not None else None,
             "ts": ts,
             "signed_sqrt_ts": math.copysign(math.sqrt(ts), ns_hat),
             "pre_trial_p": pre_trial_p,
@@ -169,12 +170,12 @@ def run_stacking_likelihood(normalized: NormalizedAnalysis, intrinsic_weights: n
     W_facs, W_facs_normd, fks = legacy_stacking_weights(W_accs_src, W_mdls_src, scheme_name == "uniform")
     S_ki, B_ki, Nks1 = stacking_signal_background_pdfs(RAs_src, Decs_src, W_facs_normd, data)
 
-    def ts_function(n_s):
-        return TS_tot(n_s, fks, S_ki, B_ki, Nks1)
+    def ts_function(n):
+        return TS_tot(n, fks, S_ki, B_ki, Nks1)
 
-    # likelihood_v4.py first scans a logarithmic n_s grid to seed the fit.
+    # likelihood_v4.py first scans a logarithmic n grid to seed the fit.
     ns_seed_grid = legacy_ns_grid(float(Nks1.sum()))
-    TS_seed_grid = array([ts_function(n_s) for n_s in ns_seed_grid])
+    TS_seed_grid = array([ts_function(n) for n in ns_seed_grid])
     ns_s_hat = ns_seed_grid[argmax(TS_seed_grid)] if len(ns_seed_grid) else 0.
     requested_spectrum = bool(normalized.spectrum) or not -6. <= float(gamma) <= -1.
     ts, ns_hat = max_TS_tot(ns_s_hat, fks, S_ki, B_ki, Nks1, requested_spectrum=requested_spectrum)
@@ -265,12 +266,12 @@ def stacking_signal_background_pdfs(RAs_src: ndarray, Decs_src: ndarray, W_facs_
     return S_ki, B_ki, array(Nks1)
 
 
-def TS_tot(n_s: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray) -> float:
+def TS_tot(n: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray) -> float:
     """likelihood_v4.py:707-720, with legacy globals passed as arguments."""
     TS_total = 0.
-    n_s = float(n_s)
+    n = float(n)
     for k in range(len(Nks1)):
-        L_k = n_s*fks[k]/float(Nks1[k])*S_ki[k] + (1.-n_s*fks[k]/float(Nks1[k]))*B_ki[k]
+        L_k = n*fks[k]/float(Nks1[k])*S_ki[k] + (1.-n*fks[k]/float(Nks1[k]))*B_ki[k]
         L_k0 = B_ki[k]
         if any(L_k <= 0.) or any(L_k0 <= 0.): # callable optimizer guard; legacy inputs are positive
             return -1e99
@@ -281,8 +282,8 @@ def TS_tot(n_s: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], N
 
 def max_TS_tot(ns0: float, fks: ndarray, S_ki: list[ndarray], B_ki: list[ndarray], Nks1: ndarray, requested_spectrum=False) -> tuple[float, float]:
     """likelihood_v4.py:722-728 using the repository's NumPy optimizer."""
-    def TS_tot1(n_s):
-        return -1.*TS_tot(n_s, fks, S_ki, B_ki, Nks1)
+    def TS_tot1(n):
+        return -1.*TS_tot(n, fks, S_ki, B_ki, Nks1)
     if requested_spectrum:
         # Restore the original likelihood_v4.py::max_TS_tot minimization
         # block for new spectrum models; retain this runtime's [0,N] bounds.

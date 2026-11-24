@@ -125,7 +125,7 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
                       and all(dataset.get("signal_energy_gamma_interpolation", "parabola_v1") == interpolation
                               for dataset in datasets.values()))
         add_check(review, "dr2_gamma_interpolation", "pass" if consistent else "fail",
-                  "signal-energy Gamma interpolation matches the request" if consistent else "signal-energy Gamma interpolation differs from the request", False)
+                  "signal-energy spectral-index interpolation matches the request" if consistent else "signal-energy spectral-index interpolation differs from the request", False)
     if isinstance(ns_bounds, list) and len(ns_bounds) == 2:
         valid = valid and ns_hat is not None and float(ns_bounds[0]) <= ns_hat <= float(ns_bounds[1])
     if result.get("gamma_mode") == "fitted" and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
@@ -135,12 +135,12 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
     if result.get("gamma_mode") == "fixed":
         requested_gamma = finite_float(normalized.get("spectral_indices", [None])[0])
         mode_matches = mode_matches and (spectrum_ok if tabulated else gamma is not None and requested_gamma is not None and abs(gamma + requested_gamma) < 1e-12)
-    add_check(review, "dr2_gamma_request", "pass" if mode_matches else "fail", "Gamma mode and fixed value match the request" if mode_matches else "Gamma mode or fixed value differs from the request", False)
+    add_check(review, "dr2_gamma_request", "pass" if mode_matches else "fail", "spectral-index mode and fixed value match the request" if mode_matches else "spectral-index mode or fixed value differs from the request", False)
     if result.get("gamma_mode") == "fitted" and gamma is not None and isinstance(gamma_bounds, list) and len(gamma_bounds) == 2:
         if any(abs(gamma - float(bound)) < 1e-5 for bound in gamma_bounds):
-            add_check(review, "dr2_gamma_boundary", "warning", "Gamma at fit boundary; not a precise spectral measurement", False)
+            add_check(review, "dr2_gamma_boundary", "warning", "spectral index at fit boundary; not a precise spectral measurement", False)
     if ns_hat is not None and isinstance(ns_bounds, list) and len(ns_bounds) == 2 and abs(ns_hat - float(ns_bounds[1])) < 1e-5:
-        add_check(review, "dr2_ns_upper_boundary", "warning", "ns at upper boundary", False)
+        add_check(review, "dr2_ns_upper_boundary", "warning", "n at upper fit boundary", False)
     requested_abs_cut = finite_float(normalized.get("event_abs_dec_max_deg"))
     requested_dec_min = finite_float(normalized.get("event_dec_min_deg"))
     requested_dec_max = finite_float(normalized.get("event_dec_max_deg"))
@@ -203,17 +203,17 @@ def review_dr2_run(review: Dict[str, Any], report: Dict[str, Any], normalized: D
         normalized_gamma = normalized.get("spectral_indices", [None])[0]
         acceptance_gamma = finite_float(result.get("acceptance_gamma_legacy"))
         fixed_acceptance = result.get("gamma_mode") == "fixed" and (spectrum_ok and result.get("gamma_role") == "fixed_spectrum_shape" if tabulated else result.get("gamma_role") == "acceptance_only" and acceptance_gamma is not None and finite_float(normalized_gamma) is not None and abs(acceptance_gamma - float(normalized_gamma)) < 1e-12)
-        add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance Gamma matches the normalized request" if fixed_acceptance else "spatial-only acceptance Gamma is not fixed or does not match the request", False)
+        add_check(review, "dr2_spatial_only_acceptance", "pass" if fixed_acceptance else "fail", "fixed acceptance spectral index matches the normalized request" if fixed_acceptance else "spatial-only acceptance spectral index is not fixed or does not match the request", False)
         no_energy = result.get("energy_pdf") == "not_used" and working_set.get("signal_energy_tables_loaded") is False
         add_check(review, "dr2_spatial_only_energy_exclusion", "pass" if no_energy else "fail", "signal and background energy PDFs are excluded" if no_energy else "spatial-only result indicates that energy tables were used", False)
-    review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
+    review["metrics"].update({"n": ns_hat, "s": gamma, "ns_hat": ns_hat, "ts": ts, "gamma": gamma, "gamma_mode": result.get("gamma_mode"), "likelihood_mode": likelihood_mode, "acceptance_gamma_legacy": result.get("acceptance_gamma_legacy")})
     if result.get("p_value_method") in {"analytic_half_chi_square_df1_estimate", "analytic_half_chi_square_df2_estimate"}:
         expected = local_p_value_estimate(result["TS"], normalized.get("gamma_mode"))
         valid_estimate = all(result.get(key) == expected[key] for key in ("p_value_method", "p_value_dof", "p_value_is_estimate", "significance_convention"))
         for key in ("pre_trial_p", "pre_trial_significance"):
             value = finite_float(result.get(key))
             valid_estimate = valid_estimate and value is not None and math.isclose(value, expected[key], rel_tol=1e-12, abs_tol=1e-14)
-        add_check(review, "dr2_local_estimate", "pass" if valid_estimate else "fail", "p-value and significance estimates match Gamma mode and declared dof" if valid_estimate else "local estimate, method or dof is inconsistent with Gamma mode", False)
+        add_check(review, "dr2_local_estimate", "pass" if valid_estimate else "fail", "p-value and significance estimates match spectral-index mode and declared dof" if valid_estimate else "local estimate, method or dof is inconsistent with spectral-index mode", False)
     table_path = result.get("generated_files", {}).get("fit_results")
     if table_path:
         table = read_csv_if_present(Path(table_path))
@@ -290,7 +290,7 @@ def review_flux_upper_limit(review, result, normalized):
         valid = valid and limit.get(field) == result.get(field)
     add_check(review, "dr2_flux_upper_limit", "pass" if valid else "fail", "one-sided profile threshold, fixed spectrum, units, detector yield and root are consistent" if valid else "upper-limit request, construction or flux conversion is inconsistent", False)
     if ns_upper is not None and finite_float(result.get("ns")) is not None and result["ns"] <= 1e-5:
-        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit has ns at the physical zero boundary", False)
+        add_check(review, "dr2_flux_ns_boundary", "warning", "Upper-limit fit is near the physical boundary n = 0", False)
     if normalized.get("_flux_suite_member"):
         return
     files = result.get("generated_files", {})
@@ -377,9 +377,11 @@ def review_single_run(review: Dict[str, Any], report: Dict[str, Any]) -> None:
     p_value = finite_float(result["pre_trial_p"])
     valid = ns_hat is not None and ts is not None and ts >= 0.0 and p_value is not None and 0.0 <= p_value <= 1.0
     add_check(review, "single_numeric_ranges", "pass" if valid else "fail", "single-source values are finite and in valid ranges" if valid else "single-source result contains invalid numeric values", False)
-    review["metrics"].update({"ns_hat": ns_hat, "ts": ts, "pre_trial_p": p_value})
+    exponent = finite_float(result.get("gamma"))
+    review["metrics"].update({"n": ns_hat, "s": -exponent if exponent is not None else None,
+                              "ns_hat": ns_hat, "ts": ts, "pre_trial_p": p_value})
     if ns_hat is not None and abs(ns_hat + 10.0) < 0.01:
-        add_check(review, "single_fit_boundary", "warning", "ns_hat is at the lower optimizer boundary", False)
+        add_check(review, "single_fit_boundary", "warning", "The fitted n reaches the lower optimizer bound", False)
 
 
 def review_dr1_event_selection(review, result, normalized, source, prefix="dr1_event_selection"):
@@ -514,7 +516,7 @@ def review_source_rows(review: Dict[str, Any], rows: List[Dict[str, str]], expec
     add_check(review, "source_local_p", "pass" if local_p_mismatch == 0 else "fail", "pre-trial p-values match the declared analytic TS approximation" if local_p_mismatch == 0 else "%d pre-trial p-values do not match the declared TS approximation" % local_p_mismatch, False)
     add_check(review, "source_trial_correction", "pass" if post_trial_mismatch == 0 else "fail", "post-trial p-values match the catalog-size correction" if post_trial_mismatch == 0 else "%d post-trial p-values do not match the catalog-size correction" % post_trial_mismatch, False)
     if boundary:
-        add_check(review, "source_fit_boundaries", "warning", "%d source fits reached the lower ns optimizer boundary" % boundary, False)
+        add_check(review, "source_fit_boundaries", "warning", "The optimizer reached the lower bound for n in %d source fit(s)" % boundary, False)
     review["metrics"]["source_lower_boundary_count"] = boundary
 
 
@@ -561,7 +563,14 @@ def render_review_markdown(review: Dict[str, Any]) -> str:
     lines = ["# Analysis Review", "", "Overall status: `%s`" % review["status"], "", "## Checks", ""]
     lines.extend("- `%s` %s: %s" % (check["status"], check["id"], check["message"]) for check in review["checks"])
     lines.extend(["", "## Metrics", ""])
-    lines.extend("- %s: `%s`" % (key, value) for key, value in review["metrics"].items())
+    def display_metrics(metrics):
+        legacy = {"ns_hat": "n", "gamma": "s"}
+        return {key: value for key, value in metrics.items() if legacy.get(key) not in metrics}
+
+    metrics = display_metrics(review["metrics"])
+    if "source_fits" in metrics:
+        metrics["source_fits"] = [display_metrics(fit) for fit in metrics["source_fits"]]
+    lines.extend("- %s: `%s`" % (key, value) for key, value in metrics.items())
     return "\n".join(lines) + "\n"
 
 

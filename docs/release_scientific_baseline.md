@@ -2,7 +2,7 @@
 
 This page specifies the time-integrated analysis used by the examples. It is a
 record of the model and numerical settings, not evidence that every scientific
-systematic has been validated. Definitions of `ns`, `Gamma` and `TS` are in the
+systematic has been validated. For definitions of `n`, `s` and `TS`, see the
 [README](../README.md#what-do-the-fitted-quantities-mean).
 
 ## Data and source model
@@ -19,21 +19,21 @@ source–event terms from the selected likelihood.
 
 ## Spectrum, event count and PDFs
 
-- Default spatial+energy: fitted ns and Gamma; ns bounds [0,10000], seed 10;
-  SkyLLH Gamma bounds [1,6], seed 3. CLI spectral exponents use negative Gamma.
-- Spatial-only: fixed acceptance Gamma, default SkyLLH 2.5 / CLI -2.5.
+- Default spatial+energy. Fit `n` with bounds [0, 10000] and seed 10, and
+  `s` with bounds [1, 6] and seed 3.
+- Spatial-only. Use `s=2.5` for detector acceptance by default.
 - Frozen background v3, current frozen signal-energy tables, unchanged hashes.
 
 The default seeds are starting values for numerical maximization, not fixed
-physical parameters. Bounds specify the allowed fit range. The negative CLI
-exponent `-3` corresponds to a positive spectrum index `Gamma=3`. With a
-spatial-only likelihood, the fixed acceptance Gamma enters the predicted
-detector yield but is not determined from the event energies.
+physical parameters. Bounds specify the allowed fit range. Set the spectral index with `--s`. The compatibility option `--gamma` takes the
+signed exponent `-s`, so `--s 3` and `--gamma -3` specify the same spectrum.
+The spatial-only likelihood uses the fixed spectral index to calculate
+detector acceptance.
 
 ## Local p-value and significance estimates
 
-Ordinary fits use the owner-approved half-chi-square estimate: dof=2 for free
-Gamma, dof=1 for fixed Gamma. Convert the estimated p-value to one-sided Gaussian
+Ordinary fits use the owner-approved half-chi-square estimate: dof=2 when fitting `s` and
+dof=1 when fixing `s`. Convert the estimated p-value to one-sided Gaussian
 significance with `Z = Phi^-1(1-p)`; only dof=1 gives `Z = sqrt(TS)`.
 At TS=0, the reporting convention remains p=0.5 and Z=0. Reports and CSVs record
 the method, dof and estimate flag. This changes the reported local estimate,

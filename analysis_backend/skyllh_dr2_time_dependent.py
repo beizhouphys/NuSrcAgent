@@ -3,7 +3,7 @@
 Each source is fitted independently. The time-dependent detector yield is
 the steady yield times integral(profile over uptime) / integrated livetime.
 An outer bounded, explicitly seeded Powell search profiles the original
-SkyLLH ns/Gamma maximization; no background trials or flux fits run here.
+SkyLLH n and s maximization; no background trials or flux fits run here.
 """
 from __future__ import annotations
 
@@ -139,7 +139,7 @@ class TemporalController:
             t0, width = decode(point)
             if not self.set_profile(t0, width):
                 self.evaluations.append(dict(t0_mjd=t0, width_days=width, TS=None, ns=None,
-                                             seconds=monotonic()-started, nonzero_acceptance=False))
+                                             seconds=monotonic()-started, nonzero_acceptance=False, s=None))
                 cache[key] = 1e100
                 return cache[key]
             # initialize_trial is done once. Only the time ratios and dataset
@@ -150,7 +150,8 @@ class TemporalController:
             ts = float(analysis.calculate_test_statistic(log_lambda=value, fitparam_values=parameters))
             fit = analysis.pmm.create_global_params_dict(gflp_values=parameters)
             row = dict(t0_mjd=t0, width_days=width, TS=ts, ns=float(fit["ns"]),
-                       seconds=monotonic()-started, nonzero_acceptance=True)
+                       seconds=monotonic()-started, nonzero_acceptance=True,
+                       s=float(fit["gamma"]) if "gamma" in analysis.pmm.global_paramset.floating_params_name_list else None)
             self.evaluations.append(row)
             if best is None or ts > best[0]:
                 best = (ts, fit, status, t0, width)
@@ -176,7 +177,7 @@ class TemporalController:
             raise ValueError("Temporal search has no profile with nonzero detector acceptance")
         ts, parameters, status, t0, width = best
         self.set_profile(t0, width)
-        # Restore all SkyLLH services to the recorded maximum, including Gamma.
+        # Restore all SkyLLH services to the recorded maximum, including spectral index.
         floating = np.array([parameters[name] for name in analysis.pmm.global_paramset.floating_params_name_list])
         analysis.llhratio.evaluate(floating)
         self.metadata = dict(settings=settings, t0_mjd=t0, width_days=width,

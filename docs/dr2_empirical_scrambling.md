@@ -11,9 +11,9 @@ The public `dr2-empirical-scramble` workflow follows a reviewed DR2
 single-source analysis or stacking analysis. It imports the observed primary
 result without another maximization and freezes its source list, weighting
 factors, event selection, spectrum, PDFs, interpolation, fit bounds, initial
-values and optimizer random seed. Fixed/fitted Gamma, spatial+energy and
+values and optimizer random seed. Fixed/fitted spectral index, spatial+energy and
 spatial-only modes retain their original settings. A fixed supplied spectrum
-retains its shape without fitting a fictitious PL Gamma.
+keeps its shape without fitting a fictitious PL spectral index.
 
 ```bash
 .venv/bin/python run_agent_wrap.py dr2-empirical-scramble \
@@ -59,11 +59,11 @@ verified before RA is changed, and source–event spatial quantities are recompu
 Declination, reconstructed energy, angular uncertainty, observation-period
 membership and event counts are preserved. Every background trial repeats the
 same fitted parameters and analysis choices as the observed fit. This tests a
-conditional background hypothesis; it does not establish unbiased ns/Gamma.
+conditional background hypothesis; it does not establish unbiased n and s.
 
 Original source–event spatial geometry cannot be reused after changing RA.
 Caching unchanged energy/declination quantities requires an equivalence check.
-The fixed-Gamma `dr2-ra-scramble` smoke test cannot replace free-Gamma trials,
+The fixed-index `dr2-ra-scramble` smoke test cannot replace free-index trials,
 and an observed TS from a different maximizer or scientific configuration
 cannot serve as the reference for the current ensemble.
 
@@ -97,7 +97,7 @@ New tasks follow the owner-approved discard-without-record rule for negative-TS
 background fits. Its possible bias must be reviewed before interpreting the
 retained ensemble as a calibrated null distribution. Historical random-catalog trials do not calibrate a different source/catalog hypothesis.
 
-Report observed TS, fitted ns/Gamma, the trial TS distribution, K/N, p-value
+Report observed TS, fitted n and s, the trial TS distribution, K/N, p-value
 and intervals, one-sided significance, fit boundaries, failures, runtime and
 the input/fit/review records. Disclose any choices informed by observed results:
 freezing them afterwards does not remove selection bias. Several catalog,

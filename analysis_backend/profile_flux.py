@@ -15,7 +15,7 @@ from agent_core.profile_progress import ProfileProgress
 
 def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                  gamma_bounds=None, ts_threshold=9.0, observed_ts=None):
-    """Profile phi1TeV and Gamma without changing events, PDFs or fit bounds.
+    """Profile phi1TeV and spectral index without changing events, PDFs or fit bounds.
 
     log_ratio(ns, gamma) returns (ln L/L0, d ln L/d ns). detector_yield(gamma)
     is the expected count for unit differential flux at 1 TeV in GeV units.
@@ -24,7 +24,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
     ns_hat, gamma_hat = float(ns_hat), float(gamma_hat)
     ns_min, ns_max = map(float, ns_bounds)
     if ns_min != 0 or not 0 <= ns_hat <= ns_max:
-        raise ValueError("Flux profile requires the recorded nonnegative ns bounds")
+        raise ValueError("Flux profile requires the recorded nonnegative n bounds")
     yields, evaluations = {}, {}
     progress = ProfileProgress()
 
@@ -65,18 +65,18 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
     if not result["reported"]:
         return result
     if ns_hat <= 0 or ns_hat >= ns_max:
-        raise ValueError("Cannot construct a flux measurement at the ns fit boundary")
+        raise ValueError("Cannot construct a flux measurement at the n fit boundary")
 
     def q(value):
         delta = 2*(best-value)
         if delta < -1e-5:
             point = next((key for key, item in evaluations.items() if item[0] == value), None)
-            raise ValueError(f"Flux profile exceeds the recorded primary maximum: 2 Delta ln L = {-delta:.12g}; (ns, Gamma) = {point}")
+            raise ValueError(f"Flux profile exceeds the recorded primary maximum: 2 Delta ln L = {-delta:.12g}; (n, s) = {point}")
         return max(0., delta)
 
     gamma_lo, gamma_hi = (gamma_hat, gamma_hat) if gamma_bounds is None else map(float, gamma_bounds)
     if not gamma_lo <= gamma_hat <= gamma_hi:
-        raise ValueError("Recorded Gamma is outside the profile bounds")
+        raise ValueError("Recorded spectral index is outside the profile bounds")
     profiles = {}
 
     def maximize_gamma(log_phi):
@@ -98,7 +98,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                     fit = minimize_scalar(objective, bounds=(grid[i-1], grid[i+1]),
                                           method="bounded", options={"xatol": 2e-6})
                     if not fit.success:
-                        raise ValueError("Gamma optimization failed in the flux profile")
+                        raise ValueError("spectral index optimization failed in the flux profile")
                     candidates.append((float(fit.fun), float(fit.x)))
         value, gamma = min(candidates)
         if not math.isfinite(value):
@@ -138,7 +138,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                         boundary = trial in (gamma_lo, gamma_hi)
                     row = function(trial)
                     if row is None:
-                        raise ValueError("Flux confidence crossing unavailable inside the recorded ns bounds")
+                        raise ValueError("Flux confidence crossing unavailable inside the recorded n bounds")
                     if row["q"] >= target:
                         root = float(brentq(lambda x: function(x)["q"]-target,
                                              min(previous, trial), max(previous, trial), xtol=1e-7))
@@ -154,7 +154,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
         return roots
 
     for parameter in (["phi0", "gamma"] if gamma_bounds is not None else ["phi0"]):
-        with progress.work('flux normalization intervals' if parameter=='phi0' else 'Gamma intervals',
+        with progress.work('flux normalization intervals' if parameter=='phi0' else 'spectral-index intervals',
                            4, initial_calls=96 if parameter=='phi0' and gamma_bounds is not None else 12):
             for confidence in (0.6826894921370859, 0.95):
                 threshold = float(chi2.ppf(confidence, 1))
@@ -165,11 +165,11 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                     lower_at_boundary=lower["boundary"], upper_at_boundary=upper["boundary"]))
 
     if gamma_bounds is not None:
-        # At fixed Gamma the mixture likelihood is concave in ns. Trace its two
-        # crossings across the Gamma profile, preserving normalization correlation.
+        # At fixed spectral index the mixture likelihood is concave in n. Trace its two
+        # crossings across the spectral index profile, preserving normalization correlation.
         for confidence in (0.6826894921370859, 0.95):
             threshold = float(chi2.ppf(confidence, 2))
-            with progress.work(f"contour Gamma bounds ({confidence:.5f})", 2):
+            with progress.work(f"contour spectral-index bounds ({confidence:.5f})", 2):
                 lower_g, upper_g = endpoints("gamma", threshold)
             gamma_grid = sorted(set(np.linspace(lower_g["value"], upper_g["value"], 33).tolist()
                                     + [gamma_hat]))
@@ -179,7 +179,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                     with progress.unit():
                         row = maximize_ns(gamma)
                         if row["q"] > threshold+1e-5:
-                            raise ValueError("Joint confidence contour crosses a disconnected Gamma region")
+                            raise ValueError("Joint confidence contour crosses a disconnected spectral index region")
                         peak = row["ns"]
                         crossing = lambda ns: q(evaluate(ns, gamma)[0])-threshold
                         if abs(row["q"]-threshold) < 1e-6:
@@ -192,7 +192,7 @@ def profile_flux(log_ratio, detector_yield, ns_hat, gamma_hat, ns_bounds,
                             while crossing(high) < 0 and high < ns_max:
                                 high = min(ns_max, peak+2*(high-peak))
                             if crossing(high) < 0:
-                                raise ValueError("Joint flux contour unavailable inside the recorded ns bounds")
+                                raise ValueError("Joint flux contour unavailable inside the recorded n bounds")
                             high_ns = float(brentq(crossing, peak, high, xtol=1e-7))
                         for branch, ns in ((lower_branch, low_ns), (upper_branch, high_ns)):
                             branch.append(dict(gamma=gamma, phi0=ns/yield_at(gamma), ns=ns,
@@ -246,6 +246,6 @@ def source_flux_measurement(analysis, result, ts_threshold):
                            intensity100_hat=measurement["phi100_hat"]/(4*math.pi),
                            intensity0_unit="GeV^-1 cm^-2 s^-1 sr^-1", solid_angle_sr=4*math.pi)
         measurement.update(flux_scope="sum_of_source_fluxes", n_sources=result["n_sources"],
-                           source_flux_definition="dPhi_j/dE = w_model_j * phi0_total * (E / 1 TeV)^(-Gamma); sum_j w_model_j = 1")
+                           source_flux_definition="phi_j(E) = w_model_j * phi0_total * (E / 1 TeV)^(-s); sum_j w_model_j = 1")
     log_ratio(result["ns"], result["gamma"])
     return measurement

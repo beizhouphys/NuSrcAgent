@@ -172,15 +172,15 @@ def create_dr2_stacking_analysis(
     """Construct the exact, memory-bounded all-event SkyLLH analysis."""
     interpolation = signal_energy_gamma_interpolation or "parabola_v1"
     if interpolation not in {"parabola_v1", "linear_v1"}:
-        raise ValueError("Unsupported signal-energy Gamma interpolation")
+        raise ValueError("Unsupported signal-energy spectral-index interpolation")
     if likelihood_mode not in {"spatial_energy", "spatial_only"}:
         raise ValueError("likelihood_mode must be 'spatial_energy' or 'spatial_only'")
     if spectrum and gamma_mode != "fixed":
-        raise ValueError("A supplied non-PL spectrum has a fixed shape; do not fit a fictitious Gamma")
+        raise ValueError("A supplied non-PL spectrum has a fixed shape; do not fit a fictitious spectral index")
     if gamma_mode not in {"fitted", "fixed"}:
         raise ValueError("gamma_mode must be 'fitted' or 'fixed'")
     if likelihood_mode == "spatial_only" and gamma_mode != "fixed":
-        raise ValueError("spatial_only requires gamma_mode='fixed'; Gamma is used only for acceptance")
+        raise ValueError("spatial_only requires gamma_mode='fixed'; spectral index is used only for acceptance")
     if not source_specs:
         raise ValueError("At least one source is required")
     event_dec_min_resolved, event_dec_max_resolved = _event_declination_bounds(
@@ -309,7 +309,7 @@ def create_dr2_stacking_analysis(
         raise ValueError("RA-scramble seeds must be non-negative integers")
     event_ra_rng = None if event_ra_scramble_seed is None else np.random.default_rng(int(event_ra_scramble_seed))
     chunked_ratios = []
-    # One shared payload budget for this fit; single-source and fixed-Gamma
+    # One shared payload budget for this fit; single-source and fixed-index
     # fits do not amortize the compression cost over repeated spectral updates.
     spatial_cache = (_ExactSpatialBlockCache() if likelihood_mode == "spatial_energy"
                      and gamma_mode == "fitted" and len(sources) > 1 else None)
@@ -625,7 +625,7 @@ def run_dr2_flux_suite(source_specs, flux_upper_limit_cl=None, flux_upper_limit_
             expected = fit_options.get("signal_energy_gamma_interpolation") or "parabola_v1"
             recorded = primary_result.get("signal_energy_gamma_interpolation") or "parabola_v1"
             if recorded != expected:
-                raise ValueError("Primary checkpoint uses a different Gamma interpolation; create a new task")
+                raise ValueError("Primary checkpoint uses a different spectral-index interpolation; create a new task")
             import copy
             result = copy.deepcopy(primary_result)
             result.pop("generated_files", None)

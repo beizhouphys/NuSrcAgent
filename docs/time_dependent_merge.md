@@ -101,3 +101,48 @@ The precomputed cached path received real-data wrapper verification; other
 explicit backend/phase configurations need their corresponding release checks.
 
 See [the public workflow](time_dependent_catalog.md) for schema and commands.
+
+## Upstream integration — 2026-11-24
+
+Merged upstream `751a1d6014af3c4172b2a364d969a6899a1d4f07` into
+`time-dep_merge`, starting from `963c8a85c04cf3440356a5a3958797a9e2747eff`.
+The common ancestor is `f6096c814eed36be07129a87d8923c34d0fc6fa1`.
+HTTPS fetch could not authenticate; the supplied local upstream clone's `main`
+was fetched instead and matched the existing upstream tracking reference.
+This does not independently establish whether GitHub has newer commits.
+
+Upstream's time-integrated runtime, flux-stage implementation, output notation,
+spectral-index aliases and Claude skill forwarding are retained. The fixed-profile
+time-dependent numerical engines, trial implementation and canonical renderer
+are unchanged from the development branch. Shared dispatch remains conditional
+on the recorded temporal scope. Documentation conflicts retain the supported
+fixed-profile workflow and distinguish it from the explicit legacy time search.
+The `n`/`s` time-integrated notation and `ns`/`Gamma` fixed-profile notation denote
+the same physical parameters; their signed-exponent input conversion is unchanged.
+No scientific definition or optimizer was selected by conflict resolution.
+
+Verification used the installed Python 3.12 runtime and its exact locked package
+versions. Public CI checks passed: dependency consistency, compilation, recursive
+imports, CLI/bootstrap checks, example catalog inspection and source/metadata
+hashes. Full DR2 numerical-input verification passed against frozen v3 and signal
+PDF hashes. Twenty-one isolated interface checks and nine public-wrapper planning
+fixtures cover aliases, rejected ambiguous inputs, fitted bounds, temporal
+validation, READY gating and separate default/legacy routing. Tests and fixture
+outputs remain outside this checkout.
+
+Matched real-input fixed-index, two-source scan-and-stack fixtures ran through
+`run_agent_wrap.py` only after READY in isolated source snapshots. Upstream and
+merged time-integrated runs have identical 239 compared numerical result fields
+and three CSV tables; both pass 63 review checks and stop at AWAITING_FLUX.
+Pre-merge and merged fixed-box time-dependent runs have identical 13 compared
+numerical result fields and their source-result CSV; both complete with 13
+passing review checks. No review warnings or failures occurred in these fixtures.
+Timing/cache/resource diagnostics were excluded from numerical equality checks.
+
+This integration check does not repeat flux continuations, background ensembles,
+fitted-index numerical fits, DR1 numerical fits or a fresh input installation.
+It is not a significance or coverage validation. Their existing implementations
+and recorded scientific definitions are preserved, but broader release checks
+remain separate. Final review against upstream contains the time-dependent
+feature and its necessary routing, dependencies, documentation and inventory.
+No push, pull request or release is performed by this integration.

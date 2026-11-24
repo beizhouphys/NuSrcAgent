@@ -56,6 +56,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
     shutil.copy2(config_source, run_dir / f"config.original{config_source.suffix}")
     if normalized.sample == "icecube_public_ps_14yr_dr2" and "TS" in result:
         row = {key: result.get(key) for key in ("TS", "ns", "gamma", "gamma_legacy", "gamma_mode", "n_sources", "pre_trial_p", "pre_trial_significance", "significance_convention", "p_value_dof", "p_value_is_estimate")}
+        row.update(n=result["ns"], s=result["gamma"])
         row["p_value_method"] = result["p_value_method"]
         table = run_dir / "fit_results.csv"
         write_csv(table, list(row), [row])
@@ -65,6 +66,7 @@ def write_run_artifacts(config_path: str | Path, config: AnalysisConfig, normali
         for item in result["source_results"]:
             fit = item["fit"]
             rows.append({"source_number": item["source_number"], "source_name": item["source_name"], "ra_deg": item["ra_deg"], "dec_deg": item["dec_deg"], "TS": fit["TS"], "ns": fit["ns"], "gamma_skyllh": fit["gamma"], "gamma_legacy": fit["gamma_legacy"], "gamma_mode": fit["gamma_mode"], "pre_trial_p_approx": fit["pre_trial_p"], "pre_trial_significance": fit["pre_trial_significance"], "significance_convention": fit["significance_convention"], "p_value_method": fit["p_value_method"], "p_value_dof": fit["p_value_dof"], "p_value_is_estimate": fit["p_value_is_estimate"]})
+            rows[-1].update(n=fit["ns"], s=fit["gamma"])
             rows[-1].update(significance_rank=item["significance_rank"], **{key: fit[key] for key in GLOBAL_COLUMNS})
         table = run_dir / "source_results.csv"
         write_csv(table, list(rows[0]) if rows else [], rows)
@@ -97,6 +99,11 @@ def build_report(normalized: NormalizedAnalysis, result: dict[str, object]) -> d
     if backend == "mock_phase0":
         warnings.append("mock backend only; replace with likelihood backend before science use")
     report_result = {key: value for key, value in result.items() if key not in {"backend", "warnings"} and not key.startswith("_")}
+    if "ns" in result or "best_fit_ns" in result:
+        report_result["n"] = result.get("ns", result.get("best_fit_ns"))
+        index = result.get("gamma")
+        if index is not None:
+            report_result["s"] = -index if normalized.sample == "icecube_public_ps_10yr" else index
     if backend != "mock_phase0":
         report_result["significance_calibration"] = "analytic_approximation"
         report_result["post_trial_calibration"] = "unavailable"
@@ -150,11 +157,13 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     lines.extend(f"- {key}: `{value}`" for key, value in report["analysis"].items() if value is not None)
     lines.extend(["", "## Result", ""])
     for key, value in report["result"].items():
-        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "background_trial_note", "fit_procedure", "signal_energy_gamma_interpolation"}:
+        if not isinstance(value, (dict, list)) and key not in {"catalog_post_trial_note", "background_trial_note", "fit_procedure", "signal_energy_gamma_interpolation",
+                "ns", "best_fit_ns", "gamma", "gamma_legacy", "gamma_convention",
+                "acceptance_gamma_skyllh", "acceptance_gamma_legacy"}:
             lines.append(f"- {key}: `{value}`")
     if report["result"].get("spectrum"):
         spectrum = report["result"]["spectrum"]
-        lines.extend(["", "Spectrum: fixed supplied dN/dE shape; no power-law Gamma is fitted.",
+        lines.extend(["", "Spectrum: fixed supplied dN/dE shape; no power-law spectral index is fitted.",
             "Input spectrum: `"+spectrum["file"]+"`; SHA-256: `"+spectrum["sha256"]+"`.",
             "Outside the supplied energy support: `"+spectrum["outside_support"]+"`."])
     source_results = report["result"].get("source_results", [])
@@ -177,8 +186,8 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
     if measurements:
         lines.extend(["", "## Primary-spectrum flux measurement", "",
             "The strict TS > 9 criterion controls reporting, not detection significance. "
-            "The primary Gamma hypothesis is retained; these estimates are separate from the fixed-spectrum upper limits.", "",
-            "dPhi_(nu_mu+anti_nu_mu)/dE = phi1TeV (E / 1 TeV)^(-Gamma). "
+            "Measurements use the primary spectral hypothesis. The fixed-spectrum upper limits use separate fits.", "",
+            "phi_(nu_mu+anti_nu_mu)(E) = phi1TeV (E / 1 TeV)^(-s). "
             "Normalization is in GeV^-1 cm^-2 s^-1.", "",
             "| Source | Parameter | Best fit | 68.27% profile interval | 95% profile interval |",
             "| --- | --- | --- | --- | --- |"])
@@ -188,20 +197,20 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
                 if not intervals:
                     continue
                 cells = [f"[{item['lower']:.7g}, {item['upper']:.7g}]" + (" (bound reached)" if item["lower_at_boundary"] or item["upper_at_boundary"] else "") for item in intervals]
-                lines.append(f"| {str(name).replace('|', '/')} | {'phi1TeV' if parameter == 'phi0' else 'Gamma'} | {best:.7g} | {cells[0]} | {cells[1]} |")
+                lines.append(f"| {str(name).replace('|', '/')} | {'phi1TeV' if parameter == 'phi0' else 's'} | {best:.7g} | {cells[0]} | {cells[1]} |")
             for key in ("flux_measurement", "flux_spectrum_png", "flux_contour_png"):
                 if key in files:
                     lines.extend(["", f"[{name}: {key}]({files[key]})"])
         lines.extend(["", "One-dimensional intervals use 2 Delta ln L = 1 (68.27%) and 3.841459 (95%). "
-            "For free Gamma, each fixed flux normalization reoptimizes Gamma with the corresponding detector yield; Gamma intervals profile ns. "
-            "Joint normalization-Gamma contours use 2 degrees of freedom: 2.295749 and 5.991465. "
+            "For each fixed flux normalization, the fit maximizes the likelihood over s with the corresponding detector yield. Spectral-index intervals profile over n. "
+            "Joint normalization and spectral-index contours use 2 degrees of freedom: 2.295749 and 5.991465. "
             "Source spectral shading is a sampled envelope of the 68.27% joint region, not a simultaneous confidence band. "
-            "A fixed-Gamma fit instead uses its one-dimensional normalization interval. "
+            "A fixed-index fit instead uses its one-dimensional normalization interval. "
             "The source curves represent complete power laws; their display range does not establish a measured sensitive range."])
     if any(fit.get("flux_upper_limit_fits") or fit.get("flux_upper_limit") for fit, _ in flux_entries):
         lines.extend(["", "## Fixed-spectrum flux upper limits", "",
-            "Separate constrained fits for each power-law spectrum; the primary fit above keeps its requested Gamma mode.", "",
-            "| Source | Fixed Gamma (E^-Gamma) | ns upper limit | phi100 upper limit [GeV^-1 cm^-2 s^-1] | E^2 dPhi/dE at 100 TeV [TeV cm^-2 s^-1] |",
+            "Separate constrained fits for each power-law spectrum; the primary fit above keeps its requested spectral-index mode.", "",
+            "| Source | Fixed s (E^-s) | n upper limit | phi100 upper limit [GeV^-1 cm^-2 s^-1] | E^2 phi(E) at 100 TeV [TeV cm^-2 s^-1] |",
             "| --- | --- | --- | --- | --- |"])
         flux_links = []
         for fit, name in flux_entries[:20]:
@@ -222,7 +231,7 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         if not artifact.is_absolute():
             artifact = path.parent / artifact if (path.parent / artifact).is_file() else artifact.resolve()
         lines.append(f"- [{key}]({artifact})" if artifact.is_file() else f"- {key}: `{value}`")
-    lines.extend(["", "Significance is the one-sided Gaussian equivalent of the reported p-value. Local p-values and significances are estimates: fitted Gamma uses half-chi-square dof=2, fixed Gamma uses dof=1. At TS=0 the reporting convention is p=0.5 and Z=0; empirical calibration is unavailable without the corresponding background trials. Catalog scans separately report the declared analytic catalog-size correction; it does not calibrate the joint stack. This method description does not by itself create a review warning."])
+    lines.extend(["", "Significance is the one-sided Gaussian equivalent of the reported p-value. The local estimates use a half-chi-square distribution with two degrees of freedom for fitted s and one for fixed s. At TS=0 the reporting convention is p=0.5 and Z=0; empirical calibration is unavailable without the corresponding background trials. Catalog scans separately report the declared analytic catalog-size correction; it does not calibrate the joint stack. This method description does not by itself create a review warning."])
     lines.extend(["", "## Background trials", "", f"- Requested: {report['diagnostics']['requested_background_trials']}", f"- Executed by this workflow: {report['diagnostics']['n_background_trials']}"])
     lines.extend(["", "## Backend warnings", "", "Fit-quality and other material warnings are listed in [review.md](review.md).", ""])
     if report["warnings"]:

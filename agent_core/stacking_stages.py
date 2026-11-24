@@ -25,9 +25,9 @@ def record_primary(task, task_path, root, run, request_hash):
     task["stacking_stages"] = dict(primary=dict(status=status,
         request_sha256=request_hash, run_directory=str(run.run_dir),
         result_file=str(receipt), artifacts_sha256={str(p): sha256_file(p) for p in files},
-        chat_summary={key: run.result[key] for key in (
+        chat_summary=dict(n=run.result["ns"], s=run.result["gamma"], **{key: run.result[key] for key in (
             "ns", "gamma", "gamma_mode", "TS", "pre_trial_p", "pre_trial_significance",
-            "p_value_method", "p_value_is_estimate", "significance_convention", "n_sources")},
+            "p_value_method", "p_value_is_estimate", "significance_convention", "n_sources")}),
         spectrum=run.result.get("spectrum", {}),
         review_status=run.review["status"],
         warnings=[c["message"] for c in run.review.get("checks", []) if c.get("status") == "warning"]), flux=dict(status="PENDING"))
@@ -118,16 +118,16 @@ def execute_flux_stage(task, task_path, root, backend="likelihood", max_safe_ret
                 result = run.result
                 summary = dict(display_quantity=settings["display_quantity"],
                     intensity_unit="GeV^-1 cm^-2 s^-1 sr^-1", upper_limits=[
-                        {key: fit["flux_upper_limit"][key] for key in (
+                        dict(s=fit["flux_upper_limit"]["gamma"], **{key: fit["flux_upper_limit"][key] for key in (
                             "gamma", "confidence_level", "pivot_energy_gev", "phi0_upper_limit", "phi0_unit",
                             "e2_dphi_de_upper_limit_gev_cm2_s", "intensity0_upper_limit",
-                            "e2_intensity_upper_limit_gev_cm2_s_sr")}
+                            "e2_intensity_upper_limit_gev_cm2_s_sr")})
                         for fit in result.get("flux_upper_limit_fits", [])],
                     generated_files=result.get("generated_files", {}))
                 measurement = result.get("flux_measurement", {})
                 if measurement.get("reported"):
                     summary["measurement"] = dict(
-                        intensity0_hat=measurement["intensity0_hat"], gamma=measurement["gamma"],
+                        intensity0_hat=measurement["intensity0_hat"], s=measurement["gamma"], gamma=measurement["gamma"],
                         pivot_energy_gev=measurement["pivot_energy_gev"],
                         intensity0_unit=measurement["intensity0_unit"],
                         intervals=[dict(row, parameter="intensity0", lower=row["lower"]/(4*math.pi),
@@ -161,7 +161,14 @@ def chat_stages(task):
         if stage.get("status") in {"COMPLETED", "COMPLETED_WITH_WARNINGS"}:
             output[name] = dict(stage["chat_summary"], status=stage["status"],
                                 review_status=stage["review_status"], warnings=stage.get("warnings", []))
+            measurement = output[name].get("measurement")
+            if measurement and "intervals" in measurement:
+                output[name]["measurement"] = dict(measurement, intervals=[
+                    dict(row, parameter_label="s" if row["parameter"] == "gamma" else row["parameter"])
+                    for row in measurement["intervals"]])
             if name == "primary":
+                output[name].setdefault("n", output[name].get("ns"))
+                output[name].setdefault("s", output[name].get("gamma"))
                 output[name]["background_trial_note"] = background_trial_note(
                     output[name].get("pre_trial_significance"))
     if task.get("status") == "AWAITING_FLUX":
@@ -179,7 +186,7 @@ def stack_flux_markdown(result):
         "Catalog intensity is the sum of the selected source fluxes divided by 4*pi sr. "
         "Each source contributes its normalized intrinsic weight; detector acceptance is applied once. "
         "All quantities below are nu_mu+anti_nu_mu.", "",
-        "| Fixed Gamma | One-sided CL | Intensity limit at 100 TeV [GeV^-1 cm^-2 s^-1 sr^-1] | E^2 dI/dE at 100 TeV [GeV cm^-2 s^-1 sr^-1] |",
+        "| Fixed s | One-sided CL | Intensity limit at 100 TeV [GeV^-1 cm^-2 s^-1 sr^-1] | E^2 dI/dE at 100 TeV [GeV cm^-2 s^-1 sr^-1] |",
         "| --- | --- | --- | --- |"]
     for fit in result.get("flux_upper_limit_fits", []):
         limit = fit["flux_upper_limit"]
@@ -187,11 +194,11 @@ def stack_flux_markdown(result):
     m = result.get("flux_measurement", {})
     if m.get("reported"):
         lines.extend(["", "Primary-spectrum measured intensity at 1 TeV: "
-            f"`{m['intensity0_hat']:.8g} GeV^-1 cm^-2 s^-1 sr^-1`; Gamma = `{m['gamma']:.8g}`.",
+            f"`{m['intensity0_hat']:.8g} GeV^-1 cm^-2 s^-1 sr^-1`, with s = `{m['gamma']:.8g}`.",
             "", "| Parameter | CL | Profile interval |", "| --- | --- | --- |"])
         for row in m["intervals"]:
             factor = 1/(4*math.pi) if row["parameter"] == "phi0" else 1.
-            parameter = "Intensity at 1 TeV [GeV^-1 cm^-2 s^-1 sr^-1]" if row["parameter"] == "phi0" else "Gamma"
+            parameter = "Intensity at 1 TeV [GeV^-1 cm^-2 s^-1 sr^-1]" if row["parameter"] == "phi0" else "s"
             bound = " (bound reached)" if row['lower_at_boundary'] or row['upper_at_boundary'] else ""
             lines.append(f"| {parameter} | {100*row['confidence_level']:.4g}% | [{row['lower']*factor:.8g}, {row['upper']*factor:.8g}]{bound} |")
     else:

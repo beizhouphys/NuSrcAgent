@@ -1,7 +1,7 @@
 """Persistent conditional event-RA calibration using the unchanged DR2 LLH.
 
 Trials inherit the reviewed single-source or stacking configuration,
-including fixed/fitted Gamma, event selections and supplied spectra. No PDF optimization or analytic TS calibration.
+including fixed/fitted spectral index, event selections and supplied spectra. No PDF optimization or analytic TS calibration.
 """
 from __future__ import annotations
 
@@ -280,9 +280,12 @@ def fit_review(result, config):
     if (config.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'
             or result.get('fit_procedure', 'skyllh_lbfgs_v1') != 'skyllh_lbfgs_v1'):
         failures.append('unsupported or inconsistent fit procedure')
-    for name in (('TS', 'ns') if config.get('fit_options', {}).get('spectrum') else ('TS', 'ns', 'gamma')):
-        if not math.isfinite(result[name]):
-            failures.append(f'nonfinite {name}')
+    fitted_fields = [('TS', 'TS'), ('ns', 'n')]
+    if not config.get('fit_options', {}).get('spectrum'):
+        fitted_fields.append(('gamma', 's'))
+    for key, label in fitted_fields:
+        if not math.isfinite(result[key]):
+            failures.append(f'nonfinite {label}')
     if (result['TS'] < 0 or not 0 <= result['ns'] <= config['ns_max'] or
             (config.get('gamma_mode', 'fitted') == 'fitted' and not config['gamma_min'] <= result['gamma'] <= config['gamma_max'])):
         failures.append('fit outside constrained domain')
@@ -290,13 +293,13 @@ def fit_review(result, config):
         failures.append('optimizer did not converge')
     if (result['gamma_mode'] != config.get('gamma_mode', 'fitted') or
             result['background_pdf_version'] != config['background_pdf_version']):
-        failures.append('wrong Gamma mode or background version')
+        failures.append('wrong spectral-index mode or background version')
     if result['n_sources'] != config['n_sources'] or result['event_selection'] != config.get('expected_event_selection', 'all_events'):
         failures.append('wrong catalog size or event selection')
     if config.get('gamma_mode', 'fitted') == 'fitted' and min(abs(result['gamma']-config['gamma_min']), abs(result['gamma']-config['gamma_max'])) < 1e-5:
-        warnings.append('Gamma at fit boundary; not a precise spectral measurement')
+        warnings.append('spectral index at fit boundary; not a precise spectral measurement')
     if abs(result['ns']-config['ns_max']) < 1e-5:
-        warnings.append('ns at upper boundary')
+        warnings.append('n at upper fit boundary')
     if 'fit_options' in config:
         options = config['fit_options']
         for key in ('likelihood_mode', 'signal_energy_gamma_interpolation', 'spectrum'):
@@ -305,8 +308,22 @@ def fit_review(result, config):
         if result['event_counts'] != config['expected_event_counts']:
             failures.append('changed event counts')
         if result.get('fit_bounds', {}).get('ns') != [0., options['ns_max']]:
-            failures.append('changed ns bounds')
+            failures.append('changed n bounds')
     return dict(status='fail' if failures else ('warning' if warnings else 'pass'), failures=failures, warnings=warnings)
+
+
+def _fit_review_for_display(review):
+    """Use current notation when reading review text from earlier checkpoints."""
+    aliases = {
+        'nonfinite ns': 'nonfinite n',
+        'nonfinite gamma': 'nonfinite s',
+        'ns at upper boundary': 'n at upper fit boundary',
+        'changed ns bounds': 'changed n bounds',
+    }
+    return dict(review, **{
+        key: [aliases.get(message, message) for message in review[key]]
+        for key in ('failures', 'warnings') if key in review
+    })
 
 
 def _is_skippable_negative_ts(row, config):
@@ -317,7 +334,7 @@ def _is_skippable_negative_ts(row, config):
             and row['review']['failures'] == ['fit outside constrained domain']
             and math.isfinite(result['TS']) and result['TS'] < 0.
             and result['minimizer_status'].get('warnflag') == 0
-            and row['review'] == fit_review(result, config))
+            and _fit_review_for_display(row['review']) == fit_review(result, config))
 
 
 def _skipped_negative_ts_rows(out, config, accepted_hashes):
@@ -490,7 +507,7 @@ def report(out, persist=True):
     for row in rows:
         if row['request_sha256'] not in accepted_hashes:
             raise ValueError('Checkpoint request hash mismatch')
-        if row['review'] != fit_review(row['result'], config):
+        if _fit_review_for_display(row['review']) != fit_review(row['result'], config):
             raise ValueError('Checkpoint review mismatch')
         index = row['index']
         expected_seed = event_seed_for_index(config, index)
@@ -535,7 +552,8 @@ def report(out, persist=True):
             result['estimated_total_fit_wall_hours'] = average*(requested_trials+1)/config['workers']/3600
     if observed and trials and not failures:
         result['statistics'] = empirical_summary(observed['result']['TS'], [r['result']['TS'] for r in trials])
-        result['observed'] = {k: observed['result'][k] for k in ('TS','ns','gamma')}
+        result['observed'] = {k: observed['result'][k] for k in ('TS', 'ns', 'gamma')}
+        result['observed'].update(n=observed['result']['ns'], s=observed['result']['gamma'])
         result['statistics_status'] = 'final_fixed_n' if complete else 'running_snapshot'
         if skipped:
             result['statistics_caution'] = ('Negative-TS fits were excluded. The empirical statistics use only '
@@ -672,7 +690,7 @@ def _run_locked(root, out, resume, max_hours, max_fits):
             raise ValueError('Incomplete ensemble cannot be reported as completed')
         review = dict(status='warning', checks=dict(all_requested_fits_present=True, all_fit_reviews_pass=True),
                       warnings=['Finite Monte Carlo precision; report exact binomial intervals.',
-                                'Conditional uniform-RA null; PDF residuals can still bias ns/Gamma.',
+                                'Conditional uniform-RA null; PDF residuals can still bias n and s.',
                                 'Uses the existing optimizer; this ensemble is not a general coverage validation.'],
                       boundary_warning_fits=summary['boundary_warning_fits'])
         write_json(out/'review.json', review)
@@ -697,7 +715,7 @@ def prepare_continuous(root, out, parent_directory, request, workers=2):
         raise ValueError('Parent timing pilot must be PAUSED before protocol amendment')
     parent_config = parent_task['parameters']['experiment']['value']
     if parent_config.get('background_pdf_version') != 'v3':
-        raise ValueError('Parent task is not the required fitted-Gamma v3 calibration')
+        raise ValueError('Parent task is not the required fitted-index v3 calibration')
     verify_v3_release(root)
     out.mkdir(parents=True, exist_ok=False)
     shutil.copy2(parent/'catalog.json', out/'catalog.json')
@@ -853,7 +871,7 @@ def prepare_versioned_continuous(root, out, reference_directory, request,
         raise ValueError('Reference empirical task must be PAUSED')
     reference_config = reference_task['parameters']['experiment']['value']
     if reference_config.get('gamma_mode') != 'fitted' or not reference_config.get('continuous'):
-        raise ValueError('Reference is not a fitted-Gamma continuous empirical task')
+        raise ValueError('Reference is not a fitted-index continuous empirical task')
     if import_reference_fits and reference_config.get('background_pdf_version') != background_version:
         raise ValueError('Cannot import fits across background-PDF versions')
     _background_release_paths(root, background_version)
@@ -1002,7 +1020,7 @@ def prepare_distributed_shard(root, out, reference_directory, request, analysis_
     if reference_task['status'] != 'PAUSED':
         raise ValueError('Canonical reference task must be PAUSED before preparing a shard')
     if not reference_config.get('continuous') or reference_config.get('gamma_mode') != 'fitted':
-        raise ValueError('Reference is not a fitted-Gamma continuous empirical task')
+        raise ValueError('Reference is not a fitted-index continuous empirical task')
     background_version = reference_config['background_pdf_version']
     _background_release_paths(root, background_version)
     observed_source = reference/'fits'/'observed.json'
@@ -1537,7 +1555,7 @@ def write_snapshot_exports(out, result):
     with temporary_csv.open('w', newline='') as stream:
         writer = csv.writer(stream)
         writer.writerow(['trial_id', 'index', 'kind', 'event_ra_seed', 'TS', 'ns', 'gamma',
-                         'review_status', 'elapsed_seconds', 'completed_at_utc'])
+                         'review_status', 'elapsed_seconds', 'completed_at_utc', 'n', 's'])
         for row in sorted(rows, key=lambda item: item['index']):
             value = row['result']
             writer.writerow([
@@ -1545,6 +1563,7 @@ def write_snapshot_exports(out, result):
                 row['index'], 'observed' if row['index'] < 0 else 'background',
                 value['ra_scramble']['event_seed'], value['TS'], value['ns'], value['gamma'],
                 row['review']['status'], row['elapsed_seconds'], row['completed_at_utc'],
+                value['ns'], value['gamma'],
             ])
     temporary_csv.replace(csv_path)
 
@@ -1571,8 +1590,8 @@ def write_snapshot_exports(out, result):
         lines += [
             '## Result', '',
             f"- Observed TS: `{observed['TS']:.12g}`",
-            f"- Observed ns: `{observed['ns']:.12g}`",
-            f"- Observed Gamma: `{observed['gamma']}`",
+            f"- Observed n: `{observed['ns']:.12g}`",
+            f"- Observed s: `{observed['gamma']}`",
             f"- Exceedances: `{stats['exceedances']}` of `{stats['n_trials']}`",
             f"- Empirical pre-trial p-value: `{stats['p_pre']:.12g}`",
             f"- Empirical post-trial p-value: `{stats['p_post']:.12g}`",
@@ -1622,7 +1641,7 @@ def _aggregate_trial_row(row, config, source, trial_id):
     actual = row['result']['ra_scramble']['event_seed']
     if actual != expected:
         raise ValueError(f'Checkpoint event seed mismatch for {trial_id}')
-    if row['review'] != fit_review(row['result'], config):
+    if _fit_review_for_display(row['review']) != fit_review(row['result'], config):
         raise ValueError(f'Checkpoint review mismatch for {trial_id}')
     if row['review']['status'] == 'fail':
         raise ValueError(f'Failed fit cannot enter aggregate: {trial_id}')
@@ -1635,10 +1654,12 @@ def _aggregate_trial_row(row, config, source, trial_id):
         'ns': row['result']['ns'],
         'gamma': row['result']['gamma'],
         'review_status': row['review']['status'],
-        'review_warnings': row['review']['warnings'],
+        'review_warnings': _fit_review_for_display(row['review'])['warnings'],
         'elapsed_seconds': row['elapsed_seconds'],
         'completed_at_utc': row['completed_at_utc'],
         'checkpoint_request_sha256': row['request_sha256'],
+        'n': row['result']['ns'],
+        's': row['result']['gamma'],
     }
 
 
@@ -1775,7 +1796,8 @@ def aggregate_distributed_shards(root, analysis_alias, out):
         'catalog_sha256': canonical_catalog_hash,
         'created_at_utc': utc_now(),
         'status': 'RUNNING' if any(item['status'] == 'RUNNING' for item in source_tasks) else 'PAUSED',
-        'observed': {key: observed[key] for key in ('TS', 'ns', 'gamma')},
+        'observed': {**{key: observed[key] for key in ('TS', 'ns', 'gamma')},
+                     'n': observed['ns'], 's': observed['gamma']},
         'statistics': statistics,
         'completed_trials': len(values),
         'attempted_trials': len(values)+len(skipped_negative_ts),
@@ -1802,7 +1824,7 @@ def aggregate_distributed_shards(root, analysis_alias, out):
     with temporary_csv.open('w', newline='') as stream:
         writer = csv.DictWriter(stream, fieldnames=[
             'trial_id', 'source', 'index', 'event_ra_seed', 'TS', 'ns', 'gamma',
-            'review_status', 'elapsed_seconds', 'completed_at_utc', 'checkpoint_request_sha256',
+            'review_status', 'elapsed_seconds', 'completed_at_utc', 'checkpoint_request_sha256', 'n', 's',
         ])
         writer.writeheader()
         for item in values:

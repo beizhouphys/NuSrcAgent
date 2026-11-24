@@ -46,8 +46,8 @@ historical timing files, input-hash comparisons or stored cost sequences. There
 is no history lookup or transfer of old call counts or speeds.
 
 The optimizer does not declare how many calls remain. A clearly labelled,
-uncalibrated reporting assumption starts at 24 calls for fitted Gamma or 12
-for fixed Gamma. After the first completed call, the observer multiplies its
+uncalibrated reporting assumption starts at 24 calls for fitted spectral index or 12
+for fixed spectral index. After the first completed call, the observer multiplies its
 estimated remaining call count by a measured current-run call cost. The first-call estimate removes measured one-time cache construction:
 
 `recurring call seconds = cold call seconds - retained geometry construction - compression - energy lookup construction + estimated cached-read seconds`
@@ -64,8 +64,8 @@ call. No extra objective-function calculation is performed.
 
 This corrected recurring cost supplies the first forecast. Later full-PDF calls
 replace it with the median of the last eight full-PDF durations. Cached calls never enter the
-full-PDF rate. Fixed-Gamma fits with only cached calls after setup use their
-own measured cached-call rate. Free-Gamma fits conservatively assume future
+full-PDF rate. Fixed-index fits with only cached calls after setup use their
+own measured cached-call rate. Free-spectral index fits conservatively assume future
 calls can require PDF recomputation, even after a cheap cached burst.
 
 When the assumed workload is reached, it expands by one quarter of the initial
@@ -129,15 +129,15 @@ and scientific review in its own timing file. Primary checkpoint validation
 precedes this record; wrapper wall time includes that validation. Primary
 reconstruction is measured separately and is never multiplied by later work.
 
-Measurement profiling reports normalization crossings, Gamma crossings, each
-contour's Gamma bounds, and each confidence contour as separate work groups.
-Normalization and Gamma intervals each have four endpoint crossings; each
-contour has two Gamma-bound crossings and its actual Gamma-grid length.
+Measurement profiling reports normalization crossings, spectral index crossings, each
+contour's spectral-index bounds, and each confidence contour as separate work groups.
+Normalization and spectral-index intervals each have four endpoint crossings; each
+contour has two spectral index-bound crossings and its actual spectral index-grid length.
 Only completed units in the same group provide the group's median unit cost
 (last eight samples). A new group starts fresh, even within the same request.
 Before its first unit completes, likelihood evaluations provide a rough
-first-unit cost, distinguishing changed Gamma from reused Gamma. The initial
-reporting assumptions are 96 evaluations for a free-Gamma normalization crossing
+first-unit cost, distinguishing changed spectral index from reused spectral index. The initial
+reporting assumptions are 96 evaluations for a free-index normalization crossing
 (roughly four scans of 13 grid points plus refinement), 12 for scalar crossings,
 and 32 for a contour slice. These are explicitly uncalibrated estimates; they
 expand if reached and never alter root finding, grid points or optimization.

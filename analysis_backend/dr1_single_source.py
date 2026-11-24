@@ -83,7 +83,7 @@ def run_single_source_time_integrated(ra_deg, dec_deg, repo_root='.', gamma=DEFA
         "fit_bounds": {"ns": [-10., float(sum(Nj))]},
         "roi_deg": float(ROI*d2r) if bounds is None else None,
         "note": "single-source time-integrated backend copied from likelihood_v4.py; p-value uses chi2(df=1)/2 approximation",
-        "warnings": (["Requested-spectrum DR1 path retains NumPy integration compatibility and uses the original likelihood code SLSQP maximization with unchanged ns bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
+        "warnings": (["The requested-spectrum DR1 path uses NumPy-compatible integration and the original likelihood code's SLSQP maximization with unchanged n bounds."] if requested_spectrum else ["Current callable backend uses NumPy-only integration/optimization compatibility code instead of SciPy SLSQP."]),
     }
 
 
@@ -236,11 +236,11 @@ def SnB_PDF(RA_src, Dec_src, data, event_bounds=None):
 
 
 
-def logL_j(n_s, fks, SB_ji, logB_ki, Nj, data):
+def logL_j(n, fks, SB_ji, logB_ki, Nj, data):
     # Copied from likelihood_v4.py::logL_j with precomputed S/B passed directly.
     logL_j = 0;
     for k in range(len(data['Nks'])):
-        a = float(n_s*fks[k])/float(Nj[k])
+        a = float(n*fks[k])/float(Nj[k])
         L_jik_fac = 1. + a*(SB_ji[k]-1.)
         if L_jik_fac.min() < 0:
             return -1e99, Nj[k]
@@ -249,9 +249,9 @@ def logL_j(n_s, fks, SB_ji, logB_ki, Nj, data):
     return logL_j, sum(array(Nj)) # maybe don't output Nk?
 
 
-def TS_j(n_s, fks, SB_ji, logB_ki, Nj, data):
+def TS_j(n, fks, SB_ji, logB_ki, Nj, data):
     # Copied from likelihood_v4.py::TS_j with precomputed S/B passed directly.
-    tmp3 = logL_j(n_s, fks, SB_ji, logB_ki, Nj, data)[0]
+    tmp3 = logL_j(n, fks, SB_ji, logB_ki, Nj, data)[0]
     return 2.*(tmp3 - logL_j(0., fks, SB_ji, logB_ki, Nj, data)[0])
 
 
@@ -260,8 +260,8 @@ def max_TS_j1(fks, SB_ji, logB_ki, Nj, data, ns_min=-10., requested_spectrum=Fal
     Nj_tot = logL_j(0., fks, SB_ji, logB_ki, Nj, data)[1]
     if Nj_tot == 0:
         return array([-999, -999, -999])
-    def TS_j1(n_s):
-        return -TS_j(n_s, fks, SB_ji, logB_ki, Nj, data)
+    def TS_j1(n):
+        return -TS_j(n, fks, SB_ji, logB_ki, Nj, data)
     if requested_spectrum:
         # Copied from likelihood_v4.py::max_TS_j1 (including the untouched
         # owner baseline): minimize(TS_j1, (0.), method='SLSQP', bounds=bnds).

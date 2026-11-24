@@ -7,7 +7,7 @@ temporal JSON inputs. Existing saved tasks retain their original interpretation.
 
 Time-dependent analysis tests a source's emission with an explicit Gaussian
 or box arrival-time profile. A catalog scan fits every selected source
-independently, with its own ns, Gamma and temporal parameters. Time-dependent
+independently, with its own n, spectral index and temporal parameters. Time-dependent
 stacking uses the separate [fixed per-source window workflow](time_dependent_catalog.md).
 This guide describes the legacy Gaussian/box time-search workflow only; its search and
 calibration restrictions do not apply to the new fixed-window workflow. DR1
@@ -16,7 +16,7 @@ remains unchanged.
 ## Scientific definition
 
 The existing full14 DR2 SkyLLH likelihood supplies the spatial PDF, optional
-energy PDF, detector acceptance, event selection and ns/Gamma maximization.
+energy PDF, detector acceptance, event selection and n and s maximization.
 For dataset k, the temporal signal PDF is
 
 `S_time^k(t) = I_k(t) g(t) / integral I_k(t') g(t') dt'`,
@@ -38,7 +38,7 @@ existing definition.
 
 The time-dependent yield is the steady detector yield multiplied by
 `integral I_k(t) g(t) dt / T_k`. Dataset signal fractions normalize these
-yields across all four datasets, with their Gamma derivatives included.
+yields across all four datasets, with their spectral index derivatives included.
 A profile wholly outside a season or within a detector downtime gap has
 zero acceptance there. Its event time ratios and dataset fraction are zero;
 other seasons still contribute normally. One released IC59 event equals a
@@ -47,9 +47,9 @@ run-stop equalities, a measure-zero endpoint convention recorded per dataset;
 no event time, event membership or uptime integral is changed. Positive
 offsets and detector downtime gaps remain invalid. Frozen PDF products are unchanged.
 A box covering every good-run interval recovers the time-integrated
-likelihood, detector fractions and fitted ns/TS exactly.
+likelihood, detector fractions and fitted n/TS exactly.
 
-The statistic is `TS = 2 log(L_hat / L_ns=0)`, constrained to ns >= 0,
+The statistic is `TS = 2 log(L_hat / L(n=0))`, constrained to n >= 0,
 without an added duration penalty. It is not the significance of the time
 search. Time-dependent p-values, one-sided significances and catalog-corrected
 values remain unavailable. The time-integrated half-chi-square formulas and
@@ -70,17 +70,17 @@ scrambling method is silently chosen.
 
 `grid_powell_v1` first evaluates the Cartesian product of the supplied seeds,
 then starts one bounded Powell search at each seed. At every temporal point,
-the original SkyLLH `skyllh_lbfgs_v1` optimizer profiles ns and any free Gamma.
+the original SkyLLH `skyllh_lbfgs_v1` optimizer profiles n and any free spectral index.
 MJD centers are scaled linearly to the unit interval; widths use log scaling.
 The requested maxiter, xtol and ftol refer to this scaled outer search.
 All seed evaluations and search outcomes are retained. An unconverged search
-or inner maximization fails; the runtime never widens bounds, changes seeds
+or inner maximization fails; the runtime never widen bounds, changes seeds
 or substitutes a different scientific request. Multiple starts improve search
 coverage but do not certify a unique global maximum. Box objectives are
 nonsmooth when an edge passes an event; choose seeds/resolution accordingly.
-When ns=0, the temporal parameters and Gamma are not measurements.
+When n=0, the temporal parameters and spectral index are not measurements.
 
-The standalone source's existing linear Gamma interpolation and the catalog
+The standalone source's existing linear spectral-index interpolation and the catalog
 scan's existing quadratic interpolation retain their respective definitions.
 A supplied fixed non-PL spectrum and an explicitly requested PL range use the
 same spectrum-preparation interface as the other supported DR2 analyses.
@@ -133,15 +133,15 @@ An explicit fixed `mode` cannot also carry fit bounds or seeds.
 .venv/bin/python run_agent_wrap.py run --task <task_id>
 ```
 
-Omitting --gamma retains the existing fitted-Gamma convention; supplying
---gamma fixes the signed power-law exponent unless --gamma-mode fitted is
+Omitting the spectral-index option selects the default fit. Supplying
+--s fixes the power-law spectral index unless --s-mode fitted is
 explicit. Generic ICRS/Galactic coordinates, angular units and provenance
 use the shared input layer.
 
 ```bash
 .venv/bin/python run_agent_wrap.py create-catalog \
   --source 'source A,77.3581851,5.69314828' --source 'source B,40,-20' \
-  --catalog-operation scan --gamma -2 \
+  --catalog-operation scan --s 2 \
   --temporal-file configs/examples/temporal_gaussian_fitted.json \
   --request 'Independently scan both example coordinates with the explicit Gaussian search.'
 .venv/bin/python run_agent_wrap.py run --task <task_id> --workers 2
@@ -161,8 +161,8 @@ retroactively alter a recorded task.
 
 ## Outputs and review
 
-`show`/`run` return `time_dependent_summary`: input-ordered results with ns,
-Gamma, TS, t0, width, fixed/fitted modes, and unavailable calibration fields.
+`show`/`run` return `time_dependent_summary`: input-ordered results with n,
+spectral index, TS, t0, width, fixed/fitted modes, and unavailable calibration fields.
 Artifacts include the complete CSV, one temporal evaluation CSV per source,
 intrinsic-profile PNG/PDF figures, normalized settings, code/input provenance
 and scientific/artifact reviews. The figures display intrinsic profile shape;
@@ -180,7 +180,7 @@ dataset-fraction derivatives against finite differences, and the complete
 SkyLLH log-likelihood/gradient against the explicit event-mixture formula.
 A broad-box limit tests the unchanged time-integrated maximum. Real persistent
 wrapper runs cover fixed/fitted temporal parameters, Gaussian/box profiles,
-fixed/fitted Gamma, spatial-only mode and catalog scans with input-order
+fixed/fitted spectral index, spatial-only mode and catalog scans with input-order
 preservation. These checks establish the implemented likelihood and workflow;
 they do not supply time-search significance calibration or parameter coverage.
 
