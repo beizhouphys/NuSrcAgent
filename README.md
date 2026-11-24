@@ -158,6 +158,13 @@ folder. Then install with one command:
 bash install.sh
 ```
 
+By default, `bash install.sh` downloads only the DR2 (14-year) inputs.
+To add DR1 (10-year) inputs, run this command in the same directory.
+
+```bash
+bash install.sh --data-sample icecube_public_ps_10yr
+```
+
 The script installs the required Python libraries and downloads the matching
 IceCube data, pre-calculated signal energy PDFs and background energy and
 spatial PDFs. Here **PDF** means probability density function, not a document
