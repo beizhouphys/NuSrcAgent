@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 51438,
-      "sha256": "36d401fdea309aedb09390de5618702ed07a01b98a901ae0434098f7cacf03c7"
+      "bytes": 51284,
+      "sha256": "c459726934d92bd9931c61a8c2afeef036edac87cde0987707129f6494c55aff"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
@@ -13,8 +13,8 @@
     },
     {
       "path": ".agents/skills/nusrcagent/references/agent-task-interface.md",
-      "bytes": 7543,
-      "sha256": "f1d80c5796c8050cb4b8f29369ebc3257bccded1e0e4644190e323e54cd4d19e"
+      "bytes": 7672,
+      "sha256": "4577158e32a02657846a66d135b221ba307de2497b1536434fe54b1f30e516b6"
     },
     {
       "path": ".agents/skills/nusrcagent/references/requested-spectra.md",
@@ -53,8 +53,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 7151,
-      "sha256": "cdc3f21954e50bc45a09e730b2cf4bb6106432cb6d5ed888751107abc47129b2"
+      "bytes": 7636,
+      "sha256": "89462d6be3405f9d88653e06a20c90f7d39d0ba271756281f255dd0adad78929"
     },
     {
       "path": "AGENT_VERSION.txt",
@@ -63,8 +63,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 24323,
-      "sha256": "1ee65cfbd42801484fe4aaa86c6224e2dc199f8bf3abb31c052dba12d42a33b8"
+      "bytes": 24319,
+      "sha256": "facc2e86b27fcaae470405e0866082c5c22e94fed1a2a358778d01f0063c15ce"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -93,8 +93,8 @@
     },
     {
       "path": "agent_core/catalog_window_outputs.py",
-      "bytes": 18687,
-      "sha256": "ef8c4adf50554c2d232135ac5c29152f93f4ae138e7fbc56ae88f7be55f16306"
+      "bytes": 18675,
+      "sha256": "8da8c8b45e0738a50b757ccc4cb27a5a890e1f2d858934c7b1e6140fc82c2f10"
     },
     {
       "path": "agent_core/config_io.py",
@@ -233,8 +233,8 @@
     },
     {
       "path": "agent_core/temporal.py",
-      "bytes": 15082,
-      "sha256": "5248f795188876294927da1cc1b0351bc8c8a1993f386437a462f45dd885fd14"
+      "bytes": 18393,
+      "sha256": "c858be7fcb5517f31f5075d783e4cfe5f8abccaf5c2c0c6aa658ea855e76e7c3"
     },
     {
       "path": "agent_core/time_dependent_outputs.py",
@@ -248,8 +248,8 @@
     },
     {
       "path": "agent_core/validate.py",
-      "bytes": 17497,
-      "sha256": "057d7a36cc49b0b026c13d5961f7f5661f83ba8185c1023402e1d0a73570a2b8"
+      "bytes": 17489,
+      "sha256": "66c7276df2460f1c20edd13a83847ec89e179d439796bc1b4adea3d8bb6b1df4"
     },
     {
       "path": "analysis_backend/__init__.py",
@@ -343,8 +343,8 @@
     },
     {
       "path": "analysis_backend/time_dependent/adapter.py",
-      "bytes": 12719,
-      "sha256": "c10a96aa4a9bff956080c6f8ce119200fb9de751afa6cf49ccadd94b75c0a228"
+      "bytes": 12711,
+      "sha256": "b30baf92143a35ab47722525ecdf10604df0b840e2d4bbe9117583326986a5d9"
     },
     {
       "path": "analysis_backend/time_dependent/analysis.py",
@@ -388,8 +388,8 @@
     },
     {
       "path": "analysis_backend/time_dependent/optimized.py",
-      "bytes": 21447,
-      "sha256": "ec6cddc0978fc98fe19b3e1a8dd8fa0922743ea157cc524bf8d5ba95c31c422a"
+      "bytes": 21443,
+      "sha256": "63ea4630e3b54aff26bc076c8ccad63bcf0ffd0064f3f686f681263155d85e12"
     },
     {
       "path": "analysis_backend/time_dependent/phase.py",
@@ -503,8 +503,8 @@
     },
     {
       "path": "docs/cpu_execution.md",
-      "bytes": 4619,
-      "sha256": "004ed1b59f2ee01b39775a84d2206396b13a98eaff2524100ffb412bb0793ed8"
+      "bytes": 4615,
+      "sha256": "173a98da1114da1d7ef3074f118db6e31a5a47bf5498625c3b721b6b17eaa728"
     },
     {
       "path": "docs/data_and_environment.md",
@@ -518,8 +518,8 @@
     },
     {
       "path": "docs/dr2_catalog_workflow.md",
-      "bytes": 11209,
-      "sha256": "5ffb1847f0c2765b10a17b0c841659a73925893ee3841fff2e5d20d2c87bef0e"
+      "bytes": 11346,
+      "sha256": "72c97e8230638d4ac116821f74c5d3f6d2da281ca1c11b53ceb19b1dcfa85063"
     },
     {
       "path": "docs/dr2_empirical_scrambling.md",
@@ -573,28 +573,28 @@
     },
     {
       "path": "docs/release_copy_changes.md",
-      "bytes": 3278,
-      "sha256": "1a2a8b39c31683495ee9d608ebaf396b3563b05170b216b7e1f20b65b4a2e6d9"
+      "bytes": 3447,
+      "sha256": "3bb74a2a852e398eb6135f4b0d5e6a8e6af22804f225579765dbb74a4797c556"
     },
     {
       "path": "docs/release_copy_verification.md",
-      "bytes": 6828,
-      "sha256": "c24f54041bc716146c6bf7cc5cbfc1a17b92e08d31f737b32a033fc35c739dc8"
+      "bytes": 6910,
+      "sha256": "9a72221345c2e07768d7c51f8a0e7f9a7ecb57383608b0fd5d8fd17e08cc590d"
     },
     {
       "path": "docs/release_metadata_draft.md",
-      "bytes": 6172,
-      "sha256": "8578721280fa4e8f064433ed1ecdc8c8e5bd957fac14c8c314442221074e4ac6"
+      "bytes": 6272,
+      "sha256": "0a0edaea13d2f44d5cad156f2ef7d2287e168e140b95c82bfc041a638dd8a7fe"
     },
     {
       "path": "docs/release_notes.md",
-      "bytes": 4193,
-      "sha256": "340fea0fdb5ede2eea982b17f3c6479527f0dac23e47e127a57f3d00b6d6a604"
+      "bytes": 4481,
+      "sha256": "201ff86b7323936e40b88c10b7847f20ce3563bd7cc4b6e3eead250673d9fb9f"
     },
     {
       "path": "docs/release_scientific_baseline.md",
-      "bytes": 5536,
-      "sha256": "46071b8d3af123ed881d08eb84f1cb7eebce56f4b719ba982ae4fa027256ec3b"
+      "bytes": 5595,
+      "sha256": "a7ccfc5df96e3ab11e9b7650047fcc247d581b41ca7d848bea13cfaeb2cb0dde"
     },
     {
       "path": "docs/requested_spectra.md",
@@ -638,8 +638,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 21742,
-      "sha256": "6090167ac8c18b78299363e05562275ae83e1bf3ed907291471f545888163fb1"
+      "bytes": 21684,
+      "sha256": "4844c3a086cd0dcddceb0671d25a3c45e422c7d5cc310bd900be77dbcd1e047a"
     },
     {
       "path": "docs/time_dependent.md",
@@ -648,13 +648,13 @@
     },
     {
       "path": "docs/time_dependent_catalog.md",
-      "bytes": 11732,
-      "sha256": "88b03cea9e3ed3d19694d7713fccd75904c5adac17d1734714f9bbf0a553f619"
+      "bytes": 12277,
+      "sha256": "1af3b2594c42fcf3eacb2bb7c6902b865368032a18bd4a5ab0ca5a38f9bceda0"
     },
     {
       "path": "docs/time_dependent_merge.md",
-      "bytes": 9255,
-      "sha256": "0c09cff5848440f77f0fc990f2aed04ab83c44fe3fb9dc14e7812e885d5310d8"
+      "bytes": 10733,
+      "sha256": "45a30ad562e14bec1dde927627f534274db5f0f41d2fba058a9adeb1c22f45b1"
     },
     {
       "path": "install.sh",

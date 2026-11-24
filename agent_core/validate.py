@@ -101,14 +101,14 @@ def validate_config(config: AnalysisConfig, repo_root: str | Path | None = None)
         catalog_windows = window_engine
         if catalog_windows:
             if interpolation not in (None, "linear_v1"):
-                result.errors.append("Catalog-window engine requires linear-density Gamma interpolation")
+                result.errors.append("Catalog-window engine requires linear-density s interpolation")
             if config.analysis.likelihood_mode != "spatial_energy" or config.analysis.spectrum:
                 result.errors.append("Catalog windows require spatial+energy and a power-law spectrum")
             if any(getattr(config.background, key) is not None for key in ("source_dec_window_deg", "event_abs_dec_max_deg", "event_dec_min_deg", "event_dec_max_deg")):
                 result.errors.append("Catalog-window engine does not support additional event declination cuts")
             engine = config.analysis.temporal.get("engine", "auto")
             if (engine == "cached-fixed" and config.stacking.gamma_mode != "fixed") or (engine == "cached-free" and config.stacking.gamma_mode != "fitted"):
-                result.errors.append("Cached engine and Gamma mode disagree")
+                result.errors.append("Cached engine and s mode disagree")
         if not catalog_windows and config.analysis.type == AnalysisType.CATALOG_STACKING and config.analysis.catalog_operation != "scan":
             result.errors.append("Global-profile time searches require catalog_operation=scan; fixed-profile stacking uses per_source_catalog_windows")
         if confidence is not None or limit_gammas or measurement_threshold is not None or stack_flux:

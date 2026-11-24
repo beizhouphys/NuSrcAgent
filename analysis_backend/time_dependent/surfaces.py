@@ -1,4 +1,4 @@
-"""Observed ``(n_s, Gamma)`` likelihood surfaces for fixed-profile analyses.
+"""Observed ``(n_s, s)`` likelihood surfaces for fixed-profile analyses.
 
 The production fit stores only the maximum.  This module reconstructs the
 same immutable observed likelihood and evaluates it on a plotting grid without
@@ -163,7 +163,7 @@ def evaluate_log_lambda_surface(
     gamma_values = np.asarray(gamma_values, dtype=np.float64)
     ns_values = np.asarray(ns_values, dtype=np.float64)
     if gamma_values.ndim != 1 or ns_values.ndim != 1:
-        raise ValueError("Gamma and ns axes must be one-dimensional")
+        raise ValueError("s and ns axes must be one-dimensional")
     if ns_chunk_size < 1:
         raise ValueError("ns_chunk_size must be positive")
     native = inputs.native_gamma
@@ -174,7 +174,7 @@ def evaluate_log_lambda_surface(
         or np.min(gamma_values) < native[0]
         or np.max(gamma_values) > native[-1]
     ):
-        raise ValueError("requested Gamma grid lies outside the native Gamma grid")
+        raise ValueError("requested s grid lies outside the native s grid")
 
     pure_counts = inputs.phase_event_counts - inputs.selected_counts
     if np.any(pure_counts < 0):
@@ -238,7 +238,7 @@ def save_observed_likelihood_surface(
     """Evaluate, validate, and atomically save one canonical surface NPZ."""
 
     if not constructed.config.spectrum.fit_gamma:
-        raise ValueError("a two-dimensional ns-Gamma surface requires fitted Gamma")
+        raise ValueError("a two-dimensional ns-s surface requires fitted s")
     if ns_points < 2 or gamma_points < 2:
         raise ValueError("surface axes require at least two points")
     best_ns = float(fit["ns"])
@@ -247,7 +247,7 @@ def save_observed_likelihood_surface(
     if not np.isfinite(best_ns) or not np.isfinite(best_ts) or best_ns < 0.0:
         raise ValueError("saved fit has invalid ns or TS")
     if best_ns > 0.0 and (best_gamma is None or not np.isfinite(best_gamma)):
-        raise ValueError("positive-ns free-Gamma fit has no finite Gamma")
+        raise ValueError("positive-ns free-s fit has no finite s")
 
     likelihood = constructed.config.likelihood
     spectrum = constructed.config.spectrum
@@ -269,10 +269,10 @@ def save_observed_likelihood_surface(
 
     if best_gamma is None:
         if not np.isclose(best_ns, float(likelihood.ns_min), atol=1e-10, rtol=0.0):
-            raise ValueError("unidentified Gamma is valid only on the ns boundary")
+            raise ValueError("unidentified s is valid only on the ns boundary")
         maximum = 0.0
         if not np.allclose(log_lambda[:, 0], maximum, atol=1e-10, rtol=0.0):
-            raise ValueError("ns-boundary likelihood is not Gamma independent")
+            raise ValueError("ns-boundary likelihood is not s independent")
     else:
         maximum = float(
             evaluate_log_lambda_surface(

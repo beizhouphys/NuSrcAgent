@@ -88,11 +88,12 @@ catalog-scan maximum. See the background-trial guide for interval conventions.
 ## Time-dependent primary results
 
 New DR2 time-dependent tasks default to `per_source_catalog_windows`, including
-when scope is omitted from `--temporal-file`. Require fixed per-source boxes,
-detector phases and explicit scientific assumptions before READY. Choose
+when scope is omitted from `--temporal-file`. Require fixed per-source box or Gaussian profiles before READY. Omitted detector
+phases are derived from detector-uptime overlap; the background-time model defaults
+to uniform_livetime. Explicit supported settings take precedence. Choose
 `scan`, `stack` or `scan_and_stack` for the requested catalog operation; the
 default catalog operation remains `scan`. `run` and `show` return
-`time_dependent_summary` with ns/Gamma/TS and artifact paths. Observed fits run
+`time_dependent_summary` with ns/s/TS and artifact paths. Observed fits run
 zero trials and have unavailable significance, with no flux continuation.
 Requested `td-background-trials` follow-ups provide empirical local,
 catalog-maximum and stacking p-values/significances after a complete ensemble.

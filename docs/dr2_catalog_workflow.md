@@ -159,14 +159,15 @@ remain opt-in. See [stacking flux and two-stage reporting](stacking_flux.md).
 New time-dependent requests use the merged
 [fixed per-source-window workflow](time_dependent_catalog.md) by default.
 It supports single-source fits, independent scans and joint stacking with
-fixed or fitted Gamma. Matched shared seasonal background trials provide
+fixed or fitted s. Matched shared seasonal background trials provide
 empirical source-local, catalog-maximum and stacking p-values and one-sided
 Gaussian significances, with Monte Carlo intervals. These quantities become
 available after the requested trial ensemble completes; observed fits alone
 report them as unavailable. Time-integrated analytic formulas do not apply.
 
-Supply explicit fixed box or Gaussian profile parameters and detector phases
-before READY. Omitted scope is recorded as `per_source_catalog_windows`.
+Supply explicit fixed box or Gaussian profile parameters before READY. Omitted
+detector phases are derived from uptime overlap and the background-time model
+defaults to uniform_livetime; explicit supported settings take precedence. Omitted scope is recorded as `per_source_catalog_windows`.
 Fixed Gaussian profiles are supported; fitted time parameters do not trigger
 an automatic fallback. The [legacy fitted-time Gaussian/box workflow](time_dependent.md) remains available
 through explicit `scope=legacy_time_profile`; it supports independent source

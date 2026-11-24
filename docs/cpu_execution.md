@@ -48,7 +48,7 @@ scheduler and one numerical thread per worker.
 ## Fixed-window time-dependent engine
 
 The default time-dependent `per_source_catalog_windows` scope interprets `--workers N` as
-Numba threads for cached fixed/free-Gamma engines, or process workers for
+Numba threads for cached fixed/free-s engines, or process workers for
 reference background trials. Reference observed fitting is serial. The public
 wrapper caps BLAS/OpenMP at one before numerical imports for these tasks;
 Numba parallelism supplies the cached-engine CPU budget. Trials retain their

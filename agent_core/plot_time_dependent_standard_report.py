@@ -60,7 +60,7 @@ def parse_args() -> argparse.Namespace:
         "--post-trial",
         choices=("empirical", "sidak", "phase-sidak"),
         default="phase-sidak",
-        help="post-trial series shown in the lower timeline panel; phase-sidak groups by detector response at the IR peak",
+        help="post-trial series shown in the lower timeline panel; phase-sidak groups by detector response at the box stop or Gaussian center",
     )
     parser.add_argument("--catalog-label", help="optional presentation-label override")
     parser.add_argument("--dataset-label", help="optional presentation-label override")
@@ -251,10 +251,10 @@ def phases_overlapping_source_windows(
 def spectral_label(summary: dict[str, Any]) -> str:
     if summary.get("fit_gamma"):
         return (
-            rf"$\Gamma$ fitted over "
+            rf"$s$ fitted over "
             rf"[{float(summary['gamma_min']):.1f}, {float(summary['gamma_max']):.1f}]"
         )
-    return rf"$\Gamma = {float(summary['fixed_gamma']):.1f}$"
+    return rf"$s = {float(summary['fixed_gamma']):.1f}$"
 
 
 def single_source_catalog_label(label: str) -> str:
@@ -503,7 +503,7 @@ def plot_source_timeline(
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     axes[1].xaxis.set_minor_locator(mdates.MonthLocator(bymonth=(4, 7, 10)))
     axes[1].set_xlabel(
-        ("Box end time (IR peak for Flaires)" if rows[0]["time_profile"] == "box" else "Gaussian center time")
+        ("Box end time" if rows[0]["time_profile"] == "box" else "Gaussian center time")
         if post_trial == "phase-sidak" else "Source time anchor"
     )
     axes[1].text(
@@ -707,7 +707,7 @@ def plot_likelihood_surface(
             else float("nan") if fallback_fit.get("gamma") is None else float(fallback_fit["gamma"])
         )
     if delta.shape != (len(gammas), len(ns_values)):
-        raise ValueError(f"surface shape in {surface_path} does not match ns/Gamma axes")
+        raise ValueError(f"surface shape in {surface_path} does not match ns/s axes")
 
     apply_style()
     fig, ax = plt.subplots(figsize=(8.4, 6.4), constrained_layout=True)
@@ -746,7 +746,7 @@ def plot_likelihood_surface(
             gammas,
             color="#7752a5",
             linewidth=2.4,
-            label=r"MLE ridge: $\hat n_s=0$, $\Gamma$ unidentified",
+            label=r"MLE ridge: $\hat n_s=0$, $s$ unidentified",
             zorder=5,
         )
     else:
@@ -758,13 +758,13 @@ def plot_likelihood_surface(
             color="black",
             edgecolor="black",
             linewidth=0.5,
-            label=rf"MLE: $\hat n_s={best_ns:.2f}$, $\hat\Gamma={best_gamma:.2f}$",
+            label=rf"MLE: $\hat n_s={best_ns:.2f}$, $\hat s={best_gamma:.2f}$",
             zorder=6,
         )
     ax.set_xlim(min(-0.45, float(ns_values[0])), float(ns_values[-1]))
     ax.set_ylim(float(gammas[0]), float(gammas[-1]))
     ax.set_xlabel(axis_label)
-    ax.set_ylabel(r"Spectral index $\Gamma$")
+    ax.set_ylabel(r"Spectral index $s$")
     ax.set_title(textwrap.fill(title, width=68))
     ax.grid(color="0.88", alpha=0.65, linewidth=0.6)
     style_ticks(ax)

@@ -43,5 +43,7 @@ SkyLLH adapter for independent single-source and catalog fits. Temporal detector
 yields and dataset fractions include good-run overlap. The public wrapper,
 skill, JSON examples and documentation use neutral release names and retain
 existing release adaptations. Owner tests, injection fixtures and validation
-products remain excluded. Time-dependent stacking awaits collaborator code;
-no time-dependent background-trial or flux/fluence path is enabled.
+products remain excluded. This dated record describes the legacy time-search
+scope, which has no stacking, calibrated trials or flux/fluence. The subsequent
+[fixed-profile integration](time_dependent_catalog.md) supports stacking and
+separately requested shared seasonal trials; flux/fluence remains unsupported.

@@ -61,7 +61,11 @@ def main(argv=None) -> int:
                     (directory/"STOP").unlink()
                 result = run(repo_root, directory, args.max_batches)
             elif args.action == "report":
-                result = report(repo_root, directory)
+                if args.source_diagnostics_directory:
+                    from agent_core.time_dependent_trials import render_source_diagnostics
+                    result = render_source_diagnostics(repo_root, directory, args.source_diagnostics_directory)
+                else:
+                    result = report(repo_root, directory)
             elif args.action == "stop":
                 result = read_task(directory)
                 (directory/"STOP").touch()
@@ -366,6 +370,7 @@ def build_parser() -> argparse.ArgumentParser:
     td.add_argument("--action", required=True, choices=["prepare", "run", "resume", "status", "stop", "report"])
     td.add_argument("--output-directory", required=True)
     td.add_argument("--baseline-task")
+    td.add_argument("--source-diagnostics-directory", help="For report only: new output directory for validated saved source diagnostics, including stack tasks; no refitting.")
     td.add_argument("--n-trials", type=int)
     td.add_argument("--seed", type=int, default=1)
     td.add_argument("--workers", type=positive_worker_count, default=1,

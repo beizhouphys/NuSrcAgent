@@ -5,7 +5,7 @@ Integration branch: `time_dependent_merge`.
 The donor is `Codex_time-dependent-stacking_SkyLLH` at
 `5c70f58642a16363c777948f5ad170b5e43a1d41`. The integration preserves its
 conditional likelihood, fixed per-source box or Gaussian time profiles, shared seasonal
-fixed-count time/RA scrambles, and reference/cached fixed/free-Gamma engines.
+fixed-count time/RA scrambles, and reference/cached fixed/free-s engines.
 The existing NuSrcAgent time-integrated and Gaussian/box temporal search
 paths retain their scientific definitions.
 
@@ -44,7 +44,7 @@ of the editable donor checkout. This is not the exact locked Python 3.12 runtime
   Unshipped donor scan helpers are used only as test references. An earlier
   58-test extraction check also included donor scan/trial utilities subsequently
   excluded from the production port.
-- 13 adapter/workflow regressions pass: source order and weights, signed Gamma,
+- 13 adapter/workflow regressions pass: source order and weights, signed exponent,
   invalid requests, legacy dispatch, artifact tampering, resumed deterministic
   trials and an independent scalar conditional-likelihood calculation.
 - After making the merged workflow the default, all 18 routing/integration
@@ -52,19 +52,19 @@ of the editable donor checkout. This is not the exact locked Python 3.12 runtime
   scope, confirmation, pending settings, explicit legacy selection, historical
   task preservation, default-engine stacking and unchanged time-integrated
   defaults. The numerical engines are unchanged by this routing update.
-- For the real 694-source SN catalog, fixed Gamma=2 and fitted-Gamma observed
-  source and stack TS/ns/Gamma exactly match the saved donor outputs: maximum
+- For the real 694-source SN catalog, fixed s=2 and fitted-s observed
+  source and stack TS/ns/s exactly match the saved donor outputs: maximum
   absolute difference zero; relative difference zero where the reference is
   nonzero (undefined at zero). Both reference stack fits are at ns=TS=0; this
   comparison alone is not a nonzero-signal stacking validation.
-- For both Gamma modes, four seeded cached trials are bitwise identical with
+- For both s modes, four seeded cached trials are bitwise identical with
   one versus two threads; two seeded reference trials are bitwise identical
   with one versus two workers. Cached/reference TS/ns agree at rtol=1e-5,
   atol=1e-4 for these small ensembles. This checks reproducibility, not a
   full null-distribution calibration or a new speedup measurement.
 - Real-input public-wrapper checks use an isolated repository root with
   read-only links to the identical frozen tables and DR2 events. Fixed/fitted
-  Gamma scan-and-stack tasks and a fixed-Gamma single source reach READY and
+  s scan-and-stack tasks and a fixed-s single source reach READY and
   complete with passing artifact/scientific reviews. The trial checks use
   four-trial ensembles, pause after two, and resume with preserved seed indices.
   A deliberately code-changed continuation is rejected.
@@ -78,10 +78,10 @@ Reference SHA256 values:
 
 | Reference | SHA256 |
 | --- | --- |
-| Fixed-Gamma observed NPZ | `746bea695b5b123a134eea4cfb414cde89dcfc38afae05c712791c0da6b320ae` |
-| Fitted-Gamma observed NPZ | `02fa3d47416919e6c292e9cf422cb1a1b86154b2072b3b2488c54e242cb99a71` |
-| Fixed-Gamma donor config | `9b129f16342e6adc7f5aa433289234ecf28d86fc39d5a6d57f4209803a183840` |
-| Fitted-Gamma donor config | `b9581289214bdd3dc7df61b23d6cfc75f597892b514d8d6bc540ea8c7397e13a` |
+| Fixed-s observed NPZ | `746bea695b5b123a134eea4cfb414cde89dcfc38afae05c712791c0da6b320ae` |
+| Fitted-s observed NPZ | `02fa3d47416919e6c292e9cf422cb1a1b86154b2072b3b2488c54e242cb99a71` |
+| Fixed-s donor config | `9b129f16342e6adc7f5aa433289234ecf28d86fc39d5a6d57f4209803a183840` |
+| Fitted-s donor config | `b9581289214bdd3dc7df61b23d6cfc75f597892b514d8d6bc540ea8c7397e13a` |
 
 ## Remaining release gates and scientific limits
 
@@ -117,8 +117,9 @@ time-dependent numerical engines, trial implementation and canonical renderer
 are unchanged from the development branch. Shared dispatch remains conditional
 on the recorded temporal scope. Documentation conflicts retain the supported
 fixed-profile workflow and distinguish it from the explicit legacy time search.
-The `n`/`s` time-integrated notation and `ns`/`Gamma` fixed-profile notation denote
-the same physical parameters; their signed-exponent input conversion is unchanged.
+At integration time, the two workflows used different display labels for the
+same spectral index. The subsequent notation update below standardizes current
+reports on s; the signed-exponent input conversion is unchanged.
 No scientific definition or optimizer was selected by conflict resolution.
 
 Verification used the installed Python 3.12 runtime and its exact locked package
@@ -146,3 +147,26 @@ and recorded scientific definitions are preserved, but broader release checks
 remain separate. Final review against upstream contains the time-dependent
 feature and its necessary routing, dependencies, documentation and inventory.
 No push, pull request or release is performed by this integration.
+
+## Default settings and notation update — 2026-11-24
+
+New fixed-profile tasks derive omitted detector phases from strictly positive
+uptime overlap with fixed profile support and default an omitted background-time
+model to uniform_livetime. The task records the policy, selected phases, source
+supports and uptime hashes. Explicit settings and historical tasks retain their
+recorded definitions; missing profiles, unavailable uptime and unsupported
+explicit settings remain pending rather than triggering another workflow.
+
+Current reports, figures and instructions use s for the spectral index in
+E^(-s). Existing gamma field names and signed CLI conventions are unchanged.
+Release documentation now distinguishes implemented fixed-profile stacking and
+shared trials from the legacy time-search scope and remaining release checks.
+
+Verification of this update: 17 isolated default-policy checks passed, including
+box/Gaussian support, exact uptime boundaries, missing files, explicit invalid
+settings, no-overlap requests and historical-task preservation. Public-wrapper
+catalog-column checks preserve source order and weights; time-integrated and
+explicit legacy defaults retain their behavior. Both identifiable and zero-signal
+contour fixtures render PNG/PDF with s labels. Numerical backend and reporting
+control flow are unchanged outside task-default planning. No likelihood fits or
+background trials were executed for this notation/default-policy update.

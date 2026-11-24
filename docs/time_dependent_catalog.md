@@ -4,8 +4,9 @@ This is the default workflow for new time-dependent requests. It supports DR2
 spatial+energy power-law single-source fits, independent catalog scans, joint
 stacking and shared background trials with empirical p-values and significances.
 The wrapper records `scope=per_source_catalog_windows` when scope is omitted,
-including in later confirmations of these tasks. Time-profile parameters, detector phases and
-scientific assumptions still need explicit settings before READY.
+including in later confirmations of these tasks. Fixed time-profile parameters must be supplied before READY. Omitted detector
+phases are derived from overlap with detector uptime; an omitted background-time
+model defaults to `uniform_livetime`. Explicit settings take precedence.
 
 This workflow supports fixed per-source box and Gaussian signal-time PDFs.
 Fitted time parameters remain unsupported here and do not automatically switch
@@ -51,8 +52,14 @@ For fixed Gaussian profiles, replace `profile` and the per-source rows:
 }
 ```
 
-Choose detector phases explicitly (`IC40`, `IC59`, `IC79`, `IC86_I-XI`, or
-supported individual IC86 seasons). Do not include overlapping pooled and
+If detector phases are omitted, the wrapper selects among `IC40`, `IC59`,
+`IC79` and pooled `IC86_I-XI` using strictly positive overlap between good-run
+intervals and at least one fixed profile's finite support. It records candidate
+phases, overlapping sources, profile supports and uptime-file hashes in the
+persistent task's `temporal_defaults`. Gaussian support uses the same recorded
+`tail_tolerance` as the likelihood. Missing uptime files or no overlapping phase
+leave the request pending. Explicit phases may also select supported individual
+IC86 seasons. Historical tasks retain their recorded settings. Do not include overlapping pooled and
 individual seasons. Each selected phase must have active sources; box windows
 or finite Gaussian supports outside all selected uptime are rejected, not
 silently pruned. Rows must
@@ -69,23 +76,22 @@ relative tail value. The Gaussian is normalized over detector uptime.
 Coordinates use the shared coordinate layer. Intrinsic source weights must be
 strictly positive and are normalized by NuSrcAgent; detector acceptance is
 applied separately by the likelihood. CLI `--gamma -2` means the positive
-internal index Gamma=2 in E^(-Gamma); `--gamma-mode fitted` fits Gamma within the
+internal index s=2 in E^(-s); `--gamma-mode fitted` fits s within the
 recorded bounds. The upstream aliases `--s 2`, `--s-mode fitted` and
 `--s-bounds 1 4` use the same positive spectral index and convert to the
-existing signed-exponent request fields. Time-integrated reports label this
-index `s`; fixed-profile time-dependent reports retain `Gamma`. Neither
-notation changes the spectrum or the saved numerical fields.
+existing signed-exponent request fields. All reports and figures label the spectral index `s`. Existing `gamma`
+CLI/API/result fields keep their recorded conventions and numerical values.
 The numerical procedure is `catalog_continuous_profile_v1`.
 Signal/background time densities are normalized over detector uptime. Gaussian
 detector-phase acceptance uses the exact truncated-profile integral over good
 runs, while box acceptance retains the existing overlap calculation. The
 conditional likelihood, phase event counts, acceptance, source weights, angular
-selection and linear-density Gamma interpolation retain the donor definitions.
+selection and linear-density s interpolation retain the donor definitions.
 
 Defaults are precomputed PDFs, `engine=auto`, `gamma_grid_step=0.1`,
 `event_selection_angle_deg=10`, and `ns_max=1000`. Optional `engine` values are
 `cached-fixed`, `cached-free`, or `reference`. Cached engines require precomputed
-PDFs and the matching Gamma mode. Frozen event-indexed backgrounds and signal
+PDFs and the matching s mode. Frozen event-indexed backgrounds and signal
 tables are hash-verified; this engine does not use the time-integrated continuous
 spatial background models. There is no silent PDF fallback. The explicit
 `pdf_backend=skyllh` alternative uses the reference engine, not frozen tables.
@@ -106,14 +112,14 @@ python run_agent_wrap.py run --task <READY_task_id> --workers 4
 
 Use `create-single` with a one-source fixed profile for a single-source task, or select
 `--catalog-operation scan|stack`. Review must pass before interpreting results.
-Outputs include normalized settings, input hashes, source/stack TS, ns, Gamma,
-fit diagnostics, CSV, PNG/PDF and independent review. Gamma at ns=0 is not a
+Outputs include normalized settings, input hashes, source/stack TS, ns, s,
+fit diagnostics, CSV, PNG/PDF and independent review. s at ns=0 is not a
 measurement. Observed runs execute zero trials; significance remains unavailable
 until a matched trial ensemble is complete. No time-integrated p-value formula,
 flux limit or second flux stage is applied.
 
-For fitted Gamma, observed output generation evaluates the immutable likelihood
-on the numerical `ns`-Gamma grid for the three largest observed source TS values
+For fitted s, observed output generation evaluates the immutable likelihood
+on the numerical `ns`-s grid for the three largest observed source TS values
 (or all sources when the catalog has fewer than three) and for the stack when
 applicable. It validates each surface against the saved MLE and TS, writes the
 NPZ surface in the run directory, and writes PNG/PDF contours under `figures/`.
@@ -125,7 +131,7 @@ For cached engines, `--workers N` sets Numba threads (one process); reference
 trials use N worker processes with one numerical-library thread each. Reference
 observed fits remain serial. BLAS/OpenMP stay capped at one to avoid nested
 oversubscription. Choose N within allocated CPU resources; no batch scheduler
-allocation is implied. Cached fixed/free-Gamma engines reuse event quantities,
+allocation is implied. Cached fixed/free-s engines reuse event quantities,
 seasonal candidates and acceptance information as in the donor implementation.
 
 ```bash
@@ -176,13 +182,13 @@ does not repeat likelihood maximization. It provides the default response-phase
 Šidák source values, local and shared-trial maximum-TS catalog results, the
 stacking result when requested, machine-readable observed
 and trial arrays, validation/provenance records, and applicable PNG/PDF figures.
-For fitted-Gamma runs it reconstructs the immutable reviewed observed
-likelihood, evaluates the full numerical `ns`-Gamma grid for the empirical
+For fitted-s runs it reconstructs the immutable reviewed observed
+likelihood, evaluates the full numerical `ns`-s grid for the empirical
 leading source and applicable stack, verifies the saved MLE and TS, and writes
 the canonical likelihood-contour NPZ files before plotting. Surface evaluation
 does not use the background trials and does not refit the parameters. A required
 surface that is missing or fails this consistency check blocks the polished
-standard result. Fixed-Gamma runs have no two-dimensional `ns`-Gamma surface.
+standard result. Fixed-s runs have no two-dimensional `ns`-s surface.
 The default source-time display places boxes at their stop time and Gaussians at
 their center, and uses the response-phase Šidák values in its lower panel.
 The empirical catalog-maximum or full-catalog Šidák series can be selected

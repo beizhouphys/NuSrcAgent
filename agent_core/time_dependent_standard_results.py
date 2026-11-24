@@ -95,7 +95,7 @@ def _safe_name(value: str) -> str:
 
 
 def _source_components(normalized: dict[str, Any]) -> bool:
-    return normalized.get("analysis_type") == "single_source" or normalized.get(
+    return normalized.get("report_source_diagnostics", False) or normalized.get("analysis_type") == "single_source" or normalized.get(
         "catalog_operation"
     ) in {"scan", "scan_and_stack"}
 
@@ -458,7 +458,7 @@ def _write_likelihood_surfaces(
     leading: dict[str, Any] | None,
     stack_summary: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
-    """Save validated free-Gamma surfaces for the leading source and stack."""
+    """Save validated free-s surfaces for the leading source and stack."""
 
     if not _fit_gamma(normalized):
         return []
@@ -470,6 +470,7 @@ def _write_likelihood_surfaces(
     )
 
     payload = dict(normalized)
+    payload.pop("report_source_diagnostics", None)
     payload["sources"] = [NormalizedSource(**source) for source in payload["sources"]]
     normalized_analysis = NormalizedAnalysis(**payload)
     prepared = prepare_analysis(
@@ -540,13 +541,16 @@ def finalize_time_dependent_results(
     trial_directory: str | Path,
     task: dict[str, Any],
     chunks: list[dict[str, np.ndarray]],
+    *, include_source_diagnostics: bool = False,
 ) -> dict[str, Any]:
     """Write and render the standard bundle for one completed trial ensemble."""
 
     root = Path(repo_root).resolve()
     directory = Path(trial_directory).resolve()
     immutable = task["immutable"]
-    normalized = immutable["normalized"]
+    normalized = dict(immutable["normalized"])
+    if include_source_diagnostics:
+        normalized["report_source_diagnostics"] = True
     observed = immutable["observed"]
     requested = int(immutable["n_trials"])
     receipt = directory / "standard_results.json"
@@ -775,7 +779,7 @@ def finalize_time_dependent_results(
         )
         if not surfaces_valid:
             raise ValueError(
-                "free-Gamma standard results did not produce every required likelihood surface"
+                "free-s standard results did not produce every required likelihood surface"
             )
     except Exception as error:
         validation["likelihood_surface_count"] = 0
@@ -806,7 +810,7 @@ def finalize_time_dependent_results(
                 "",
                 f"- Leading source: {leading['source_name']}",
                 f"- Best fit: TS={leading['ts']:.6g}, ns={leading['ns']:.6g}"
-                + ("; Gamma unidentified" if leading["gamma"] is None else f", Gamma={leading['gamma']:.6g}"),
+                + ("; s unidentified" if leading["gamma"] is None else f", s={leading['gamma']:.6g}"),
                 f"- Local p-value: {leading['p_pre']:.6g} ({leading['n_exceedances']}/{requested} exceedances)",
                 f"- Default response-phase Sidak post-trial p-value: {leading['p_post_phase_sidak']:.6g} (N={leading['response_phase_n_sources']} in {leading['response_phase']}; analytic estimate from joint-fit local p)",
                 f"- Full-catalog Sidak post-trial p-value: {leading['p_post_sidak']:.6g}",
@@ -821,12 +825,12 @@ def finalize_time_dependent_results(
             else f"{stack_summary['significance_sigma_one_sided']:.4g} sigma, one-sided"
         )
         gamma_display = (
-            "Gamma unidentified"
+            "s unidentified"
             if stack_summary["observed_gamma"] is None and fit_gamma
             else (
-                "fixed Gamma"
+                "fixed s"
                 if stack_summary["observed_gamma"] is None
-                else f"Gamma={stack_summary['observed_gamma']:.6g}"
+                else f"s={stack_summary['observed_gamma']:.6g}"
             )
         )
         lines.extend(
@@ -842,9 +846,9 @@ def finalize_time_dependent_results(
         [
             "All validation checks passed. Trial seeds are unique and trial indices are contiguous.",
             (
-                "Validated numerical ns-Gamma likelihood surfaces were saved for the applicable leading-source and stacking fits."
+                "Validated numerical ns-s likelihood surfaces were saved for the applicable leading-source and stacking fits."
                 if fit_gamma
-                else "The fixed-Gamma fit has no two-dimensional ns-Gamma likelihood surface."
+                else "The fixed-s fit has no two-dimensional ns-s likelihood surface."
             ),
             "NuSrcAgent uses the matched scrambled distribution as the time-dependent null calibration; no time-integrated asymptotic significance formula is applied.",
             "",

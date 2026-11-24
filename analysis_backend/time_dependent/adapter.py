@@ -1,6 +1,6 @@
 """NuSrcAgent adapter for fixed catalog time profiles and shared trial engines.
 
-Positive Gamma is used internally; NuSrcAgent supplies the signed exponent.
+Positive s is used internally; NuSrcAgent supplies the signed exponent.
 Execution resources do not enter the scientific request.
 """
 from __future__ import annotations
@@ -146,7 +146,7 @@ def prepare_analysis(
     if cached and backend != "precomputed":
         raise ValueError("Cached engines require precomputed PDFs")
     if (engine_name == "cached-free") != (normalized.gamma_mode == "fitted") and cached:
-        raise ValueError("Cached engine and Gamma mode disagree")
+        raise ValueError("Cached engine and s mode disagree")
     with tempfile.TemporaryDirectory(prefix="nusrcagent-td-") as directory:
         catalog = Path(directory) / "sources.csv"
         with catalog.open("w", newline="") as stream:

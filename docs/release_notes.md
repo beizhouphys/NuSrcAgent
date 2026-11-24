@@ -19,7 +19,8 @@ renaming existing private-alpha tags. Repository visibility is independent of
 these version numbers.
 
 - DR2 time-integrated point-source single fits, individual catalog scans and
-  stacking; spatial+energy fits ns/Gamma, spatial-only uses fixed acceptance Gamma.
+  stacking; spatial+energy fits the signal count and spectral index s, while
+  spatial-only uses a fixed acceptance spectral index.
 - Existing DR1 spatial-only capabilities retained with separate inputs.
 - Python 3.12 hash-locked environment and one-command bootstrap for the prepared
   raw-data, frozen v3 background and SEpdf bundles. All seven bundles are hosted
@@ -39,13 +40,16 @@ physicists without assuming AI/software expertise. This is a documentation-only
 change: likelihood definitions, commands, fit settings and numerical inputs
 are unchanged.
 
-This draft covers implemented time-integrated behavior, not the complete approved
-first-release scope. Time-dependent work is deferred by the owner until
-collaborator code is integrated; it does not block the current source-code
-synchronization and must not be advertised as supported in this copy.
+This copy also supports the merged fixed-profile DR2 time-dependent workflow:
+single-source fits, scans, stacking and separately requested fixed-count shared
+seasonal background trials. Fixed box and Gaussian profiles are supported;
+fitted-time legacy searches remain a separate scope without stacking or
+calibrated trials. See [the workflow](time_dependent_catalog.md) and
+[verification scope](time_dependent_merge.md). Implementation support does not
+imply a completed public release or general scientific validation.
 Ordinary fits execute no background trials; analytic local p-values are not
 empirical or catalog-global significance. Frozen v3 residuals and possible
-ns/Gamma/flux bias remain. Warning-bearing results are preliminary.
+signal-count/spectral-index/flux bias remain. Warning-bearing results are preliminary.
 
 See [scientific status](scientific_status.md),
 [release checks](testing_and_release.md) and

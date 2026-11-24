@@ -101,10 +101,11 @@ The owner's earlier deferral is superseded for DR2 time-dependent single-source
 analysis and independent catalog scans. These paths use SkyLLH with explicit
 Gaussian/box profiles and fixed/fitted temporal parameters; see
 [the method and validation scope](time_dependent.md). Time-dependent stacking
-still awaits collaborator-provided code. The single-source/catalog integration
-does not add collaborator code or change the author list. Time-dependent
-scrambling is unapproved; significance calibration and flux/fluence remain
-unavailable. No release tag is implied by this synchronization.
+is now supported by the separate merged fixed-profile workflow, which also
+provides explicitly requested shared seasonal trials and empirical calibration.
+The legacy time-search scope still has no calibrated trials; neither scope
+provides flux/fluence inference. Contributor metadata requires separate approval;
+this capability update does not change the author list or imply a release tag.
 
 No new packaging framework, mandatory workbook integration, general significance
 calibration service or PDF regeneration is proposed. Existing scientific
