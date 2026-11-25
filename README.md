@@ -1,6 +1,10 @@
 # NuSrcAgent
 
-Give NuSrcAgent a source name, sky coordinates or a catalog to search for high-energy neutrino emission in public IceCube data. The agent runs the likelihood fit and saves the inputs, settings and results so you can repeat it.
+If you use NuSrcAgent in a publication, please cite [our paper](#citation). We will add the arXiv link here when it is available. Read the paper for details on the IceCube data, the likelihood methods and the comparisons with IceCube results. You can also ask NuSrcAgent which analysis to use, what assumptions it makes or how to interpret a result.
+
+NuSrcAgent helps astrophysicists and particle physicists search public IceCube point-source data for high-energy neutrino emission from individual objects or catalogs of candidate sources. Describe your analysis to an AI assistant in natural language or run it from a terminal. In both cases, the likelihood code computes the numerical results. You can start with a source name, sky coordinates or a catalog. NuSrcAgent saves the inputs, settings and results so you can repeat the analysis.
+
+We assume basic familiarity with physics or astronomy. You can use NuSrcAgent without a background in AI or software architecture.
 
 ## Get started
 
@@ -18,7 +22,7 @@ Analyze NGC 1068
 
 The agent looks up NGC 1068 and runs a time-integrated fit using all 14 years of IceTracks-DR2. To invoke the skill by name, use `$nusrcagent` in Codex or `/nusrcagent` in Claude Code.
 
-For either installation method, you need Python 3.12 and Git on macOS or Linux. This private repository contains version `0.2.0`. To download the files, sign in with a GitHub account that has access, using Git HTTPS credentials or `gh auth login`.
+Install Python 3.12 and Git on macOS or Linux before you start. NuSrcAgent uses your existing Python to create the project environment. This private repository contains version `0.2.0`. To download the files, sign in with a GitHub account that has access, using Git HTTPS credentials or `gh auth login`.
 
 To install from a terminal, run
 
@@ -28,7 +32,11 @@ cd NuSrcAgent
 bash install.sh
 ```
 
-The installer downloads and verifies the IceTracks-DR2 data and precomputed probability density tables. To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`. See the [installation guide](docs/input_installation.md) or [run a fit from the terminal](docs/quickstart.md).
+The installer downloads and verifies the IceTracks-DR2 data and precomputed probability density function (PDF) tables. The default download is **1.52 GB** and takes up **3.8 GiB** after extraction. Allow extra space for the Python environment, cached downloads and staging files.
+
+After extraction, IceCube event data, detector uptime and detector response files occupy about 2.61 GB. The PDF tables take up another 1.44 GB. The tables speed up likelihood evaluation by letting each fit look up precomputed distributions. The raw IceCube files compress well, so the PDF tables account for about 91% of the download.
+
+To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`. See [installation options and recovery](docs/input_installation.md), [data attribution](docs/data_attribution.md) and the [terminal examples](docs/quickstart.md).
 
 ## What analyses can I run?
 
@@ -63,4 +71,4 @@ For numerical details, see the [catalog fit procedure](docs/dr2_catalog_workflow
 
 ## Citation
 
-If you use NuSrcAgent in a publication, please cite Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*. For the observations, see the [IceCube dataset citations](docs/data_attribution.md).
+Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*. For the observations, see the [IceCube dataset citations](docs/data_attribution.md).
