@@ -1,6 +1,6 @@
 # NuSrcAgent
 
-If you use NuSrcAgent in a publication, please cite [our paper](#citation). We will add the arXiv link here when it is available. 
+If you use NuSrcAgent in a publication, please cite [our paper](#citation).
 Read the paper for details on the IceCube data, the likelihood methods, and the comparisons with IceCube results. 
 You can also chat with NuSrcAgent directly for anything you would like to learn about it and how to use. 
 
@@ -47,6 +47,7 @@ To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`
 ## Citation
 
 Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
+We will add the arXiv link when it is available.
 
 ## What analyses can I run?
 
