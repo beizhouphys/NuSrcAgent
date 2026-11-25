@@ -68,8 +68,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6671,
-      "sha256": "5ef435616bbef2e34b59d96fd6c180c95db0123d2d838b1461b9a754e14b68cf"
+      "bytes": 6875,
+      "sha256": "7e79b4199cc7a78ba05ba2243f9aad1d718a08ec0583fd8ef9bfdc344fb09b78"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
