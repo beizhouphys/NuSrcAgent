@@ -142,6 +142,25 @@ analysis-specific contracts below; time-dependent tasks do not enter
 - Do not infer a response-language preference from the language used to write
   `AGENTS.md`, skill instructions or other repository files.
 
+## Response style
+
+- Use terminology familiar to particle physicists and astrophysicists. Avoid
+  business jargon. Name the physical quantity or operation, such as detector
+  response, point-spread function, angular-uncertainty distribution, energy
+  response, or effective-area convolution. Describe how to use or deploy the
+  agent or which interface to use. Use `kernel` only when discussing the
+  mathematical kernel itself or when a code or API identifier requires it.
+  Explain its physical role where needed.
+- Keep physical quantities and their dependencies explicit in equations.
+  Avoid shorthand introduced for brevity alone. Define any auxiliary symbols
+  or substitutions used in a derivation and, where practical, substitute
+  them back into the final expression. Leave existing notation in code,
+  notebooks, and historical documents unchanged.
+- Write as you would to a research collaborator. Lead with the conclusion and
+  give the reasoning and qualifications needed to interpret it. Skip repeated
+  background and recaps. Use headings and lists where they help the reader
+  follow the answer.
+
 ## Clarification policy
 
 Ask only about unresolved ambiguity that materially changes the spectrum,

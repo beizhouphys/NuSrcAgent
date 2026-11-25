@@ -3,8 +3,8 @@
   "files": [
     {
       "path": ".agents/skills/nusrcagent/SKILL.md",
-      "bytes": 51870,
-      "sha256": "569f6df55799f2a7cf70cdce07200b0de6b7a0c998ea6cf6a35f3a15524cc6ef"
+      "bytes": 52983,
+      "sha256": "67b6b2f73c82439d138457c789daf714953c63595fd8213495a99152aec8d8d2"
     },
     {
       "path": ".agents/skills/nusrcagent/agents/openai.yaml",
