@@ -63,7 +63,7 @@ identity checks. Frozen bytes are never rebuilt or silently replaced.
 
 The public `v0.2.0-private-alpha.4` GitHub Release hosts all seven input bundles.
 That tag identifies the input bundles.
-The installed code version is `0.2.0`. The manifest pins the download location
+The installed code version is `1.0.0`. The manifest pins the download location
 and the SHA-256 hashes of the archives and their contents.
 An explicit mirror can be supplied through `--base-url`; it must serve the same
 hash-pinned files. A maintainer-provided local directory is also supported with

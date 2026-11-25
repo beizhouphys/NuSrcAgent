@@ -53,8 +53,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 778,
-      "sha256": "2d5f9eaf6f52da093d857229fa19061836ec67172191c6a65fff6298e54e48d1"
+      "bytes": 808,
+      "sha256": "d0a184a2d9f015c2ed49ea100605134467f76aa5d0618c7fb253fc09feb2044a"
     },
     {
       "path": "AGENTS.md",
@@ -64,12 +64,12 @@
     {
       "path": "AGENT_VERSION.txt",
       "bytes": 6,
-      "sha256": "1f930dd1f133c1f97a94fe3acb8db34372cf4c01ffdb2b3ff4ca72f9494121e9"
+      "sha256": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03"
     },
     {
       "path": "README.md",
-      "bytes": 7048,
-      "sha256": "abe4c10d884f30f429a9c8fc377377ae0a77203805e7fe407d3e6c7e13dc9390"
+      "bytes": 5633,
+      "sha256": "43b812c1d7b0832b57c3d92ee51bc10dc548cd50cfc4913aa5c6813e7f44b00e"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -239,7 +239,7 @@
     {
       "path": "agent_core/task_state.py",
       "bytes": 8766,
-      "sha256": "70f9fdf3c7d26203af0442b052b82b1392f1e5f53f48e903d7f933d15ca2e695"
+      "sha256": "10dd4c8df4ec1dd5402255a5763b19286046b24d6bbbc34a1c9d7a7178c6e8dd"
     },
     {
       "path": "agent_core/temporal.py",
@@ -568,8 +568,8 @@
     },
     {
       "path": "docs/input_installation.md",
-      "bytes": 6125,
-      "sha256": "dae93cc873237b7693dd5ccee55f2e1b086520395985b4ed369d2fd25e86caa2"
+      "bytes": 6318,
+      "sha256": "5dbf48c9484a9801aae3b3dfbe449af2cff1c919deaf5384731162eea4cc303a"
     },
     {
       "path": "docs/input_installation_verification.md",
@@ -603,8 +603,8 @@
     },
     {
       "path": "docs/release_metadata_draft.md",
-      "bytes": 6272,
-      "sha256": "0a0edaea13d2f44d5cad156f2ef7d2287e168e140b95c82bfc041a638dd8a7fe"
+      "bytes": 6405,
+      "sha256": "cb3fa05a74a86b1b8d79ff249311e3c979d2f421f7a663833e10431b2ed8bd20"
     },
     {
       "path": "docs/release_notes.md",
@@ -678,8 +678,8 @@
     },
     {
       "path": "install.sh",
-      "bytes": 2312,
-      "sha256": "38fc5a49929ba6c4bc1f49dbb0e710f855d6d25472069b0960ab9534db4171fb"
+      "bytes": 7736,
+      "sha256": "234eb6a7b0cc20be3d82a711fc127ba0fd0a9b5cc623c7991ad327d7f440d817"
     },
     {
       "path": "requirements_skyllh_v26.txt",

@@ -33,7 +33,7 @@ The agent looks up NGC 1068 and runs a time-integrated fit using all 14 years of
 
 ### More details about installation
 
-NuSrcAgent `0.2.0` is a public development preview for macOS and Linux.
+NuSrcAgent `1.0.0` is the version described in the paper. It runs on macOS and Linux.
 You need Git and internet access. The installer uses an existing Python 3.12
 or downloads one into the project folder. On Apple Silicon it uses native
 arm64 Python. You can install without a GitHub account.

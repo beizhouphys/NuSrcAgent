@@ -1,4 +1,7 @@
-# Release metadata — awaiting owner approval
+# Release metadata draft for the 0.2.0 snapshot
+
+This draft records the earlier development snapshot. See the
+[README](../README.md#citation) for the current version and citation.
 
 This page concerns software credit, citation and permission for public reuse.
 It is not an installation guide or an additional analysis requirement. Invited
