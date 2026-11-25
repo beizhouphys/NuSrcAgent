@@ -1,4 +1,4 @@
-# NuSrcAgent
+# NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches
 
 If you use NuSrcAgent in a publication, please cite [our paper](#citation).
 Read the paper for details on the IceCube data, the likelihood methods, and the comparisons with IceCube results. 
