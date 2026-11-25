@@ -42,6 +42,10 @@ After extraction, IceCube event data, detector uptime and detector response file
 
 To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`. See [installation options and recovery](docs/input_installation.md), [data attribution](docs/data_attribution.md) and the [terminal examples](docs/quickstart.md).
 
+## Citation
+
+Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
+
 ## What analyses can I run?
 
 - **Single-source analysis** tests for a neutrino excess at one sky position.
@@ -77,7 +81,3 @@ For a more precise significance, request background trials that repeat the fit o
 Open `report.md` and `review.md` in the run directory for the results and warnings. The same directory holds the CSV tables and records of the settings and inputs. Flux figures are under `figures/runs/<run_id>/`. Treat results with warnings as preliminary. Residuals in the DR2 background model for the IC79 detector season can bias `n`, `s` and flux. See [output files](docs/quickstart.md#read-the-outputs) and [scientific limitations](docs/scientific_status.md).
 
 For numerical details, see the [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans), [single-source spectral interpolation](docs/single_source_linear_interpolation.md) and [stacking performance](docs/stacking_performance.md).
-
-## Citation
-
-Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
