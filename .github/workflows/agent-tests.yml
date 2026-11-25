@@ -83,10 +83,9 @@ jobs:
           assert result["status"] == "pass" and result["row_count"] == 3, result
           print("Example catalog inspection passed; no likelihood or trials executed")
           PY
-      - name: Verify shipped metadata and source hashes only
+      - name: Verify release inventory and pinned input metadata
         run: |
           python - <<'PY'
-          import hashlib
           import json
           from pathlib import Path
           from agent_core.input_install import load_manifest
@@ -94,11 +93,10 @@ jobs:
           root = Path(".")
           load_manifest(root)
           _manifest(root)
-          entries = json.loads((root / "docs/release_file_manifest.json").read_text())["files"]
-          assert entries and len({row["path"] for row in entries}) == len(entries)
-          for row in entries:
-              raw = (root / row["path"]).read_bytes()
-              assert len(raw) == row["bytes"], row["path"]
-              assert hashlib.sha256(raw).hexdigest() == row["sha256"], row["path"]
-          print(f"Verified {len(entries)} shipped files and pinned metadata; numerical inputs not checked")
+          paths = [row["path"] for row in
+                   json.loads((root / "docs/release_file_manifest.json").read_text())["files"]]
+          assert paths and len(set(paths)) == len(paths)
+          for path in paths:
+              assert (root / path).is_file(), path
+          print(f"Found {len(paths)} listed release files and verified pinned input metadata")
           PY

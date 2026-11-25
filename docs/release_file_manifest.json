@@ -48,8 +48,8 @@
     },
     {
       "path": ".github/workflows/agent-tests.yml",
-      "bytes": 4429,
-      "sha256": "8821183e88444f88f30ed35adc8cd33a37e2e3d6834c67f7199e7a3308374379"
+      "bytes": 4265,
+      "sha256": "cd0601f600feb9603cba4f4946b394a4e8422012a725a16c0494a778cc05b9d9"
     },
     {
       "path": ".gitignore",
@@ -68,8 +68,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5633,
-      "sha256": "43b812c1d7b0832b57c3d92ee51bc10dc548cd50cfc4913aa5c6813e7f44b00e"
+      "bytes": 5687,
+      "sha256": "bcf814f654e4cc4f63c6f702df6fe9e37d793b1fab6ea5d04e46d01bf7510610"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -658,8 +658,8 @@
     },
     {
       "path": "docs/testing_and_release.md",
-      "bytes": 21684,
-      "sha256": "4844c3a086cd0dcddceb0671d25a3c45e422c7d5cc310bd900be77dbcd1e047a"
+      "bytes": 21846,
+      "sha256": "854181426afb585648add85d7d814f6ce8eed421ac9019b1baac1d2cecb32041"
     },
     {
       "path": "docs/time_dependent.md",

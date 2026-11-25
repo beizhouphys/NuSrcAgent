@@ -27,7 +27,7 @@ and checks every locked package version. Repository permissions are read-only.
 | Python compilation and module imports | Public runtime imports without owner tests, raw data, PDF tables or neighboring-project helpers |
 | CLI help and shell-bootstrap syntax | Public commands are loadable; the installer is syntactically valid |
 | Three-row example catalog inspection | Column/coordinate parsing works without running a likelihood |
-| Pinned bundle/PDF mapping metadata and source inventory hashes | Shipped metadata and small source files have their recorded identities |
+| Pinned bundle/PDF metadata and release file inventory | Input metadata matches its pinned hashes, and each listed release file exists |
 
 CI never runs `install.sh` without `--help`, downloads scientific input bundles,
 executes a fit/trial, or calls the full data preflight/hash verifier. In particular,
@@ -36,8 +36,8 @@ tests are not distributed and are not discovered by CI. There is no fallback to
 old private-alpha dependencies, no `continue-on-error`, and no data-dependent
 test reported as passed because it was skipped. A green CI means only that the
 listed engineering checks passed, not that a release is scientifically validated.
-When changing shipped source/documents, regenerate `release_file_manifest.json`
-from the intended release files (excluding the inventory itself).
+CI checks that the listed release files exist. It does not compare their
+contents with the release snapshot.
 
 ## Required manual release checks: real inputs
 
@@ -46,12 +46,16 @@ automatic checks above. A clean clone means a newly downloaded copy with no
 pre-existing Python environment or scientific inputs. A commit identifies the
 exact recorded code revision being tested.
 
+Before tagging a release, refresh `docs/release_file_manifest.json` from the
+intended release files, excluding the inventory itself. Check each file's
+recorded size and SHA-256 in a clean clone of the candidate commit.
+
 1. Start from a clean clone of the exact candidate commit with no existing
    environment or inputs and no owner `PYTHONPATH`. Run `bash install.sh` using
    the published project-provided raw/v3/SEpdf bundles. Require archive and
    extracted-file SHA-256 verification and the full selected-data preflight.
-   For this private repository use authenticated GitHub asset downloads;
-   local `--bundle-dir` verification is not their substitute.
+   Test the public download path without GitHub credentials. A local
+   `--bundle-dir` run does not test that path.
 2. For default full14 DR2, run the full verifier explicitly:
 
    ```bash
