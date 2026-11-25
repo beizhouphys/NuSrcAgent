@@ -72,14 +72,4 @@ With the default IceTracks-DR2 data, you can run each of these analyses in eithe
 
 Try both catalog analyses with the [three-source example](docs/quickstart.md#2-three-source-scan-plus-stack). You can also use the [catalog of 3,386 radio-bright AGN](data_input/sources/README.md).
 
-## What do the fitted quantities mean?
 
-For the default NGC 1068 analysis, the first fit gives you the best-fit signal count `n`, the power-law spectral index `s` (differential flux proportional to $E^{-s}$), the likelihood-ratio test statistic `TS`, the estimated local p-value and the corresponding one-sided significance. A larger `TS` favors signal plus background over background alone. At `n = 0`, the fit cannot determine `s`.
-
-If you choose to continue, you get 95% profile-likelihood flux upper limits and, when `TS > 9`, a flux measurement. See the [single-source workflow](docs/single_source_stages.md) and [stacking flux results](docs/stacking_flux.md).
-
-For a more precise significance, request background trials that repeat the fit on randomized data. [Time-integrated DR2 trials](docs/dr2_empirical_scrambling.md) calibrate the significance of a specified single-source or stacking analysis. A fixed-profile time-dependent fit gives a significance only after matched trials. To test the most significant source in the catalog, those trials must repeat the full catalog search and record its largest `TS`. See [time-dependent trials](docs/time_dependent_catalog.md).
-
-Open `report.md` and `review.md` in the run directory for the results and warnings. The same directory holds the CSV tables and records of the settings and inputs. Flux figures are under `figures/runs/<run_id>/`. Treat results with warnings as preliminary. Residuals in the DR2 background model for the IC79 detector season can bias `n`, `s` and flux. See [output files](docs/quickstart.md#read-the-outputs) and [scientific limitations](docs/scientific_status.md).
-
-For numerical details, see the [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans), [single-source spectral interpolation](docs/single_source_linear_interpolation.md) and [stacking performance](docs/stacking_performance.md).
