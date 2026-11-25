@@ -48,6 +48,11 @@ To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`
 - **Catalog-wide single-source analysis** fits each source independently, giving one result per source.
 - **Stacking analysis** tests a catalog’s combined emission. Choose a weighting scheme, such as equal weighting or weighting by a measured source flux. The fit accounts for detector acceptance at each source position.
 
+With IceTracks-DR2, you can run each of these analyses in either of two time modes.
+
+- Use a **time-integrated analysis** to test for emission across the selected observation periods, pooling events over time.
+- Use a **time-dependent analysis** to test for a flare or other time-varying emission using event arrival times.
+
 | Data and analysis | What you can test |
 | --- | --- |
 | IceTracks-DR2 (2008–2022), time-integrated | All three analyses. The default fit uses event directions and energy proxies. You can also request a spatial-only fit. |
@@ -75,4 +80,4 @@ For numerical details, see the [catalog fit procedure](docs/dr2_catalog_workflow
 
 ## Citation
 
-Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*. For the observations, see the [IceCube dataset citations](docs/data_attribution.md).
+Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
