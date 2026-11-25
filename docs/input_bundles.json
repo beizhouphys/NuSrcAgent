@@ -478,6 +478,6 @@
   "github_release": {
     "repository": "beizhouphys/NuSrcAgent",
     "tag": "v0.2.0-private-alpha.4",
-    "private": true
+    "private": false
   }
 }

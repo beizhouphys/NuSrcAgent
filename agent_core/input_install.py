@@ -18,7 +18,7 @@ from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 MANIFEST = "docs/input_bundles.json"
-MANIFEST_SHA256 = "9a9a9590a9e0d65ec922051028f3ad9829920cb9a20b579290cf4765524b6412"
+MANIFEST_SHA256 = "185097a51c986214dac70ed190e74c0d2a72bee2d4320c9e0b319c7790ee21c4"
 SAMPLES = ("icecube_public_ps_14yr_dr2", "icecube_public_ps_10yr")
 
 
@@ -56,13 +56,11 @@ class _AssetRedirectHandler(HTTPRedirectHandler):
 
 def _open_download(manifest, bundle, base):
     github = manifest.get("github_release")
-    if github and base == manifest.get("download_base_url"):
+    if github and github.get("private") and base == manifest.get("download_base_url"):
         asset_id = int(bundle["github_asset_id"])
         url = f"https://api.github.com/repos/{github['repository']}/releases/assets/{asset_id}"
         headers = {"Accept": "application/octet-stream", "User-Agent": "NuSrcAgent-input-installer",
-                   "Cache-Control": "no-cache"}
-        if github.get("private"):
-            headers["Authorization"] = "Bearer " + _github_token()
+                   "Cache-Control": "no-cache", "Authorization": "Bearer " + _github_token()}
         request = Request(url, headers=headers)
         return build_opener(_AssetRedirectHandler()).open(request, timeout=120)
     return urlopen(base.rstrip("/") + "/" + bundle["filename"], timeout=120)

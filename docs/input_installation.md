@@ -3,12 +3,8 @@
 The installation script works with Python 3.12 on macOS/Linux. Python must
 already be installed with its `venv` and pip tools, used to create a separate
 Python environment and install libraries. Run the command from the project
-folder containing `install.sh`. Inputs are hosted on GitHub, not fetched manually
-from IceCube. The repository is private: collaborators need repository read
-access and an existing GitHub HTTPS login (`gh auth login`, Git credential
-helper, or `GH_TOKEN`/`GITHUB_TOKEN`). An SSH key alone cannot authenticate an
-HTTPS asset download; SSH-only users must log in with `gh auth login` once.
-No maintainer credentials are included in the checkout or written by installation.
+folder containing `install.sh`. The installer downloads the inputs from GitHub
+without a GitHub account or token.
 
 ```bash
 bash install.sh
@@ -59,21 +55,12 @@ manifest and rejects other snapshots. `raw_input_manifest.json`,
 `pdf_release_manifest.json` and the separate DR1 manifest retain their numerical
 identity checks. Frozen bytes are never rebuilt or silently replaced.
 
-## GitHub login and alternative download locations
+## Input downloads
 
-No token needs to be pasted into the installation command. The script first
-uses an existing `GH_TOKEN`/`GITHUB_TOKEN` environment variable if supplied,
-then your GitHub command-line login, then saved Git HTTPS credentials. These
-are alternative ways to use your own account, not additional requirements.
-If authentication fails, check that your account has repository access and,
-if you use GitHub's `gh` tool, run `gh auth login` before retrying installation.
-
-All seven assets are hosted in the existing `v0.2.0-private-alpha.4` Release.
-That tag is only an input-storage location, not the installed code version
-(currently 0.2.0); no existing tag was moved and no new tag/Release was created.
-For maintainers: the shipped manifest fixes the HTTPS location, numeric GitHub
-asset IDs, and archive/member hashes. Private assets are downloaded through the GitHub API
-using your own credentials; authorization is removed before cross-host redirects.
+The public `v0.2.0-private-alpha.4` GitHub Release hosts all seven input bundles.
+That tag identifies the input bundles.
+The installed code version is `0.2.0`. The manifest pins the download location
+and the SHA-256 hashes of the archives and their contents.
 An explicit mirror can be supplied through `--base-url`; it must serve the same
 hash-pinned files. A maintainer-provided local directory is also supported with
 `--bundle-dir /absolute/path/to/release_assets`.

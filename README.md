@@ -26,7 +26,9 @@ The agent looks up NGC 1068 and runs a time-integrated fit using all 14 years of
 
 ### More details about installation
 
-Install Python 3.12 and Git on macOS or Linux before you start. NuSrcAgent uses your existing Python to create the project environment. This private repository contains version `0.2.0`. To download the files, sign in with a GitHub account that has access, using Git HTTPS credentials or `gh auth login`.
+NuSrcAgent `0.2.0` is a public development preview. Install Python 3.12 and Git
+on macOS or Linux. The installer uses your Python to create a project environment.
+You can install without a GitHub account.
 
 To install from a terminal, run
 

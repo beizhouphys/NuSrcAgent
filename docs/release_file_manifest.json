@@ -68,8 +68,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7137,
-      "sha256": "6e95bac96eeea2bf2b7f1e5342ad0f17a9ac664eb3a0f304907b77b224cd97f9"
+      "bytes": 7054,
+      "sha256": "d8ac6993a380940a96e46dd40d02e15fd4641fc94ce827a82998bbbec494b553"
     },
     {
       "path": "agent_core/agent_orchestrator.py",
@@ -148,8 +148,8 @@
     },
     {
       "path": "agent_core/input_install.py",
-      "bytes": 10101,
-      "sha256": "1520c06235c899a455d413e480e7127e3bad5d97c5e901f652e65d6476d37b8a"
+      "bytes": 10072,
+      "sha256": "7893469c53caf94fa012aac99ecedd572c2ae0784091550bb298bc14191e0535"
     },
     {
       "path": "agent_core/likelihood_backend.py",
@@ -563,13 +563,13 @@
     },
     {
       "path": "docs/input_bundles.json",
-      "bytes": 22356,
-      "sha256": "9a9a9590a9e0d65ec922051028f3ad9829920cb9a20b579290cf4765524b6412"
+      "bytes": 22357,
+      "sha256": "185097a51c986214dac70ed190e74c0d2a72bee2d4320c9e0b319c7790ee21c4"
     },
     {
       "path": "docs/input_installation.md",
-      "bytes": 7204,
-      "sha256": "6c1e64a1a56a665c88a0177e4313de8d54efac5336651b313c47e60ea98afac9"
+      "bytes": 6125,
+      "sha256": "dae93cc873237b7693dd5ccee55f2e1b086520395985b4ed369d2fd25e86caa2"
     },
     {
       "path": "docs/input_installation_verification.md",
