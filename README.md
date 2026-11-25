@@ -1,380 +1,66 @@
 # NuSrcAgent
 
-If you use NuSrcAgent in a publication, please cite our paper (arXiv link to be added when available).
+Give NuSrcAgent a source name, sky coordinates or a catalog to search for high-energy neutrino emission in public IceCube data. The agent runs the likelihood fit and saves the inputs, settings and results so you can repeat it.
 
-NuSrcAgent helps astrophysicists and particle physicists search for high-energy
-neutrino emission from individual objects or catalogs of candidate sources,
-using IceCube public point-source data. You can describe an analysis in natural
-language to an AI assistant, or run the same analysis directly from a terminal.
-The numerical results come from the likelihood code, not from the language model.
+## Get started
 
-The analysis accepts researcher-supplied source lists and catalogs; no source
-population or observing band has a privileged role. The bundled catalog below
-provides a worked example.
+Ask Codex or Claude Code to install NuSrcAgent.
 
-The tool assumes basic familiarity with physics/astronomy; familiarity with
-AI or software architecture is not required. Start with installation below,
-then run the two [worked examples](docs/quickstart.md).
+```text
+Install NuSrcAgent from https://github.com/beizhouphys/NuSrcAgent
+```
 
-NuSrcAgent `0.2.0` is a **public development preview**. The installer downloads
-the IceCube data and precomputed probability-density tables. New time-dependent
-requests default to the merged [fixed-profile workflow](docs/time_dependent_catalog.md), supporting
-single-source fits, catalog scans, stacking and shared seasonal background
-trials with empirical p-values and significances.
+Then continue in the same chat from the NuSrcAgent folder.
 
-Verified on 2026-10-16: a fresh GitHub clone completed plain `bash install.sh`
-and both real DR2 examples. See the [verification record](docs/input_installation_verification.md#github-hosted-one-command-verification).
+```text
+Analyze NGC 1068
+```
 
-## Analysis interface
+The agent looks up NGC 1068 and runs a time-integrated fit using all 14 years of IceTracks-DR2. To invoke the skill by name, use `$nusrcagent` in Codex or `/nusrcagent` in Claude Code.
 
-The analysis interface connects your requests to the likelihood calculation and
-its reviewed results. Three features help you manage calculations that can take
-substantial time, especially large catalog searches and repeated background fits:
+For either installation method, you need Python 3.12 and Git on macOS or Linux. This private repository contains version `0.2.0`. To download the files, sign in with a GitHub account that has access, using Git HTTPS credentials or `gh auth login`.
 
-1. **Estimated time remaining during calculation.** Progress updates report a
-   rough estimate of time remaining (ETA) from work completed in the current run.
-   Single-source analyses, stacking analyses, catalog-wide single-source analyses
-   and flux calculations report
-   the relevant fit or stage; an estimate for one stage excludes later stages
-   that have not been timed. Before a usable timing sample, the estimate is
-   pending. Optimizer call counts are uncertain, so the ETA is approximate and
-   never changes the fit's stopping conditions. Continuous background trials
-   without a target count have no scheduled end time. Final chat answers include
-   total elapsed time when a request takes more than one minute.
-   See [progress and elapsed time](docs/task_timing.md).
-2. **Number of workers and CPU budget.** Add `--workers N` to
-   `run --task <task_id>` to select computing resources (default 1). Independent
-   catalog fits use N worker processes with one numerical-library thread each.
-   For one single-source analysis or stacking analysis, the same option sets the
-   numerical-library thread budget. More workers can require more memory;
-   speedup depends on the calculation. The choice is recorded with the run and
-   preserves the scientific settings. Pass it again for a user-authorized flux
-   stage. Background-trial tasks use their separately recorded scheduler size.
-   See [CPU selection](docs/cpu_execution.md).
-3. **Background-trial guidance and empirical significance.** Every reported
-   analytic significance estimate is followed by a reminder that a more precise
-   significance requires background trials; an estimate strictly above 2 sigma
-   receives an explicit reminder that trials are needed. Ordinary fits do not
-   start trials automatically. A separate, checkpointed event-right-ascension
-   trial workflow follows an existing reviewed DR2 single-source analysis or
-   stacking analysis, retaining its sources, weighting factors, event selection,
-   spectrum, PDFs and fitting procedure. It reports empirical p-value and
-   significance, 68%/95% Monte Carlo intervals and trial-distribution figures,
-   with checkpoints, stopping and resumption. Catalog-scan maxima and
-   time-dependent trials remain outside this workflow.
-   See [background trials](docs/dr2_empirical_scrambling.md).
-
-## What analyses can I run?
-
-| Data / mode | Implemented analysis | Status |
-| --- | --- | --- |
-| DR2 full14, time-integrated spatial+energy | Single source, individual catalog scan, stacking | Default; fits n and s |
-| DR2 full14, time-integrated spatial-only | Single source, individual catalog scan, stacking | Fixed acceptance spectral index; no energy term |
-| DR1 10-year, time-integrated spatial-only | Existing single-source and catalog scan+stack paths | Separate inputs and definitions |
-| DR2 time-dependent per-source profiles | Single source, catalog scan, stacking | Default time-dependent workflow; fixed box or Gaussian time PDFs; fixed/fitted s; shared trials and empirical significance |
-| DR2 legacy Gaussian/box time searches | Single source and individual catalog scan | Explicit legacy selection; fixed parameters or time searches; no calibrated trials |
-
-### Data and analysis terminology
-
-- **IceCube public point-source data** are released samples of track-like
-  event candidates for searches for neutrino emission from localized sources.
-  They include reconstructed directions, angular uncertainties, energy proxies
-  and arrival times, together with detector uptime, effective areas and
-  **instrument response functions (IRFs)** describing the relation between true
-  neutrino quantities and reconstructed quantities. The event energy proxy is
-  not the true neutrino energy, and the event sample is not a list of confirmed
-  astrophysical neutrinos.
-- **DR1** denotes the earlier 10-year release, covering 2008–2018. See the
-  [official data description](https://icecube.wisc.edu/data-releases/2021/01/all-sky-point-source-icecube-data-years-2008-2018/),
-  [data download](https://doi.org/10.7910/DVN/VKL316) and
-  [data-release paper, arXiv:2101.09836](https://arxiv.org/abs/2101.09836).
-  NuSrcAgent retains its separate spatial-only analysis and input definitions.
-- **DR2** denotes IceTracks-DR2, the 14-year release covering 2008–2022,
-  with updated event selection and detector calibration; it is not simply DR1
-  with four more years appended. See the
-  [official data description](https://icecube.wisc.edu/data-releases/2026/05/icecube-second-track-data-release-icetracks-dr2-data-from-2008-2022-for-neutrino-source-searches/),
-  [data download](https://doi.org/10.7910/DVN/MMIIZA) and
-  [data-release paper, arXiv:2605.19040](https://arxiv.org/abs/2605.19040).
-  **full14** means all 14 observation periods of this release.
-- **Time-integrated** analysis combines the selected observation periods
-  without searching for flares or using an event-time probability density.
-- **Spatial** information consists of reconstructed event directions and their
-  angular uncertainties, used to compare events with the source positions and
-  the background directional distribution.
-- **Energy** information is the reconstructed event energy proxy, interpreted
-  through the detector response and the assumed signal/background distributions.
-  The **energy term** is the likelihood's contribution from these probability
-  densities, not a direct substitution of the energy proxy for neutrino energy.
-- **Spatial+energy** analysis uses both directional and energy information.
-  By default it fits the signal count `n` and spectral index `s`.
-- **Spatial-only** analysis omits the energy term. For DR1 and DR2, it assumes
-  `dN/dE` proportional to `(E/E0)^(-2.5)` by default when calculating detector
-  acceptance: `s=2.5` with `--s 2.5`
-  in the command interface. The spectral index is fixed, not fitted. An explicitly
-  supplied spectrum overrides this default; this spectral index is not a measured source
-  spectrum. Historical tasks keep their recorded spectrum settings.
-- **Time-dependent** analysis also uses event arrival times to test emission
-  over a specified time profile, for example a flare. The default merged workflow
-  uses fixed per-source box or Gaussian time PDFs for DR2 single-source fits, scans and stacking.
-  Matched shared trials provide empirical p-values and significances. See the
-  [time-dependent guide](docs/time_dependent_catalog.md) for settings and limits.
-- **Single source** analysis fits for a neutrino excess at one specified
-  sky position.
-- **Individual catalog scan** fits each catalog source independently,
-  producing one result per source rather than a joint detection of the catalog.
-- **Stacking** analysis tests the catalog's combined emission using specified
-  relative source weighting factors, a total signal count and a common spectral index.
-  Detector acceptance is applied separately, so equal intrinsic source weighting factors
-  do not imply equal expected detected signal counts.
-
-### What do the fitted quantities mean?
-
-- **n** is the expected number of signal events in the selected data. In a
-  stacking analysis, n describes the total from the catalog.
-- **s** is the power-law spectral index. The differential neutrino flux
-  phi(E) is proportional to (E/E0)^(-s), where E0 is a reference energy.
-  Use `--s 2.5` for E^(-2.5). If n=0, the fit cannot measure s.
-  The signed-exponent option `--gamma -2.5` specifies the same spectrum.
-  Use `--s-mode fitted` to fit a supplied seed and `--s-bounds MIN MAX`
-  to set bounds in increasing s order. Saved records can include legacy field names.
-- **TS** is the likelihood-ratio test statistic after maximization. A larger
-  value favors the signal model relative to background alone; it is not itself
-  a significance in sigma. See [interpretation cautions](#before-interpreting-a-result).
-
-## Installation
-
-You need Python 3.12 on macOS or Linux, Git and an internet connection.
-Clone the repository and enter its folder:
+To install from a terminal, run
 
 ```bash
 git clone https://github.com/beizhouphys/NuSrcAgent.git
 cd NuSrcAgent
-```
-
-If you have already cloned the repository, simply open a terminal in that
-folder. Then install with one command:
-
-```bash
 bash install.sh
 ```
 
-By default, `bash install.sh` downloads only the DR2 (14-year) inputs.
-To add DR1 (10-year) inputs, run this command in the same directory.
+The installer downloads and verifies the IceTracks-DR2 data and precomputed probability density tables. To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`. See the [installation guide](docs/input_installation.md) or [run a fit from the terminal](docs/quickstart.md).
 
-```bash
-bash install.sh --data-sample icecube_public_ps_10yr
-```
+## What analyses can I run?
 
-The script installs the required Python libraries and downloads the matching
-IceCube data, pre-calculated signal energy PDFs and background energy and
-spatial PDFs. Here **PDF** means probability density function, not a document
-file; **SEpdf** means signal energy PDF. You do not need
-to select files on the IceCube website or calculate the PDFs yourself.
+- **Single-source analysis** tests for a neutrino excess at one sky position.
+- **Catalog-wide single-source analysis** fits each source independently, giving one result per source.
+- **Stacking analysis** tests a catalog’s combined emission. Choose a weighting scheme, such as equal weighting or weighting by a measured source flux. The fit accounts for detector acceptance at each source position.
 
-The Python libraries are installed in **.venv/**, an environment kept inside
-this project so they do not replace your system's libraries. The script checks
-each downloaded file against its recorded **SHA-256 checksum**, a file fingerprint
-used to detect incomplete or changed inputs. Successful installation ends with
-`Installation and input verification complete.` Re-running reuses verified inputs.
+| Data and analysis | What you can test |
+| --- | --- |
+| IceTracks-DR2 (2008–2022), time-integrated | All three analyses. The default fit uses event directions and energy proxies. You can also request a spatial-only fit. |
+| IceTracks-DR2, time-dependent | All three analyses with a fixed box or Gaussian time profile for each source. For one source or for each catalog source independently, you can also request a [fitted-time search](docs/time_dependent.md). |
+| IceTracks-DR1 (2008–2018), time-integrated | Spatial-only single-source analysis, or a catalog-wide single-source analysis with stacking. |
 
-The current installer uses your GitHub credentials to download the data bundles.
-It uses Git HTTPS credentials or an existing `gh auth login` session. If you
-only use SSH for GitHub, run `gh auth login` before installing.
-See [authentication and installation options](docs/input_installation.md).
+## Examples from the paper
 
-The default DR2 download is about 1.52 GB and extracts about 3.8 GiB, in addition
-to the Python environment and retained download/staging cache. Most extracted
-space is used by the IceCube event data and detector response files (about
-2.61 GB); pre-calculated PDFs add about 1.44 GB. These tables require modest
-additional disk space but make likelihood evaluation much faster by reusing
-pre-calculated distributions rather than recalculating them during each fit.
-The raw-data files compress particularly
-well, so the PDFs account for most of the download size, despite using a
-smaller share of the extracted disk space. Python itself is not installed by
-the script. See [installation options and recovery](docs/input_installation.md)
-and [data attribution](docs/data_attribution.md).
+- **NGC 1068.** We gave the agent turbulent corona model code and compared the resulting non-power-law fit with a power-law fit in a time-integrated analysis. To test your own model, supply a table of energy and differential flux for a fixed spectral shape. See [spectrum inputs](docs/requested_spectra.md).
+- **32 magnetars.** We asked the agent to find an IceCube stacking analysis in the literature and fit the same 32 magnetars with equal weighting. To reproduce the study’s flux upper limit, the agent wrote signal-injection simulations for this comparison.
 
-## Ask for an analysis in natural language
+Try both catalog analyses with the [three-source example](docs/quickstart.md#2-three-source-scan-plus-stack). You can also use the [catalog of 3,386 radio-bright AGN](data_input/sources/README.md).
 
-**Natural-language interaction** means describing the scientific request in
-your own words rather than assembling Python commands. You may use any natural
-language supported by your AI assistant, including English, Chinese or a
-mixture of languages. Interpretation quality can vary by language; unresolved
-scientific ambiguities must still be clarified before running an analysis.
+## What do the fitted quantities mean?
 
-Replies follow your explicitly requested language or an explicitly established
-personal language preference. Otherwise, they follow the language of your
-request. If there is no preference or language cue, such as a bare
-`$nusrcagent` invocation, replies default to English. The language used to
-write project instructions is not treated as your language preference.
+For the default NGC 1068 analysis, the first fit gives you the best-fit signal count `n`, the power-law spectral index `s` (differential flux proportional to $E^{-s}$), the likelihood-ratio test statistic `TS`, the estimated local p-value and the corresponding one-sided significance. A larger `TS` favors signal plus background over background alone. At `n = 0`, the fit cannot determine `s`.
 
-After installation, start a local Claude Code session in the project folder and
-enter the request below. In Codex, use `$nusrcagent` with the same request. Both
-assistants follow the **NuSrcAgent skill** and call the same local Python commands.
+If you choose to continue, you get 95% profile-likelihood flux upper limits and, when `TS > 9`, a flux measurement. See the [single-source workflow](docs/single_source_stages.md) and [stacking flux results](docs/stacking_flux.md).
 
-```text
-/nusrcagent Analyze NGC 1068 at RA 40.6696 deg, Dec -0.0133 deg
-with full14 DR2, time-integrated spatial+energy. Fit n and s.
-```
+For a more precise significance, request background trials that repeat the fit on randomized data. [Time-integrated DR2 trials](docs/dr2_empirical_scrambling.md) calibrate the significance of a specified single-source or stacking analysis. A fixed-profile time-dependent fit gives a significance only after matched trials. To test the most significant source in the catalog, those trials must repeat the full catalog search and record its largest `TS`. See [time-dependent trials](docs/time_dependent_catalog.md).
 
-The assistant records your source positions, spectrum and weighting choices,
-asks about unresolved choices that would change the analysis, then runs the
-likelihood fit and reads its checks. Each request has a saved analysis record
-with an identifier, so you can locate its settings and results later. **READY**
-means the required inputs/settings are complete; it is not a scientific result.
+Open `report.md` and `review.md` in the run directory for the results and warnings. The same directory holds the CSV tables and records of the settings and inputs. Flux figures are under `figures/runs/<run_id>/`. Treat results with warnings as preliminary. Residuals in the DR2 background model for the IC79 detector season can bias `n`, `s` and flux. See [output files](docs/quickstart.md#read-the-outputs) and [scientific limitations](docs/scientific_status.md).
 
-The assistant interprets natural language. The Python command-line interface
-does not: its `--request` text is only a description kept with the analysis.
-When using Python commands directly, provide positions and settings explicitly.
+For numerical details, see the [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans), [single-source spectral interpolation](docs/single_source_linear_interpolation.md) and [stacking performance](docs/stacking_performance.md).
 
-Under the default analysis settings, the minimum information a researcher
-needs to provide is the sky coordinates or a resolvable name of each source.
-NuSrcAgent accepts ICRS RA/Dec and Galactic l/b, converting them to backend
-RA/Dec. Degrees, radians and RA hourangle are supported. It asks when the
-coordinate system or units are unclear; original inputs and the conversion
-are recorded. This applies to all currently supported analyses. The Python
-wrapper requires coordinates; name lookup is performed by the natural-language
-agent. See [coordinate input and conversion](docs/coordinates.md).
+## Citation
 
-For new single-source requests, the Agent first reports best-fit n and spectral index,
-TS, local p value and one-sided significance in a final answer after LLH review.
-It asks whether to continue and ends that turn. Only after the user replies does
-it continue the flux calculation and report upper limits
-and/or measurements, figures and tables in a second chat output. Terminal users
-run `run --stage flux --task <task_id> --flux-user-reply "<actual user reply>"`
-after the first-stage result and continuation reply. The primary fit is
-saved and is not maximized again. See the [two-stage workflow](docs/single_source_stages.md).
-
-## Minimal examples and outputs
-
-To run the numerical fits directly in a terminal, follow the
-[worked examples](docs/quickstart.md) for complete terminal commands:
-
-1. NGC 1068 single-source fit.
-2. Three-source individual scan plus uniform-weight stack using the bundled CSV.
-
-Both explain how to save a request, check `READY` and run the fit. They show
-where to find readable reports, CSV result tables, the settings used, and
-records of the code/data versions (called **provenance**).
-The guide includes observed numerical references from the local clean-install
-checks. DR2 produces numerical reports/tables, catalog sqrt(TS) PDF/PNG figures,
-and the documented single-source flux-limit figures; no Excel workbook is generated.
-
-## Example catalog: radio-bright AGN
-
-The 3386-source RFC 2019c radio-bright AGN catalog is one example for
-inspection, single-source analysis and stacking analysis. It is not a default
-source population or a required input; researchers select their own source
-lists, catalogs and weighting schemes. This example is included in [data_input/sources/](data_input/sources/README.md), with column definitions,
-selection and attribution. The CSV retains full stored coordinate precision,
-X-band flux density and source identifiers; it supports uniform or radio-flux
-weighting. This small table comes with the Git clone, separately from the IceCube bundles.
-For example, ask `$nusrcagent` to inspect the bundled radio-bright AGN catalog
-without running fits. A full individual scan requires 3386 fits; start small
-when testing. See the [catalog notes](data_input/sources/README.md).
-
-## Before interpreting a result
-
-- An ordinary fit runs no background trials. Its local p-value uses an analytic
-  approximation, not a measured background TS distribution. A source scan also
-  requires accounting for the search over multiple sources before quoting a
-  catalog-wide significance.
-- The background PDFs keep IC79 Dec–energy residuals; n, s and inferred
-  flux may be biased. Hash verification establishes input identity, not scientific validity.
-- Report fitted quantities, TS, p-value and corresponding one-sided Gaussian
-  significance in sigma, with local/post-trial and analytic/empirical labels.
-  Ordinary local p-values and significances are estimates: use half-chi-square
-  dof=2 for free spectral index and dof=1 for fixed spectral index; empirical calibration is separate.
-  Zero background trials alone do not create a warning: an otherwise passing
-  ordinary fit returns **COMPLETED**.
-- Whenever an estimated significance is reported, a more precise significance
-  requires background trials. If the estimate exceeds 2 sigma, background
-  trials are needed to calibrate the result. This applies to every analysis,
-  including single sources, catalog scans and stacks. Trials must repeat the
-  corresponding fit and search/hypothesis family; this reminder does not
-  start trials or change the review status.
-- **COMPLETED_WITH_WARNINGS** means the calculation finished but issues remain to
-  be read in the report; results are preliminary. Failed reviews are not valid results.
-  At n = 0, the fit cannot measure s. Spatial-only spectral index describes acceptance,
-  not a measured spectrum.
-- Background trials can follow a reviewed DR2 single-source or stacking
-  analysis. That time-integrated workflow does not calibrate catalog-scan maxima
-  or time-dependent trials. The separate [fixed-window trial workflow](docs/time_dependent_catalog.md)
-  supports source-local, catalog-maximum and stacking calibration.
-
-See [scientific status](docs/scientific_status.md) and the
-[fixed scientific baseline](docs/release_scientific_baseline.md) before interpreting outputs.
-
-## Repository layout
-
-- `run_agent_wrap.py`: the Python command used to request and run analyses.
-- `agent_core/`: records analysis requests, runs calculations and checks outputs.
-- `analysis_backend/`: **likelihood (LLH)** calculations, PDF evaluation and diagnostics.
-- `.agents/skills/`: instructions for the assistant, including result-checking rules.
-- `tools/`: the optional workbook builder, not PDF construction tools.
-- `docs/`: definitions, input requirements, scientific limitations and release status.
-
-Owner tests, dedicated catalog comparisons, PDF precalculation, historical
-research scripts and conversation transcripts are excluded.
-
-See [catalog workflow](docs/dr2_catalog_workflow.md),
-[release preparation](docs/testing_and_release.md) and
-[release adaptations](docs/release_copy_changes.md).
-Current code version: `0.2.0`; the previous snapshot is identified as `0.1.0`.
-Author: Bei Zhou. License and final citation/publication metadata remain pending.
-No open-source license is granted by this preparation copy.
-See the [metadata decisions and remaining work](docs/release_metadata_draft.md)
-and [draft release notes](docs/release_notes.md).
-
-New DR1 and DR2 single-source tasks and individual catalog fits default to a source-centered
-declination window: minimum half-width 20 degrees and at least 20% of each
-dataset. Use `--full-sky-events` at task creation for all events, or
-`--source-dec-window-deg 30` for a larger minimum half-width. The stack part of
-`scan_and_stack` retains its existing event selection. Scans reuse complete
-loaded data and validated PDF tables. [Settings and limitations](docs/single_source_performance.md).
-
-New DR2 time-integrated spatial+energy single-source tasks also report preliminary one-sided 95% flux upper limits for E^-2, E^-2.5 and E^-3, with a spectrum figure including published NGC 1068 and diffuse uncertainty bands. Use `--no-flux-upper-limits` to omit them; catalog scans enable the per-source limits and figures only with `--flux-upper-limits`. See [flux limits and reference spectra](docs/flux_upper_limits.md) for definitions, units, files and coverage limitations.
-
-Catalog scans now automatically report the top five sources with separate local/global
-p value and significance columns, an analytic independent-source catalog correction,
-and a Fig. 3-style sqrt(TS) histogram without a normal-distribution fit.
-See [catalog reporting](docs/dr2_catalog_workflow.md#catalog-scan-reporting) for assumptions, files and display conventions.
-
-New DR2 time-integrated spatial+energy **single-source** tasks also report the primary-spectrum flux measurement when **TS > 9**, with 68.27%/95% profile intervals, spectrum shading and joint flux and spectral-index contours. Existing fixed-spectrum upper limits remain. Catalog scans do not enable this measurement calculation. See [single-source measurements](docs/flux_measurements.md).
-
-New catalog scans explicitly record the original SkyLLH optimizer separately
-from single-source and joint stacking defaults. See [catalog fit procedure](docs/dr2_catalog_workflow.md#independent-fit-procedure-for-source-scans).
-
-DR2 spatial+energy stacking reduces repeated PDF calculations with a lossless
-spatial PDF block cache (1 GiB shared per stack with fitted s) and exact observed-
-energy interpolation lookups (16 MiB per dataset). Budgets apply per analysis
-process; CPU settings and scientific fit definitions retain their existing values.
-See [stacking performance and cache lifecycle](docs/stacking_performance.md).
-
-New DR2 time-integrated spatial+energy stacks report the primary n, s, TS, p-value and
-one-sided significance first. Continue the same task with `run --task <id>
---stage flux --flux-user-reply "<actual user reply>"` for default s=2, 2.5, 3 upper limits and primary intensity
-measurements when TS > 9. The Agent ends the first turn with the primary result
-and asks whether to continue. After the user replies, it runs the flux stage with
-`--flux-user-reply "<actual user reply>"` and reports that stage in a new final answer. Upper-limit spectrum figures are generated and reported
-regardless of primary TS; TS > 9 adds the measured spectrum and its uncertainty.
-Joint-stack figures use total flux / (4*pi sr),
-with only the two diffuse references. [Stacking flux definitions and workflow](docs/stacking_flux.md).
-
-New DR2 time-integrated spatial+energy standalone single-source tasks use two-node linear spectral index
-interpolation for the signal energy PDF in both the primary fit and flux
-calculation. Catalog scan and joint stacking defaults retain their original
-quadratic interpolation. Optimizer, tolerances and the flux-profile consistency
-guard remain unchanged. See [single-source interpolation](docs/single_source_linear_interpolation.md).
-
-## Spectra beyond the conventional power law
-
-A specified PL exponent is fixed unless fitting is requested. Conventional
-spectra use the existing signal-energy PDF tables. An explicit rising or steep
-spectrum, a fitted range outside those tables, or a supplied modeled spectrum
-triggers preparation of the matching signal-energy PDFs and detector acceptance
-before interpolation and likelihood fitting. The agent explains the preparation
-and reports a current measured ETA. Spatial-only analyses calculate acceptance
-without using energy PDFs. This applies to individual sources, catalog scans
-and stacking. See [requested spectra](docs/requested_spectra.md) for the input
-format, energy support, preparation command and current scope.
+If you use NuSrcAgent in a publication, please cite Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*. For the observations, see the [IceCube dataset citations](docs/data_attribution.md).
