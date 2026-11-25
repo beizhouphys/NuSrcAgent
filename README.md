@@ -10,7 +10,7 @@ NuSrcAgent helps researchers search public IceCube point-source data for high-en
 
 ## Get started
 
-### Install with Claude Code or Codex
+### Easiest way to install and use (with Claude Code or Codex)
 
 Open the folder that will contain the NuSrcAgent checkout. In Claude Desktop,
 open the **Code** tab and select **Local**. In Codex, select **This computer**.
