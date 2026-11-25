@@ -2,7 +2,7 @@
 
 [arXiv link when it is available.]
 
-Read the paper for details on the IceCube data, the likelihood methods, and the comparisons with IceCube results. 
+Read the paper for details on the neutrino data, likelihood methods, architecture of NuSrcAgent, comparisons with IceCube results, and more. 
 
 You can also chat with NuSrcAgent directly for anything you would like to learn about it and how to use it. 
 
