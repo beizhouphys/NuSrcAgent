@@ -1,24 +1,28 @@
 # One-command installation
 
-The installation script works with Python 3.12 on macOS/Linux. Python must
-already be installed with its `venv` and pip tools, used to create a separate
-Python environment and install libraries. Run the command from the project
-folder containing `install.sh`. The installer downloads the inputs from GitHub
-without a GitHub account or token.
+Run the installer from the project folder on the macOS or Linux computer you
+will use for analyses. The installer needs access to GitHub and PyPI.
+You can download the inputs from GitHub without an account or token.
 
 ```bash
 bash install.sh
 ```
 
-The script creates `.venv/`, a Python environment inside the project folder,
-installs the specified versions of all required libraries, downloads the input
-archives and checks that they contain the expected data and PDF tables.
-It installs no PDF construction tools and starts no scientific analysis or trials.
-Python itself is a prerequisite; automatic operating-system Python installation
-and a native Windows installation script are not implemented.
-Set `NUSRC_PYTHON` to an existing Python 3.12 executable if it is not named
-`python3.12`. The script does not install the optional DR1 Excel-workbook
-dependency; numerical analysis and CSV/PDF outputs are separate from that feature.
+The installer looks for Python 3.12 with `venv` and `ensurepip`. It requires
+native arm64 Python on Apple Silicon and checks common Homebrew, python.org
+and Conda locations as well as your `PATH`. If it finds no suitable Python,
+it downloads a fixed [uv release](https://github.com/astral-sh/uv/releases/tag/0.13.10),
+checks its SHA-256 checksum and installs Python 3.12 under the project's
+`.bootstrap/` directory. Automatic Python setup supports arm64 and x86_64
+on macOS and Linux and uses `curl` and `tar` to download and unpack uv from
+Astral's release server. To use a Python executable in a custom location,
+set `NUSRC_PYTHON` to its path.
+
+The installer reuses a compatible `.venv/`. If the existing environment
+cannot run the required Python, it moves that environment into a
+`.venv-backup.*` folder before creating a new `.venv/`. It then installs the
+pinned libraries, downloads the input archives and verifies the data and PDF
+tables. The DR1 Excel workbook requires an additional dependency.
 
 When the command finishes successfully, you can run the
 [worked examples](quickstart.md) with `.venv/bin/python`. There is no need to

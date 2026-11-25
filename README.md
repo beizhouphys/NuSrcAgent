@@ -8,15 +8,22 @@ NuSrcAgent helps researchers search public IceCube point-source data for high-en
 
 ## Get started
 
-### Easiest way to install and use NuSrcAgent
+### Install with Claude Code or Codex
 
-Send this prompt in Codex or Claude Code.
+Open the folder that will contain the NuSrcAgent checkout. In Claude Desktop,
+open the **Code** tab and select **Local**. In Codex, select **This computer**.
+Send this prompt.
 
 ```text
-Install NuSrcAgent from https://github.com/beizhouphys/NuSrcAgent
+https://github.com/beizhouphys/NuSrcAgent install this
 ```
 
-Then continue in the same chat from the NuSrcAgent folder.
+The assistant runs `bash install.sh` from an existing NuSrcAgent GitHub
+checkout or clones the repository into a new directory in the selected folder
+and runs it there. It reports the install path after input verification passes.
+If a download fails, it reports the failed step and host.
+
+After installation, open the `NuSrcAgent` folder in a Local session.
 
 ```text
 Analyze NGC 1068
@@ -26,9 +33,10 @@ The agent looks up NGC 1068 and runs a time-integrated fit using all 14 years of
 
 ### More details about installation
 
-NuSrcAgent `0.2.0` is a public development preview. Install Python 3.12 and Git
-on macOS or Linux. The installer uses your Python to create a project environment.
-You can install without a GitHub account.
+NuSrcAgent `0.2.0` is a public development preview for macOS and Linux.
+You need Git and internet access. The installer uses an existing Python 3.12
+or downloads one into the project folder. On Apple Silicon it uses native
+arm64 Python. You can install without a GitHub account.
 
 To install from a terminal, run
 
