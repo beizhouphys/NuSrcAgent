@@ -1,6 +1,6 @@
 # NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches
 
-[arXiv link when it is available.]
+https://arxiv.org/abs/2611.33324 Bei Zhou, Po-Wen Chang, Kohta Murase
 
 Read the paper for details on the neutrino data, likelihood methods, architecture of NuSrcAgent, comparisons with IceCube results, and more. 
 
@@ -56,8 +56,10 @@ To add IceTracks-DR1, run `bash install.sh --data-sample icecube_public_ps_10yr`
 
 ## Citation
 
-Bei Zhou, Po-Wen Chang and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
-[We will add the arXiv link when it is available.]
+Bei Zhou, Po-Wen Chang, and Kohta Murase, *NuSrcAgent: An AI Agent for High-Energy Neutrino Source Searches*.
+
+https://arxiv.org/abs/2611.33324
+
 If you use NuSrcAgent in a publication, we would greatly appreciate it if you cite this paper. 
 
 
